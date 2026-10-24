@@ -1,0 +1,124 @@
+# VOKASI Web
+
+**Next.js 16 · TypeScript · React 19 · Supabase · responsive web**
+
+Project terpisah dari APK Android di `Vhirazhr/VOKASI`. Pengembangan web tidak perlu mengubah tabel, akun, atau kode Android lama.
+
+## 1. Jalankan di Laragon (Windows)
+
+1. Pastikan Laragon menyediakan Node.js **20.9+** (`node -v`). Node.js 22 LTS dianjurkan.
+2. Ekstrak folder `VOKASI-WEB` ke `C:\laragon\www\VOKASI-WEB`.
+3. Buka **Laragon → Terminal**, lalu jalankan:
+
+   ```powershell
+   cd C:\laragon\www\VOKASI-WEB
+   npm install
+   copy .env.example .env.local
+   ```
+
+4. Edit `.env.local` dan masukkan **Project URL** serta **publishable / anon key** dari proyek Supabase yang **sama** dengan Android. Jangan memasukkan `service_role` / secret key.
+5. Salin **500 soal asli** dari repo Android secara otomatis (memerlukan internet):
+
+   ```powershell
+   npm run sync:bank
+   npm run check:bank
+   ```
+
+   Alternatif jika akses GitHub raw gagal: salin file `app/src/main/assets/vokasi_bank_500.json` di repo Android ke `public/data/vokasi_bank_500.json` pada repo web, lalu jalankan `npm run check:bank`.
+6. Jalankan website:
+
+   ```powershell
+   npm run dev
+   ```
+
+7. Buka **http://localhost:3000** (bukan `localhost/VOKASI-WEB`). Laragon menyediakan terminal/Node, sedangkan Next.js dijalankan sebagai server Node sendiri, bukan PHP/Apache.
+
+> **Penting:** `npm run dev` harus tetap berjalan saat pengujian lokal. Jika port 3000 terpakai: `npm run dev -- -p 3001`.
+
+## 2. Buat repository GitHub BARU
+
+Buka https://github.com/new, isi:
+
+- **Owner**: `Vhirazhr` (atau organisasi GitHub sendiri)
+- **Repository name**: `VOKASI-WEB`
+- **Description**: `Website pembelajaran VOKASI — Next.js + Supabase`
+- **Visibility**: **Private** dianjurkan untuk proyek sekolah. Website dapat tetap dideploy publik dari repo private.
+- **Initialize repository**: kosongkan pilihan README/.gitignore/license, sebab file sudah tersedia di paket.
+
+Di Laragon Terminal:
+
+```powershell
+cd C:\laragon\www\VOKASI-WEB
+git init
+git branch -M main
+git add .
+git commit -m "Initial VOKASI web migration"
+git remote add origin https://github.com/Vhirazhr/VOKASI-WEB.git
+git push -u origin main
+```
+
+GitHub baru berhasil setelah kamu membuatnya di situs GitHub dan menjalankan `git push`.
+
+## 3. Login dan backend lama
+
+- **Siswa**: nama lengkap / username + password yang sudah berlaku di APK. Siswa bernama kembar menggunakan `Nama Lengkap | Kelas`.
+- **Admin**: email + password Supabase; role dicek melalui `is_school_admin`.
+- **Database**: tabel `student_roster`, `classes`, `majors`, `student_attempts`, dan RPC `vokasi_school_leaderboard`.
+- **Data nilai**: mode admin mengambil nilai wajib untuk tanggal WIB, dipaging 500, dan mencocokkan berdasarkan `auth_user_id` (bukan hanya nama).
+- **Latihan wajib**: 100 soal, distribusi 13 kode sesuai Android, maksimal 30 menit, nilai per sesi. Latihan mandiri 10 soal per kategori. Nilai baru ditandai berhasil jika baris sesi yang sama **dibaca kembali dari Supabase**.
+- **Ekspor**: `.xlsx` 6 kolom (No, Nama Siswa, Kelas, Tanggal, Nilai, Status).
+
+**Penting:** akun tidak disalin; aplikasi web menggunakan **Supabase existing**. Jangan membuat project Supabase baru jika ingin histori sama. Row Level Security (RLS) dari proyek Android wajib tetap aktif. Jika ada migrasi SQL sebelumnya yang belum dijalankan, selesaikan di proyek Android/Supabase lebih dahulu.
+
+## 4. Embed ke website sekolah
+
+Setelah di-deploy di domain HTTPS publik, tampilkan route `/embed` sebagai iframe:
+
+```html
+<iframe src="https://vokasi.example.sch.id/embed" title="VOKASI Learning"
+  style="width:100%;height:850px;border:0;border-radius:16px" loading="lazy"
+  referrerpolicy="strict-origin-when-cross-origin"></iframe>
+```
+
+Atur `.env` server deployment:
+
+```env
+EMBED_ALLOWED_ORIGINS=https://sekolah.example.sch.id
+```
+
+Origin harus tepat (tanpa path); untuk beberapa domain pisahkan spasi. Konfigurasi mengaktifkan kebijakan `Content-Security-Policy: frame-ancestors` sehingga **hanya domain tepercaya** yang dapat menampilkan VOKASI di iframe. Jangan gunakan `*`.
+
+**Catatan browser:** browser tertentu membatasi storage/login di third-party iframe. Jika login di iframe ditolak, sediakan tautan **Buka VOKASI di tab baru** atau pasang VOKASI sebagai subdomain same-site (misalnya `vokasi.sekolah.sch.id`). Uji langsung di Chrome, Edge, Firefox dan perangkat seluler.
+
+## 5. Deploy publik
+
+Gunakan Vercel atau server Node.js yang menjalankan `npm run build` dan `npm run start`. **GitHub Pages biasa tidak cocok untuk menjalankan server Next.js dinamis.** Set environment variables Supabase dan `EMBED_ALLOWED_ORIGINS` di hosting.
+
+### Kesiapan produksi dan batasan saat ini
+
+Proyek ini adalah **fondasi web fungsional / MVP migrasi**, bukan jaminan seluruh fitur APK sudah 1:1. Fitur yang telah dirancang: autentikasi siswa/admin, latihan numerasi, pengiriman nilai, dashboard siswa, leaderboard, dashboard admin/filter tanggal, ekspor XLSX, dan embed yang dibatasi origin.
+
+Hal yang masih memerlukan pengujian atau pengembangan sebelum rollout seluruh sekolah:
+
+- uji dengan akun siswa/admin asli, pengiriman nilai, RLS, SQL trigger XP, dan histori lintas Android–web;
+- verifikasi ulang batas XP web sesuai aturan versi Android, termasuk kuota harian dan concurrent login;
+- tambah CRUD siswa, impor massal, CRUD soal, profil foto, pemulihan password, dan notifikasi bila ingin paritas 1:1 APK;
+- uji performa 2.378+ siswa, aksesibilitas, proteksi sesi lintas perangkat, serta keamanan akun;
+- `student_attempts` Android merupakan data nilai **dihitung klien untuk latihan**; jangan menggunakan nilainya sebagai ujian resmi yang wajib anti-kecurangan tanpa validasi server-side;
+- bank soal JSON yang disajikan di browser berisi kunci jawaban seperti APK publik sebelumnya: **hanya untuk latihan**, bukan evaluasi berisiko tinggi;
+- mekanisme simpan kuis browser menggunakan `sessionStorage`; login iframe tergantung kebijakan penyimpanan browser. Jangan memakai perangkat publik tanpa logout;
+- periksa versi dependensi pada `npm audit`, jalankan `npm run build` dan pengujian end-to-end sebelum produksi.
+
+**Tidak pernah simpan `service_role` di environment `NEXT_PUBLIC_*`, frontend, atau repositori.**
+
+## Struktur
+
+```
+app/             Next.js App Router: landing, login, siswa, admin, embed
+components/      UI shell + engine kuis
+lib/             autentikasi, Supabase client, query sekolah, aturan kuis
+public/data/     bank 500 soal asli (diisi via npm run sync:bank)
+scripts/         sinkronisasi & validasi bank
+```
+
+Source Android acuan: https://github.com/Vhirazhr/VOKASI
