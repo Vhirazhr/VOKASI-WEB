@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, BookOpen, ChartNoAxesCombined, ShieldCheck, CheckCircle2, PlayCircle, MonitorSmartphone } from 'lucide-react';
+import { ArrowRight, BookOpen, ChartNoAxesCombined, ShieldCheck, CheckCircle2, MonitorSmartphone } from 'lucide-react';
 
 export default function Home() {
   return <main className="landing">
