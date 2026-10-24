@@ -12,18 +12,17 @@ export default function StudentPage(){const {profile,loading,error,logout}=useSc
  const [attempts,setAttempts]=useState<Attempt[]>([]);const [leaders,setLeaders]=useState<LeaderboardEntry[]>([]);
  const [busy,setBusy]=useState(true);const [warning,setWarning]=useState('');const [category,setCategory]=useState<string|null|undefined>(undefined);
  const [embed,setEmbed]=useState(false);
- useEffect(()=>{setEmbed(new URLSearchParams(window.location.search).get('embed')==='1');},[]);
+ useEffect(()=>{queueMicrotask(()=>setEmbed(new URLSearchParams(window.location.search).get('embed')==='1'));},[]);
  const refresh=useCallback(async()=>{if(!profile)return;setBusy(true);setWarning('');
    const [hist,rank]=await Promise.allSettled([getOwnAttempts(profile.authId),getLeaderboard()]);
    if(hist.status==='fulfilled')setAttempts(hist.value);else setWarning('Gagal membaca riwayat nilai dari Supabase.');
    if(rank.status==='fulfilled')setLeaders(rank.value);
    setBusy(false);
  },[profile]);
- useEffect(()=>{void refresh();},[refresh]);
+ useEffect(()=>{queueMicrotask(()=>void refresh());},[refresh]);
  if(loading||!profile)return <main className="page-loader">{error||'Memeriksa akun siswa...'}</main>;
  const compulsory=attempts.filter(a=>a.practice_category===null),latest=compulsory[0],today=compulsory.find(a=>wibDate(a.completed_at_ms)===wibDate());
  const average=compulsory.length?Math.round(compulsory.reduce((s,a)=>s+a.score,0)/compulsory.length):0;
- const initials=profile.fullName.split(' ').slice(0,2).map(x=>x[0]).join('');
  return <AppShell role="student" onLogout={()=>void logout()} displayName={profile.fullName} embed={embed}>
   {category!==undefined?<QuizView profile={profile} category={category} history={attempts} onQuit={()=>setCategory(undefined)} onDone={()=>{setCategory(undefined);void refresh();}}/>:<>
   <div className="dashboard-heading"><div><div className="section-kicker">DASHBOARD SISWA</div><h1>Halo, {profile.fullName.split(' ')[0]} <span>👋</span></h1><p>{profile.className} • {profile.majorName}</p></div><span className="today-tag"><Clock3 size={16}/> {new Intl.DateTimeFormat('id-ID',{dateStyle:'full',timeZone:'Asia/Jakarta'}).format(new Date())}</span></div>
