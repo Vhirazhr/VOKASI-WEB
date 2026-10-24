@@ -1,5 +1,5 @@
 'use client';
-import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle} from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import {buildQuiz,fetchBank,makeAttempt} from '@/lib/quiz';
@@ -17,7 +17,7 @@ function safeRestore(profile:StudentProfile):QuizState|null {try {const raw=sess
 
 export default function QuizView({profile,category,history,onDone,onQuit}:{profile:StudentProfile;category:string|null;history:Attempt[];onDone:()=>void;onQuit:()=>void}) {
  const [state,setState]=useState<QuizState|null>(null);const [loading,setLoading]=useState(true);
- const [error,setError]=useState('');const [now,setNow]=useState(Date.now());const [completed,setCompleted]=useState<Attempt|null>(null);
+ const [error,setError]=useState('');const [now,setNow]=useState(0);const [completed,setCompleted]=useState<Attempt|null>(null);
  const [sync,setSync]=useState<'idle'|'saving'|'saved'|'failed'>('idle');const [syncError,setSyncError]=useState('');
  const alreadyFinalized=useRef(false);
  useEffect(()=>{let alive=true;async function start(){
@@ -35,9 +35,6 @@ export default function QuizView({profile,category,history,onDone,onQuit}:{profi
   }void start();return()=>{alive=false;};
  },[profile,category]);
  useEffect(()=>{if(state)try{sessionStorage.setItem(key(profile.authId),JSON.stringify(state));}catch{}},[state,profile]);
- useEffect(()=>{if(!state||completed)return;
-   const id=window.setInterval(()=>setNow(Date.now()),250);return()=>clearInterval(id);
- },[state,completed]);
  const processTimeouts=useCallback((current:QuizState,time:number):QuizState=>{
     if(current.index>=current.questions.length) return current;
     let next=current;
@@ -50,7 +47,16 @@ export default function QuizView({profile,category,history,onDone,onQuit}:{profi
     }
     return next;
  },[]);
- useEffect(()=>{setState(prev=>prev?processTimeouts(prev,now):prev);},[now,processTimeouts]);
+ const ticking=state!==null&&completed===null;
+ useEffect(()=>{
+   if(!ticking)return;
+   const id=window.setInterval(()=>{
+     const timestamp=Date.now();
+     setNow(timestamp);
+     setState(prev=>prev?processTimeouts(prev,timestamp):prev);
+   },250);
+   return()=>clearInterval(id);
+ },[ticking,processTimeouts]);
  const current=state?.questions[state.index];
  const remaining=current&&state?Math.max(0,Math.min(Math.ceil((state.deadline-now)/1000),Math.ceil((state.totalDeadline-now)/1000))):0;
  const totalRemaining=state?Math.max(0,Math.ceil((state.totalDeadline-now)/1000)):0;
@@ -75,7 +81,7 @@ export default function QuizView({profile,category,history,onDone,onQuit}:{profi
    try{sessionStorage.setItem(pendingKey(profile.authId),JSON.stringify(attempt));}catch{}
    setCompleted(attempt);void syncAttempt(attempt);
  },[state,profile,history,syncAttempt]);
- useEffect(()=>{if(completed&&sync==='idle')void syncAttempt(completed);},[completed,sync,syncAttempt]);
+ useEffect(()=>{if(completed&&sync==='idle')queueMicrotask(()=>void syncAttempt(completed));},[completed,sync,syncAttempt]);
  function quit(){if(!window.confirm('Keluar dari latihan? Progres akan tetap tersimpan di browser ini.'))return;onQuit();}
  const answeredCount=state?.index||0;
  if(loading) return <section className="white-panel center-message">Menyiapkan latihan VOKASI...</section>;

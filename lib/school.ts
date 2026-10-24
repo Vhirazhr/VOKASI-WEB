@@ -2,12 +2,25 @@ import { supabase } from './supabase';
 import type { Attempt, RosterRow, SchoolStudent, StudentProfile, LeaderboardEntry } from './types';
 
 const BATCH = 500;
-async function allRows<T>(table: string, select: string, apply?: (q: any) => any): Promise<T[]> {
+type RowQuery = {
+  equals?: { column: string; value: string };
+  lowerBound?: { column: string; value: number };
+  upperBound?: { column: string; value: number };
+  nullColumn?: string;
+  order?: { column: string; ascending?: boolean }[];
+};
+async function allRows<T>(table: string, select: string, options: RowQuery = {}): Promise<T[]> {
   const rows: T[] = [];
   for (let from = 0; ; from += BATCH) {
-    let q: any = supabase().from(table).select(select).range(from, from + BATCH - 1);
-    if (apply) q = apply(q);
-    const {data,error} = await q;
+    let q = supabase().from(table).select(select);
+    if (options.equals) q = q.eq(options.equals.column, options.equals.value);
+    if (options.lowerBound) q = q.gte(options.lowerBound.column, options.lowerBound.value);
+    if (options.upperBound) q = q.lt(options.upperBound.column, options.upperBound.value);
+    if (options.nullColumn) q = q.is(options.nullColumn, null);
+    for (const order of options.order || [{column:'id',ascending:true}]) {
+      q = q.order(order.column, {ascending:order.ascending!==false});
+    }
+    const {data,error} = await q.range(from, from + BATCH - 1);
     if (error) throw error;
     const batch = (data || []) as T[];
     rows.push(...batch);
@@ -30,7 +43,7 @@ export async function getStudent(authId: string): Promise<StudentProfile> {
 }
 export async function getSchoolStudents(): Promise<SchoolStudent[]> {
   const [roster, classes, majors] = await Promise.all([
-    allRows<RosterRow>('student_roster','id,auth_user_id,username,full_name,class_id,major_id,registration_status',q=>q.order('id')),
+    allRows<RosterRow>('student_roster','id,auth_user_id,username,full_name,class_id,major_id,registration_status'),
     allRows<{id:string;class_name:string;major_id:string}>('classes','id,class_name,major_id'),
     allRows<{id:string;name:string}>('majors','id,name')
   ]);
@@ -54,11 +67,10 @@ export function wibRange(date:string): [number,number] {
 }
 export async function getAdminAttempts(date:string):Promise<Attempt[]> {
   const [start,end]=wibRange(date);
-  return allRows<Attempt>('student_attempts','*',q=>q.gte('completed_at_ms',start).lt('completed_at_ms',end).is('practice_category',null)
-    .order('completed_at_ms',{ascending:false}).order('id',{ascending:false}));
+  return allRows<Attempt>('student_attempts','*',{lowerBound:{column:'completed_at_ms',value:start},upperBound:{column:'completed_at_ms',value:end},nullColumn:'practice_category',order:[{column:'completed_at_ms',ascending:false},{column:'id',ascending:false}]});
 }
 export async function getOwnAttempts(authId:string): Promise<Attempt[]> {
-  return allRows<Attempt>('student_attempts','*',q=>q.eq('auth_user_id',authId).order('completed_at_ms',{ascending:false}));
+  return allRows<Attempt>('student_attempts','*',{equals:{column:'auth_user_id',value:authId},order:[{column:'completed_at_ms',ascending:false},{column:'id',ascending:false}]});
 }
 export async function getLeaderboard():Promise<LeaderboardEntry[]> {
   const {data,error}=await supabase().rpc('vokasi_school_leaderboard');

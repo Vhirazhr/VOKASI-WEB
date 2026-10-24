@@ -5,6 +5,8 @@ const trustedOrigins = (process.env.EMBED_ALLOWED_ORIGINS ?? '')
 const frameAncestors = ["'self'", ...trustedOrigins].join(' ');
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Explicit project root prevents Next.js from selecting a parent Laragon lockfile.
+  turbopack: { root: process.cwd() },
   async headers() {
     return [{ source: '/:path*', headers: [
       { key: 'Content-Security-Policy', value: `frame-ancestors ${frameAncestors}` },
