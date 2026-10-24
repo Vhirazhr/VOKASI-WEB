@@ -13,7 +13,7 @@ export default function LoginPage(){
   const [pending,setPending]=useState(false);const [error,setError]=useState('');
   useEffect(()=>{
     const qs=new URLSearchParams(window.location.search);
-    setRole(qs.get('role')==='admin'?'admin':'student');setEmbed(qs.get('embed')==='1');
+    queueMicrotask(()=>{setRole(qs.get('role')==='admin'?'admin':'student');setEmbed(qs.get('embed')==='1');});
     if(configured()){void currentRole().then(s=>{if(s) router.replace((s.role==='admin'?'/admin':'/siswa')+(qs.get('embed')==='1'?'?embed=1':''));}).catch(()=>{});}
   },[router]);
   async function submit(e:React.FormEvent){e.preventDefault();setError('');setPending(true);
