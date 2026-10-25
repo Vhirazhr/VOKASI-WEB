@@ -36,3 +36,14 @@
 .vqe-list article button{border:1px solid #d7e5f8;background:#eff6ff;color:#376cb8;padding:9px 10px;border-radius:8px;font-size:10px;font-weight:800;display:flex;align-items:center;gap:5px}
 .vqe input:focus-visible,.vqe textarea:focus-visible,.vqe button:focus-visible{outline:2px solid #4183e8;outline-offset:2px}
 @media(max-width:700px){.vqe-card{padding:16px}.vqe-grid{grid-template-columns:1fr}.vqe-heading{flex-direction:column;align-items:start}.vqe-list article{align-items:start;flex-direction:column}.vqe-list article>div:last-child{align-self:end}}
+
+
+.vqe-import h2{font-size:20px;color:#24476d;margin:0 0 18px}
+.vqe-import-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:23px 0}
+.vqe-import-stats>div{display:grid;align-items:center;gap:6px;padding:18px;border-radius:13px;background:#edf5ff;color:#3765a2}
+.vqe-import-stats strong{font-size:27px}.vqe-import-stats span{font-size:10px;color:#7190b0}
+.vqe-import-wait{display:flex;align-items:center;gap:8px;font-size:12px;color:#5c7ca5}
+.vqe-import-progress{margin-top:20px;color:#557ba8;font-size:12px;font-weight:800}
+.vqe-import-progress>div{width:100%;height:11px;border-radius:99px;background:#e6effd;overflow:hidden}
+.vqe-import-progress>div>span{display:block;height:100%;background:#3877d8;border-radius:99px;transition:width .2s}
+@media(max-width:640px){.vqe-import-stats{gap:7px}.vqe-import-stats>div{padding:12px}.vqe-import-stats strong{font-size:22px}}

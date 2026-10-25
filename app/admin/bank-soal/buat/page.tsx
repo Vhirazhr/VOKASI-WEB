@@ -35,6 +35,7 @@ function UploadField({title,file,path,setImage,remove}:{title:string;file:File|n
    {(file||path)&&!url&&<button type="button" onClick={remove}>Hapus gambar</button>}
  </div>;
 }
+function FileUpFallback(){return <span aria-hidden="true">📦</span>;}
 export default function CreatePictureQuestion(){
  const {loading,error,logout}=useSchoolAuth('admin');
  const [drafts,setDrafts]=useState<Draft[]>([]);
@@ -124,7 +125,7 @@ export default function CreatePictureQuestion(){
  if(error)return <main className="page-loader">{error}</main>;
  return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()}>
   <div className="vqe">
-   <Link href="/admin/bank-soal" className="vqe-back"><ArrowLeft size={17}/> Kembali ke bank soal</Link>
+   <Link href="/admin/bank-soal" className="vqe-back"><ArrowLeft size={17}/> Kembali ke bank soal</Link><Link href="/admin/bank-soal/impor" className="vqe-back"><FileUpFallback/> Impor massal dari Word</Link>
    <div className="vqe-heading"><div><span className="section-kicker">BANK SOAL BARU</span><h1>Editor soal bergambar</h1><p>Teks, gambar soal, gambar pilihan A–C atau A–D, dan kunci jawaban.</p></div><span className="admin-workspace-pill">Khusus admin</span></div>
    <div className="vqe-note"><b>Mode draft:</b> bank lama, timer dan nilai siswa tidak berubah. Soal baru baru dapat dipakai setelah seluruh bank dan aturan sesi diperiksa.</div>
    {issue&&<div role="alert" className="vqe-alert">Penyimpanan draft belum siap: {issue}. Jalankan berkas SQL <code>supabase/migrations/202610250001_vokasi_visual_question_drafts.sql</code> melalui SQL Editor Supabase sekolah.</div>}

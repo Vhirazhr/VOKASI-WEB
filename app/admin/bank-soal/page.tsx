@@ -25,7 +25,7 @@ export default function AdminBankPage(){
  if(error)return <main className="page-loader">{error}</main>;
  return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()}>
   <div className="admin-workspace">
-   <header className="admin-workspace-header"><div><span className="section-kicker">KONTEN LATIHAN</span><h1>Bank Soal</h1><p>Bank lama masih aktif. Untuk format baru, admin sekarang bisa membuat draft soal teks maupun bergambar.</p></div><Link href="/admin/bank-soal/buat" className="btn primary small"><ImagePlus size={17}/> Tambah soal bergambar</Link></header>
+   <header className="admin-workspace-header"><div><span className="section-kicker">KONTEN LATIHAN</span><h1>Bank Soal</h1><p>Bank lama masih aktif. Untuk format baru, admin sekarang bisa membuat draft soal teks maupun bergambar.</p></div><div className="panel-actions"><Link href="/admin/bank-soal/impor" className="btn secondary small"><ImagePlus size={17}/> Impor 500 soal</Link><Link href="/admin/bank-soal/buat" className="btn primary small"><ImagePlus size={17}/> Tambah soal bergambar</Link></div></header>
    <div className="admin-mini-stats"><div><BookOpen size={20}/><span>Jumlah soal</span><strong>{busy?'—':bank.length}</strong></div><div><FileQuestion size={20}/><span>Kategori</span><strong>{busy?'—':categories.length}</strong></div><div><Clock3 size={20}/><span>Blueprint wajib</span><strong>100 soal</strong></div></div>
    <section className="admin-data-card">
     <div className="admin-data-title"><div><h2>Daftar pertanyaan</h2><p>Filter materi, kode kesulitan, atau cari pertanyaan.</p></div><span className="admin-workspace-pill">Read-only</span></div>
