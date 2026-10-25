@@ -74,7 +74,14 @@ export async function getOwnAttempts(authId:string): Promise<Attempt[]> {
 }
 export async function getLeaderboard():Promise<LeaderboardEntry[]> {
   const {data,error}=await supabase().rpc('vokasi_school_leaderboard');
-  if(error) throw error; return (data || []) as LeaderboardEntry[];
+  if(error) throw error;
+  // Urutan RPC bisa berbasis XP. Peringkat akademik web wajib berbasis nilai.
+  // Tanpa hasil wajib terverifikasi, siswa tidak diberi posisi peringkat.
+  return ((data || []) as LeaderboardEntry[])
+    .filter(row => row.mandatory_days > 0 && typeof row.mandatory_average === 'number' && Number.isFinite(row.mandatory_average))
+    .sort((a,b) => (b.mandatory_average ?? 0) - (a.mandatory_average ?? 0)
+      || b.mandatory_days - a.mandatory_days
+      || a.display_name.localeCompare(b.display_name, 'id'));
 }
 export function latestGrades(attempts:Attempt[], students:SchoolStudent[]): Map<string,Attempt> {
   const map=new Map<string,Attempt>();
