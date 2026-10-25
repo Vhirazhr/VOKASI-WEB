@@ -13,13 +13,21 @@ type ClassSummary={key:string;name:string;major:string;count:number;registered:n
 export default function AdminClassesPage(){
  const {loading,error,logout}=useSchoolAuth('admin');
  const [students,setStudents]=useState<SchoolStudent[]>([]),[busy,setBusy]=useState(true),[issue,setIssue]=useState('');
+ const [allClasses,setAllClasses]=useState<{id:string;class_name:string;major_id:string}[]>([]);
  const [search,setSearch]=useState(''),[major,setMajor]=useState(''),[selected,setSelected]=useState<string|null>(null),[refreshKey,setRefreshKey]=useState(0);
  const [majorsDb,setMajorsDb]=useState<{id:string;name:string}[]>([]);
  const [newMajor,setNewMajor]=useState(''),[newClass,setNewClass]=useState('');
  const [newGrade,setNewGrade]=useState(10),[newYear,setNewYear]=useState('2026/2027');
  const [saveBusy,setSaveBusy]=useState(false),[feedback,setFeedback]=useState('');
  useEffect(()=>{if(loading||error)return;let active=true;
-  async function load(){try{const data=await getSchoolStudents();if(active){setStudents(data);setIssue('');setBusy(false);}}catch(e){if(active){setIssue(e instanceof Error?e.message:'Data kelas tidak dapat dimuat.');setBusy(false);}}}
+  async function load(){try{
+ const [data,cls]=await Promise.all([
+  getSchoolStudents(),
+  supabase().from('classes').select('id,class_name,major_id').order('class_name')
+ ]);
+ if(cls.error)throw cls.error;
+ if(active){setStudents(data);setAllClasses(cls.data||[]);setIssue('');setBusy(false);}
+ }catch(e){if(active){setIssue(e instanceof Error?e.message:'Data kelas tidak dapat dimuat.');setBusy(false);}}}
   queueMicrotask(()=>void load());return()=>{active=false};
  },[loading,error,refreshKey]);
  useEffect(()=>{if(loading||error)return;
@@ -39,12 +47,21 @@ export default function AdminClassesPage(){
  }
  const groups=useMemo(()=>{
   const map=new Map<string,ClassSummary>();
-  for(const s of students){const key=s.majorName+'|||'+s.className;let item=map.get(key);
-   if(!item){item={key,name:s.className,major:s.majorName,count:0,registered:0,students:[]};map.set(key,item);}
+  const majorsById=new Map(majorsDb.map(x=>[x.id,x.name]));
+  for(const cl of allClasses){
+    const major=majorsById.get(cl.major_id)||students.find(s=>s.classId===cl.id)?.majorName||'Jurusan belum terpetakan';
+    map.set(cl.id,{key:cl.id,name:cl.class_name,major,count:0,registered:0,students:[]});
+  }
+  for(const s of students){
+   let item=map.get(s.classId);
+   if(!item){
+    item={key:s.classId,name:s.className,major:s.majorName,count:0,registered:0,students:[]};
+    map.set(s.classId,item);
+   }
    item.count++;item.registered+=s.registered?1:0;item.students.push(s);
   }
   return [...map.values()].sort((a,b)=>a.major.localeCompare(b.major,'id')||a.name.localeCompare(b.name,'id'));
- },[students]);
+ },[students,allClasses,majorsDb]);
  const majors=[...new Set(groups.map(g=>g.major))].sort((a,b)=>a.localeCompare(b,'id'));
  const filtered=groups.filter(g=>(!major||g.major===major)&&(!search||[g.name,g.major].some(s=>s.toLowerCase().includes(search.trim().toLowerCase()))));
  const picked=groups.find(g=>g.key===selected);
