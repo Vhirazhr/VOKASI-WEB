@@ -79,3 +79,4 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
       </Link>)}
     </nav>}
   </div>;
+}
