@@ -13,10 +13,13 @@ export function buildQuiz(bank:BankQuestion[], category:string|null):SessionQues
     });
   if(source.length!==(category?10:100)) throw new Error('Jumlah soal tidak sesuai blueprint.');
   return shuffle(source).map(q=>{
-    const optionText=q.options[q.correctOption.charCodeAt(0)-65];
-    if(!optionText || q.options.length!==4) throw new Error(`Kunci jawaban nomor ${q.id} rusak.`);
-    const options=shuffle(q.options);
-    return {...q,options,answerIndex:options.indexOf(optionText)};
+    const correctIndex=q.correctOption.charCodeAt(0)-65;
+    if(!Number.isInteger(correctIndex)||correctIndex<0||correctIndex>=q.options.length
+      ||q.options.length<2||q.options.length>6)throw new Error(`Pilihan atau kunci soal nomor ${q.id} tidak valid.`);
+    // Shuffle text and its paired diagram together, never separately.
+    const pairs=shuffle(q.options.map((text,i)=>({text,imageUrl:q.optionImageUrls?.[i]??null,wasCorrect:i===correctIndex})));
+    return {...q,options:pairs.map(p=>p.text),optionImageUrls:pairs.map(p=>p.imageUrl),
+      answerIndex:pairs.findIndex(p=>p.wasCorrect)};
   });
 }
 export async function fetchBank():Promise<BankQuestion[]> {

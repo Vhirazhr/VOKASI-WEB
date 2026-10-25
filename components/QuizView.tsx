@@ -43,7 +43,7 @@ function ResultReview({attempt,questions}:{attempt:Attempt;questions:SessionQues
      <p className="vokasi-review-minor">{rows.length?'Soal '+(at*10+1)+'–'+Math.min((at+1)*10,rows.length)+' dari '+rows.length:'Tidak ada soal pada filter ini.'}</p>
      {rows.slice(at*10,(at+1)*10).map(r=><article key={r.q.id} className="vokasi-review-card">
        <div className="vokasi-review-label"><b>Soal {r.i+1} • {r.q.category}</b><span className={r.status==='BENAR'?'good':'bad'}>{r.status==='BENAR'?'Benar':r.status==='SALAH'?'Salah':r.status==='TIMEOUT'?'Timeout':'Kosong'}</span></div>
-       <h4>{r.q.question}</h4>
+       <h4>{r.q.question}</h4>{r.q.questionImageUrl&&<img className="quiz-review-figure" src={r.q.questionImageUrl} alt="Gambar soal"/>}
        <p>Jawaban kamu: <b>{r.selected===null?'Tidak dijawab':r.q.options[r.selected]||'Tidak dijawab'}</b></p>
        <p>Jawaban benar: <b>{r.q.options[r.q.answerIndex]}</b></p>
        {r.q.explanation&&<p className="vokasi-review-explanation"><b>Pembahasan:</b> {r.q.explanation}</p>}
@@ -167,12 +167,13 @@ export default function QuizView({profile,category,history,onDone,onQuit}:{profi
    <div className="quiz-progress"><div className="quiz-progress-label"><span>Soal <b>{answeredCount+1}</b> dari {state.questions.length}</span><span>{progress}% selesai</span></div><div className="progress-track"><div style={{width:progress+'%'}}/></div></div>
    <div className="quiz-card"><div className="quiz-playful-deco" aria-hidden="true"><span className="quiz-playful-deco-icon">✦</span> VOKASI PLAY MODE <span className="quiz-playful-deco-spark">✧</span></div><div className="quiz-card-head"><span className="question-type">PERTANYAAN {answeredCount+1}</span><div className="time-group"><span className={remaining<=5?'timer urgent':'timer'}><Clock3 size={17}/> {textClock(remaining)}</span><span className="total-time">Total: {textClock(totalRemaining)}</span></div></div>
       <div className="quiz-playful-question"><div><h2>{current.question}</h2><p className="question-hint">Pilih satu jawaban yang paling tepat.</p></div><div className="quiz-playful-mascot" aria-hidden="true"><span className="quiz-mascot-face"><i/><i/></span><span className="quiz-mascot-grin"/></div></div>
+      {current.questionImageUrl&&<div className="quiz-visual-figure"><img src={current.questionImageUrl} alt="Gambar pendukung pertanyaan" loading="eager"/></div>}
       <div className="answers">{current.options.map((option,i)=>{
         const selected=(state.feedback?.selectedIndex??state.selected)===i;
         return <button type="button" key={i} aria-pressed={selected} disabled={!!state.feedback||remaining<=0}
           className={'answer '+(selected?'chosen ':'')+(selected&&state.feedback?(state.feedback.correct?'feedback-correct':'feedback-wrong'):'')}
           onClick={()=>setState(prev=>prev&&!prev.feedback?{...prev,selected:i}:prev)}>
-          <span className="answer-letter">{String.fromCharCode(65+i)}</span><span>{option}</span>{selected&&<CheckCircle2 size={18}/>}
+          <span className="answer-letter">{String.fromCharCode(65+i)}</span><span className="quiz-choice-content">{option&&<span>{option}</span>}{current.optionImageUrls?.[i]&&<img src={current.optionImageUrls[i]??''} alt={'Gambar pilihan '+String.fromCharCode(65+i)} loading="eager"/>}</span>{selected&&<CheckCircle2 size={18}/>} 
         </button>;
       })}</div>
       {state.feedback&&<div role="status" aria-live="polite" className={'quiz-answer-feedback '+(state.feedback.correct?'correct':'wrong')}>

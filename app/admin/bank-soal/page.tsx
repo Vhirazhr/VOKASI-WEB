@@ -1,7 +1,8 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {BookOpen,Clock3,FileQuestion,Search,ShieldCheck} from 'lucide-react';
+import Link from 'next/link';
+import {BookOpen,Clock3,FileQuestion,ImagePlus,Search,ShieldCheck} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {fetchBank} from '@/lib/quiz';
@@ -24,7 +25,7 @@ export default function AdminBankPage(){
  if(error)return <main className="page-loader">{error}</main>;
  return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()}>
   <div className="admin-workspace">
-   <header className="admin-workspace-header"><div><span className="section-kicker">KONTEN LATIHAN</span><h1>Bank Soal</h1><p>Jelajahi 500 soal numerasi yang dipakai VOKASI, tanpa mengubah isi bank resmi.</p></div><span className="admin-workspace-pill"><ShieldCheck size={15}/> Tampilan admin</span></header>
+   <header className="admin-workspace-header"><div><span className="section-kicker">KONTEN LATIHAN</span><h1>Bank Soal</h1><p>Bank lama masih aktif. Untuk format baru, admin sekarang bisa membuat draft soal teks maupun bergambar.</p></div><Link href="/admin/bank-soal/buat" className="btn primary small"><ImagePlus size={17}/> Tambah soal bergambar</Link></header>
    <div className="admin-mini-stats"><div><BookOpen size={20}/><span>Jumlah soal</span><strong>{busy?'—':bank.length}</strong></div><div><FileQuestion size={20}/><span>Kategori</span><strong>{busy?'—':categories.length}</strong></div><div><Clock3 size={20}/><span>Blueprint wajib</span><strong>100 soal</strong></div></div>
    <section className="admin-data-card">
     <div className="admin-data-title"><div><h2>Daftar pertanyaan</h2><p>Filter materi, kode kesulitan, atau cari pertanyaan.</p></div><span className="admin-workspace-pill">Read-only</span></div>
@@ -38,7 +39,7 @@ export default function AdminBankPage(){
      <div className="admin-workspace-table-wrap"><table><thead><tr><th>ID</th><th>Kategori</th><th>Kode</th><th>Soal</th><th>Waktu</th><th>Detail</th></tr></thead><tbody>{filtered.slice(activePage*30,(activePage+1)*30).map(q=><tr key={q.id}><td><b>#{q.id}</b></td><td>{q.category}</td><td>{q.difficultyCode}</td><td>{q.question}</td><td>{q.timeLimitSeconds} detik</td><td><button type="button" className="admin-workspace-detail" onClick={()=>setSelected(q)}>Lihat</button></td></tr>)}</tbody></table></div>}
     <div className="admin-workspace-footer"><span>{filtered.length} soal sesuai filter</span><div><button type="button" onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={activePage===0}>Sebelumnya</button><span>{activePage+1} / {pages}</span><button type="button" onClick={()=>setPage(p=>p+1)} disabled={activePage>=pages-1}>Berikutnya</button></div></div>
    </section>
-   <div className="admin-workspace-footnote">Bank ini masih berupa berkas JSON frontend untuk latihan. Evaluasi resmi berisiko tinggi membutuhkan penyimpanan kunci di backend dan validasi server. Fitur edit/impor belum diaktifkan.</div>
+   <div className="admin-workspace-footnote">Bank aktif masih berupa JSON asli. Draft soal bergambar disimpan terpisah di Supabase setelah migrasi, tidak otomatis dipakai siswa. Penggantian total bank dan soal ujian resmi memerlukan pemeriksaan kunci serta aturan pemilihan soal.</div>
    {selected&&<div role="presentation" className="admin-modal-overlay" onMouseDown={()=>setSelected(null)}><section role="dialog" aria-modal="true" aria-label="Detail soal" className="admin-modal-card admin-bank-modal" onMouseDown={e=>e.stopPropagation()}>
      <div className="admin-modal-top"><span className="admin-modal-avatar"><BookOpen size={25}/></span><button type="button" aria-label="Tutup detail" onClick={()=>setSelected(null)}>×</button></div>
      <span className="section-kicker">SOAL #{selected.id} · {selected.category} · {selected.difficultyCode}</span><h2>{selected.question}</h2><p>Waktu {selected.timeLimitSeconds} detik per soal</p>

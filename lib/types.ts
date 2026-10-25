@@ -41,6 +41,7 @@ export interface AttemptSummary {
 export interface BankQuestion {
   id:number; category:string; question:string; options:string[];
   correctAnswer:string; correctOption:string; difficultyCode:string; timeLimitSeconds:number; explanation:string;
+  questionImageUrl?:string|null; optionImageUrls?:(string|null)[];
 }
 export interface SessionQuestion extends BankQuestion { answerIndex: number; }
 export interface LeaderboardEntry {
