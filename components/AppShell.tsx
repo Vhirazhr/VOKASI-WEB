@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, ChartColumnIncreasing, GraduationCap, History, LayoutDashboard, LogOut, ShieldCheck, Trophy, UserRound, Users } from 'lucide-react';
+import { BookOpen, ChartColumnIncreasing, GraduationCap, History, LayoutDashboard, LogOut, ShieldCheck, Trophy, UserRound, Users, School2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import '@/app/school-shell.css';
 
@@ -27,20 +27,22 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
   ];
   const adminLinks=[
     {href:'/admin',label:'Ringkasan sekolah',icon:LayoutDashboard},
-    {href:'/admin#hasil',label:'Nilai & laporan',icon:ChartColumnIncreasing},
-    {href:'/admin#siswa',label:'Data siswa',icon:Users}
+    {href:'/admin/siswa',label:'Data siswa',icon:Users},
+    {href:'/admin/kelas',label:'Kelas & jurusan',icon:School2},
+    {href:'/admin/bank-soal',label:'Bank soal',icon:BookOpen},
+    {href:'/admin#hasil',label:'Nilai & laporan',icon:ChartColumnIncreasing}
   ];
   const items=isAdmin?adminLinks:studentLinks;
   function askBeforeLeave(e:React.MouseEvent<HTMLAnchorElement>) {
     if(navigationBlocked&&!window.confirm('Keluar dari layar latihan? Sesi yang sedang berlangsung belum selesai.')) e.preventDefault();
   }
-  const active=(href:string)=>href.startsWith('/admin')?pathname==='/admin':pathname===href;
+  const active=(href:string)=>href.includes('#')?false:pathname===href;
   return <div className={'shell school-shell '+(embed?'shell-embed':'')}>
     <aside className="sidebar" aria-label={isAdmin?'Menu admin':'Menu siswa'}>
       <Link onClick={askBeforeLeave} href="/" className="brand"><span className="brand-mark">V</span><span>VOKASI<span className="brand-dot">.</span></span></Link>
       <div className="side-label">{isAdmin?'PANEL SEKOLAH':'AREA BELAJAR'}</div>
       <nav className="side-menu" aria-label="Navigasi dashboard">
-        {items.map(({href,label,icon:Icon})=><Link key={href} onClick={askBeforeLeave} href={href+(href.includes('#')?'':suffix)} aria-current={active(href)&&!href.includes('#')?'page':undefined} className={'side-link '+(active(href)&&!href.includes('#')?'selected':'')}>
+        {items.map(({href,label,icon:Icon})=><Link key={href} onClick={askBeforeLeave} href={href.includes('#')?(embed?href.replace('#','?embed=1#'):href):href+suffix} aria-current={active(href)&&!href.includes('#')?'page':undefined} className={'side-link '+(active(href)&&!href.includes('#')?'selected':'')}>
           <Icon size={19}/><span>{label}</span>
         </Link>)}
       </nav>
