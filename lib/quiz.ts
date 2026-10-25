@@ -1,35 +1,109 @@
 import type { Attempt, BankQuestion, SessionQuestion, StudentProfile } from './types';
 import { wibDate } from './school';
+import { supabase } from './supabase';
+import { APPROVED_BLUEPRINT, APPROVED_GROUPS } from './new-bank-blueprint';
 
-export const QUOTAS:Record<string,number>={ K1:6,K2:6,K3:6,K4:6,K5:6,P1:6,P2:6,P3:6,P4:6,P5:6,J:20,S1:15,S2:5 };
-const shuffle=<T,>(list:T[])=>{const out=[...list];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;};
-export function buildQuiz(bank:BankQuestion[], category:string|null):SessionQuestion[] {
-  if(category && !['Perkalian','Pembagian','Penjumlahan','Konversi Satuan'].includes(category)) throw new Error('Kategori latihan tidak dikenal.');
-  const source=category ? shuffle(bank.filter(q=>q.category===category)).slice(0,10)
-    : Object.entries(QUOTAS).flatMap(([code,count])=>{
-      const available=bank.filter(q=>q.difficultyCode===code);
-      if(available.length<count) throw new Error(`Bank soal ${code} belum lengkap.`);
-      return shuffle(available).slice(0,count);
-    });
-  if(source.length!==(category?10:100)) throw new Error('Jumlah soal tidak sesuai blueprint.');
-  return shuffle(source).map(q=>{
-    const correctIndex=q.correctOption.charCodeAt(0)-65;
-    if(!Number.isInteger(correctIndex)||correctIndex<0||correctIndex>=q.options.length
-      ||q.options.length<2||q.options.length>6)throw new Error(`Pilihan atau kunci soal nomor ${q.id} tidak valid.`);
-    // Shuffle text and its paired diagram together, never separately.
-    const pairs=shuffle(q.options.map((text,i)=>({text,imageUrl:q.optionImageUrls?.[i]??null,wasCorrect:i===correctIndex})));
-    return {...q,options:pairs.map(p=>p.text),optionImageUrls:pairs.map(p=>p.imageUrl),
-      answerIndex:pairs.findIndex(p=>p.wasCorrect)};
+export const QUOTAS: Record<string,number>=Object.fromEntries(
+  APPROVED_GROUPS.map(group=>[group,APPROVED_BLUEPRINT.groups[group].quota])
+);
+export const PRACTICE_CATEGORIES=[
+ 'Perkalian','Pembagian','Numerasi Campuran','Fisika Dasar','Logika dan Penalaran','Pola Gambar'
+] as const;
+const shuffle=<T,>(list:T[])=>{
+ const out=[...list];
+ for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}
+ return out;
+};
+
+type ActiveChoice={text:string;image_path:string|null};
+type PublishedRow={
+ source_number:number;category:string;difficulty_code:string;question:string;
+ question_image_path:string|null;options:ActiveChoice[];correct_index:number;
+ time_limit_seconds:number;explanation:string;
+};
+export async function getPublishedBankVersion():Promise<string|null>{
+ const {data,error}=await supabase().from('vokasi_web_bank_release')
+    .select('active,version').eq('id',1).maybeSingle();
+ if(error||!data)return null;
+ return data.active?String(data.version):null;
+}
+
+export async function fetchBank():Promise<BankQuestion[]>{
+ const version=await getPublishedBankVersion();
+ if(!version||!version.startsWith('VOKASI-NEW-'))
+    throw new Error('Bank soal baru masih menunggu aktivasi admin. Latihan belum tersedia.');
+ const {data,error}=await supabase().from('vokasi_web_published_questions')
+   .select('source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation')
+   .order('source_number',{ascending:true}).limit(550);
+ if(error)throw new Error('Gagal mengambil soal baru dari Supabase: '+error.message);
+ if(!Array.isArray(data)||data.length!==APPROVED_BLUEPRINT.bankCount)
+   throw new Error('Bank soal baru belum lengkap 500 nomor. Hubungi admin sekolah.');
+ const rows=data as PublishedRow[];
+ const filePaths=[...new Set(rows.flatMap(r=>[
+    ...(r.question_image_path?[r.question_image_path]:[]),
+    ...r.options.flatMap(o=>o.image_path?[o.image_path]:[])
+ ]))];
+ const signed=new Map<string,string>();
+ if(filePaths.length){
+   const {data:urls,error:signError}=await supabase().storage.from('vokasi-question-figures')
+     .createSignedUrls(filePaths,7200);
+   if(signError||!urls)throw new Error('Gambar soal tidak dapat diakses: '+(signError?.message||'Storage tidak tersedia.'));
+   urls.forEach((item,i)=>{
+     if(item.error||!item.signedUrl)throw new Error('Gambar soal tidak dapat dibuka: '+filePaths[i]);
+     signed.set(filePaths[i],item.signedUrl);
+   });
+ }
+ const bank:BankQuestion[]=rows.map(r=>{
+   if(!Array.isArray(r.options)||r.options.length<2||r.options.length>6
+      ||!Number.isInteger(r.correct_index)||r.correct_index<0||r.correct_index>=r.options.length)
+      throw new Error('Format pilihan soal #'+r.source_number+' tidak valid.');
+   return {
+     id:r.source_number,category:r.category,question:r.question,
+     options:r.options.map(o=>o.text||''),
+     correctAnswer:r.options[r.correct_index].text||'',
+     correctOption:String.fromCharCode(65+r.correct_index),
+     difficultyCode:r.difficulty_code,timeLimitSeconds:r.time_limit_seconds,
+     explanation:r.explanation||'',
+     questionImageUrl:r.question_image_path?signed.get(r.question_image_path):null,
+     optionImageUrls:r.options.map(o=>o.image_path?signed.get(o.image_path)||null:null)
+   };
+ });
+ for(const group of APPROVED_GROUPS){
+   const rule=APPROVED_BLUEPRINT.groups[group];
+   const rowsForGroup=bank.filter(q=>q.difficultyCode===group);
+   if(rowsForGroup.length<rule.quota||rowsForGroup.some(q=>q.timeLimitSeconds!==rule.seconds))
+     throw new Error('Blueprint '+rule.label+' tidak sesuai kuota/timer.');
+ }
+ if(bank.filter(q=>q.difficultyCode==='POLA_GAMBAR').some(q=>!q.questionImageUrl))
+   throw new Error('Gambar soal penalaran visual belum lengkap.');
+ return bank;
+}
+export function buildQuiz(bank:BankQuestion[],category:string|null):SessionQuestion[]{
+ if(category&&!PRACTICE_CATEGORIES.some(c=>c===category))throw new Error('Kategori latihan tidak dikenal.');
+ const source=category?shuffle(bank.filter(q=>q.category===category)).slice(0,10):
+  APPROVED_GROUPS.flatMap(group=>{
+    const rule=APPROVED_BLUEPRINT.groups[group];
+    const options=bank.filter(q=>q.difficultyCode===group);
+    if(options.length<rule.quota)throw new Error('Bank '+rule.label+' kurang lengkap.');
+    return shuffle(options).slice(0,rule.quota);
   });
+ if(source.length!==(category?10:APPROVED_BLUEPRINT.sessionCount)
+   ||new Set(source.map(q=>q.id)).size!==source.length)
+   throw new Error('Jumlah soal atau nomor tidak valid.');
+ if(!category&&source.reduce((n,q)=>n+q.timeLimitSeconds,0)!==APPROVED_BLUEPRINT.sessionSeconds)
+   throw new Error('Waktu total wajib bukan 30 menit.');
+ return shuffle(source).map(q=>{
+   const index=q.correctOption.charCodeAt(0)-65;
+   if(!Number.isInteger(index)||index<0||index>=q.options.length)
+     throw new Error('Kunci soal #'+q.id+' tidak valid.');
+   const options=shuffle(q.options.map((text,i)=>({
+     text,imageUrl:q.optionImageUrls?.[i]||null,correct:index===i
+   })));
+   return {...q,options:options.map(o=>o.text),optionImageUrls:options.map(o=>o.imageUrl),
+     answerIndex:options.findIndex(o=>o.correct)};
+ });
 }
-/** Never fall back to the old bank. New exercises may start only after an approved bank is published. */
-export async function fetchBank():Promise<BankQuestion[]> {
-  const response=await fetch('/data/vokasi_bank_active.json',{cache:'no-store'});
-  if(!response.ok) throw new Error('Bank soal lama sudah dihapus. Bank 500 soal baru belum diaktifkan; latihan sementara tidak tersedia.');
-  const bank:unknown=await response.json();
-  if(!Array.isArray(bank)||bank.length!==500) throw new Error('Bank soal baru belum divalidasi sebagai 500 soal; latihan ditangguhkan.');
-  return bank as BankQuestion[];
-}
+
 export function earnedXp(ownHistory:Attempt[],now:number,practiceCategory:string|null,correct:number):number {
   const today=ownHistory.filter(a=>wibDate(a.completed_at_ms)===wibDate(now));
   const spent=today.reduce((sum,a)=>sum+a.earned_xp,0);

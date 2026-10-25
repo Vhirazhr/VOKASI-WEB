@@ -191,7 +191,7 @@ export default function ImportQuestionBundle(){
      {notice&&<p role="status" className="vqe-alert">{notice}</p>}
      {saving&&<div className="vqe-import-progress"><p>Impor {progress.done} dari {progress.total} soal...</p>
        <div><span style={{width:(progress.total?Math.round(progress.done/progress.total*100):0)+'%'}}/></div></div>}
-     <div className="vqe-actions"><Link className="btn secondary" href="/admin/bank-soal/buat">Editor manual</Link>
+     <div className="vqe-actions"><Link className="btn secondary" href="/admin/bank-soal/aktifkan">Periksa & aktifkan</Link><Link className="btn secondary" href="/admin/bank-soal/buat">Editor manual</Link>
        <button type="button" className="btn primary" disabled={!bundle||saving||reading} onClick={()=>void importDrafts()}>
          <FileUp size={16}/>{saving?'Mengimpor...':'Impor ke draft Supabase'}
        </button></div>

@@ -52,3 +52,8 @@ Satu soal diketahui bermasalah di sumber: **no. 339** memiliki pilihan **A=Jumat
 - [ ] Bank lama dipertahankan sampai versi baru lulus uji; histori nilai tidak dihapus.
 
 > Memindahkan soal ke draft bukan berarti mengaktifkan soal di ujian. Data Supabase dan Android tidak berubah hanya karena kode impor sudah masuk GitHub.
+
+
+## Implementasi website
+
+Alur penerbitan: `/admin/bank-soal/impor` → perbaiki opsi 339 → `/admin/bank-soal/aktifkan` → siswa membuka `/siswa`. Bank aktif adalah snapshot Supabase `vokasi_web_published_questions`, bukan JSON lama. Android tidak berubah dalam tahap ini.

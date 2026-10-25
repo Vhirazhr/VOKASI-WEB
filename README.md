@@ -144,3 +144,18 @@ Blueprint 100 soal / 30 menit dan prosedur impor sebagai draft tersedia di [`doc
 ## Penghapusan bank lama
 
 Atas instruksi pemilik, file `public/data/vokasi_bank_500.json` dan script `scripts/sync-bank.mjs` sudah dihapus. Latihan wajib dan mandiri ditangguhkan sampai paket pengganti 500 soal diaktifkan. Jangan menjalankan `npm run sync:bank` atau menyalin asset lama dari APK. Riwayat nilai siswa di Supabase tidak dihapus. APK Android yang sudah terpasang tidak otomatis menerima perubahan repo; perlu instal versi APK baru.
+
+
+## Aktivasi 500 soal baru bergambar di WEBSITE
+
+Bank lama telah dicabut. Aktivasi bank baru hanya mengubah WEBSITE, bukan Android atau riwayat nilai siswa.
+
+1. Jalankan SQL pada project Supabase sekolah: pertama `supabase/migrations/202610250001_vokasi_visual_question_drafts.sql`, kemudian `supabase/migrations/202610260001_vokasi_web_publish_new_bank.sql`.
+2. Login admin web. Di `/admin/bank-soal/impor`, pilih paket ZIP final berisi 500 soal dan timer yang sudah dibagikan lewat chat. Fitur impor akan menyimpan seluruh soal dan gambar ke draft privat Supabase.
+3. Periksa dan perbaiki soal nomor 339 di `/admin/bank-soal/buat` karena dua jawaban bernama "Jumat" (perlu dipastikan pilihan yang benar dari sumber); periksa pula seluruh isi/kunci soal sebelum ujian resmi.
+4. Buka `/admin/bank-soal/aktifkan`. Tombol hanya aktif ketika paket lulus pemeriksaan 500 nomor, pilihan, diagram, kuota, dan timer. SQL menerbitkan salinan bank tetap secara atomik setelah memeriksa gambar tersimpan di Supabase Storage.
+5. Buka ulang `/siswa`. Saat bank aktif, siswa bisa mengerjakan latihan wajib (100 soal/30 menit) maupun 10 soal mandiri per kategori. Diagram sesi dipreload sebelum timer berjalan.
+
+Blueprint: 30×5 detik hitung dasar, 20×10 menengah, 10×15 lanjut, 10×30 numerasi campuran, 10×35 fisika, 10×25 logika, 10×40 pola gambar; total 1.800 detik.
+
+**Batas keamanan:** Scoring untuk saat ini tetap dihitung di aplikasi klien sebagaimana Android sebelumnya. Kunci pada bank aktif dapat dibaca akun siswa terautentikasi, sehingga sistem ini cocok untuk latihan, bukan ujian resmi yang membutuhkan pencegahan kecurangan dan verifikasi skor server. Proses SQL, impor dan uji akun asli perlu dilakukan di project sekolah; berhasil build saja tidak membuktikan aktivasi.

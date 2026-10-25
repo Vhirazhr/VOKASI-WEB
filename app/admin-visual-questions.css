@@ -50,3 +50,11 @@
 
 .vqe-grid select{height:45px;width:100%;min-width:0;border:1px solid #d9e5f5;border-radius:11px;background:#fff;color:#26476e;padding:0 10px;font-size:12px}
 .vqe-grid input[readonly]{background:#eaf3ff!important;color:#3769ad!important;font-weight:800}
+
+
+.vqe-publication-state{display:flex;align-items:center;gap:15px;padding:18px;background:#fff5e6;border:1px solid #f0d6ab;border-radius:12px;color:#9b6e24;margin-bottom:18px}
+.vqe-publication-state.is-active{background:#eaf8f1;border-color:#bbe8cc;color:#237d56}
+.vqe-publication-state strong{font-size:15px}.vqe-publication-state p{font-size:11px;margin:6px 0}.vqe-publication-state small{font-size:10px}
+.vqe-publish-table{width:100%;border-collapse:collapse;margin:18px 0}
+.vqe-publish-table td,.vqe-publish-table th{padding:11px;text-align:left;border-bottom:1px solid #e1eaf6;font-size:11px;color:#537097}
+.vqe-publish-table th{color:#295782;background:#edf4ff}

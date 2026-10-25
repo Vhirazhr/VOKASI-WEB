@@ -3,7 +3,7 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle} from 'lucide-react';
 import '@/app/quiz-playful.css';
 import {supabase} from '@/lib/supabase';
-import {buildQuiz,fetchBank,makeAttempt} from '@/lib/quiz';
+import {buildQuiz,fetchBank,getPublishedBankVersion,makeAttempt} from '@/lib/quiz';
 import type {Attempt,SessionQuestion,StudentProfile} from '@/lib/types';
 
 type QuizFeedback={questionId:number;correct:boolean;selectedIndex:number;until:number};
@@ -14,7 +14,7 @@ const pendingKey=(id:string)=>`vokasi-web-pending-${id}`;
 const textClock=(seconds:number)=>`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
 function safeRestore(profile:StudentProfile):QuizState|null {try {const raw=sessionStorage.getItem(key(profile.authId));if(!raw)return null;
   const state=JSON.parse(raw) as QuizState;
-  if(!state.bankVersion?.startsWith('VOKASI-NEW-'))return null;
+  if(state.bankVersion!=='VOKASI-NEW-20261026-v1')return null;
   if(!Array.isArray(state.questions)||![10,100].includes(state.questions.length)||!Number.isFinite(state.totalDeadline)||!Number.isFinite(state.startedAt)||state.index<0||state.index>state.questions.length) return null;
   return state;
 }catch{return null;}}
@@ -61,14 +61,31 @@ export default function QuizView({profile,category,history,onDone,onQuit}:{profi
  const [sync,setSync]=useState<'idle'|'saving'|'saved'|'failed'>('idle');const [syncError,setSyncError]=useState('');
  const alreadyFinalized=useRef(false);
  useEffect(()=>{let alive=true;async function start(){
+   const publishedVersion=await getPublishedBankVersion().catch(()=>null);
+   if(!alive)return;
+   if(publishedVersion!=='VOKASI-NEW-20261026-v1'){
+      setError('Bank 500 soal baru belum diaktifkan admin. Latihan sementara belum tersedia.');
+      setLoading(false);return;
+   }
    // Resume an already graded attempt with the SAME session UUID after refresh.
    try {const pending=sessionStorage.getItem(pendingKey(profile.authId));if(pending){const attempt=JSON.parse(pending) as Attempt;if(attempt.auth_user_id===profile.authId&&attempt.session_key){const original=safeRestore(profile);if(original)setState(original);setCompleted(attempt);setNow(Date.now());setLoading(false);return;}}}catch{}
    const existing=safeRestore(profile);
    if(existing&&existing.category===category){setState(existing);setNow(Date.now());setLoading(false);return;}
    try {const bank=await fetchBank();if(!alive)return;
-     const qs=buildQuiz(bank,category);const startTime=Date.now();
+     const qs=buildQuiz(bank,category);
+     // Each student's 10 selected visual diagrams must be fully loaded BEFORE the 30-minute clock starts.
+     const pictures=[...new Set(qs.flatMap(q=>[
+       q.questionImageUrl||null,...(q.optionImageUrls||[])
+     ]).filter((url):url is string=>!!url))];
+     await Promise.all(pictures.map(url=>new Promise<void>((resolve,reject)=>{
+       const image=new window.Image();image.onload=()=>resolve();
+       image.onerror=()=>reject(new Error('Gambar soal gagal dimuat. Periksa koneksi lalu ulangi.'));
+       image.src=url;
+     })));
+     if(!alive)return;
+     const startTime=Date.now();
      const initial:QuizState={questions:qs,index:0,answers:{},selected:null,startedAt:startTime,
-       deadline:startTime+qs[0].timeLimitSeconds*1000,totalDeadline:startTime+qs.reduce((sum,q)=>sum+q.timeLimitSeconds,0)*1000,category,bankVersion:'VOKASI-NEW-PENDING',sessionKey:crypto.randomUUID(),questionStartedAt:startTime,responseSeconds:{},feedback:null};
+       deadline:startTime+qs[0].timeLimitSeconds*1000,totalDeadline:startTime+qs.reduce((sum,q)=>sum+q.timeLimitSeconds,0)*1000,category,bankVersion:'VOKASI-NEW-20261026-v1',sessionKey:crypto.randomUUID(),questionStartedAt:startTime,responseSeconds:{},feedback:null};
      setNow(startTime);setState(initial);
    }catch(e){if(alive)setError(e instanceof Error?e.message:'Bank soal tidak dapat dibuka.');}
    if(alive)setLoading(false);
