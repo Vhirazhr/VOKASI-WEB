@@ -15,4 +15,9 @@ assert(migration.includes('REVOKE INSERT ON TABLE public.student_attempts FROM a
 assert(migration.includes('FROM public.vokasi_verified_attempts AS a'),'Leaderboard must use verified attempts');
 assert(secure.includes('auth_user_id=auth.uid() FOR UPDATE'),'Session write must lock and check ownership');
 assert(safe.includes('vokasi_visual_asset_blocks'),'Known defective diagrams must be quarantined');
+
+const examHardening=file('supabase/migrations/202610260009_vokasi_exam_clock_xp_asset_scope.sql');
+assert(examHardening.includes('s.started_at + make_interval'),'Exam deadline must be based on server start and fixed budget');
+assert(examHardening.includes('vokasi_web_verified_results proof'),'XP must consult verified results');
+assert(examHardening.includes('s.auth_user_id=auth.uid()'),'Image grants must be scoped to owned sessions');
 console.log('OK: security contract checks passed (code + migrations; database runtime tested separately).');
