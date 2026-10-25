@@ -18,6 +18,42 @@ function safeRestore(profile:StudentProfile):QuizState|null {try {const raw=sess
   return state;
 }catch{return null;}}
 
+
+function ResultReview({attempt,questions}:{attempt:Attempt;questions:SessionQuestion[]}) {
+ const [show,setShow]=useState(false);
+ const [filter,setFilter]=useState('Semua');
+ const [page,setPage]=useState(0);
+ const all=questions.map((q,i)=>{const ans=attempt.review_summary.find(r=>r.question_id===q.id);
+   return {q,i,status:ans?.status||'TIDAK_DIJAWAB',selected:ans?.selected_index??null,seconds:ans?.response_seconds??0};
+ });
+ const rows=all.filter(r=>filter==='Semua'||(filter==='Benar'?r.status==='BENAR':filter==='Salah'?r.status!=='BENAR':r.status==='TIMEOUT'));
+ const pages=Math.max(1,Math.ceil(rows.length/10)),at=Math.min(page,pages-1);
+ const grade=attempt.score>=90?'Sangat Baik':attempt.score>=75?'Baik':attempt.score>=60?'Cukup':'Perlu Latihan';
+ const wrong=all.filter(r=>r.status==='SALAH').length,timeout=all.filter(r=>r.status==='TIMEOUT').length,empty=all.filter(r=>r.status==='TIDAK_DIJAWAB').length;
+ return <div className="vokasi-review">
+   <div className="vokasi-review-grade"><small>GRADE / PENCAPAIAN</small><strong>{grade}</strong></div>
+   <p className="vokasi-review-overview">Benar {attempt.correct} dari {attempt.question_count} soal</p>
+   <p className="vokasi-review-minor">Salah dijawab {wrong} • Timeout {timeout} • Kosong {empty}</p>
+   <button type="button" className="btn secondary vokasi-review-toggle" aria-expanded={show} onClick={()=>setShow(v=>!v)}>{show?'Tutup Pembahasan':'Pembahasan Jawaban'}</button>
+   {show&&<section className="vokasi-review-details" aria-label="Pembahasan jawaban">
+     <h3>Pembahasan Jawaban</h3>
+     <div className="vokasi-review-filters" role="group" aria-label="Filter pembahasan">
+       {['Semua','Salah','Benar','Timeout'].map(v=><button key={v} type="button" className={filter===v?'active':''} aria-pressed={filter===v} onClick={()=>{setFilter(v);setPage(0);}}>{v}</button>)}
+     </div>
+     <p className="vokasi-review-minor">{rows.length?'Soal '+(at*10+1)+'–'+Math.min((at+1)*10,rows.length)+' dari '+rows.length:'Tidak ada soal pada filter ini.'}</p>
+     {rows.slice(at*10,(at+1)*10).map(r=><article key={r.q.id} className="vokasi-review-card">
+       <div className="vokasi-review-label"><b>Soal {r.i+1} • {r.q.category}</b><span className={r.status==='BENAR'?'good':'bad'}>{r.status==='BENAR'?'Benar':r.status==='SALAH'?'Salah':r.status==='TIMEOUT'?'Timeout':'Kosong'}</span></div>
+       <h4>{r.q.question}</h4>
+       <p>Jawaban kamu: <b>{r.selected===null?'Tidak dijawab':r.q.options[r.selected]||'Tidak dijawab'}</b></p>
+       <p>Jawaban benar: <b>{r.q.options[r.q.answerIndex]}</b></p>
+       {r.q.explanation&&<p className="vokasi-review-explanation"><b>Pembahasan:</b> {r.q.explanation}</p>}
+       <small>Waktu menjawab: {r.seconds} detik</small>
+     </article>)}
+     <div className="vokasi-review-pages"><button type="button" className="btn secondary small" disabled={at===0} onClick={()=>setPage(v=>Math.max(0,v-1))}>‹ Sebelumnya</button><span>{at+1} / {pages}</span><button type="button" className="btn secondary small" disabled={at>=pages-1} onClick={()=>setPage(v=>v+1)}>Berikutnya ›</button></div>
+   </section>}
+ </div>;
+}
+
 export default function QuizView({profile,category,history,onDone,onQuit}:{profile:StudentProfile;category:string|null;history:Attempt[];onDone:()=>void;onQuit:()=>void}) {
  const [state,setState]=useState<QuizState|null>(null);const [loading,setLoading]=useState(true);
  const [error,setError]=useState('');const [now,setNow]=useState(0);const [completed,setCompleted]=useState<Attempt|null>(null);
@@ -113,7 +149,7 @@ export default function QuizView({profile,category,history,onDone,onQuit}:{profi
    try{sessionStorage.setItem(pendingKey(profile.authId),JSON.stringify(attempt));}catch{}
    setCompleted(attempt);void syncAttempt(attempt);
  },[state,profile,history,syncAttempt,completed]);
- useEffect(()=>{if(completed&&sync==='idle')queueMicrotask(()=>void syncAttempt(completed));},[completed,sync,syncAttempt]);
+ useEffect(()=>{if(completed&&sync==='idle'&&!alreadyFinalized.current){alreadyFinalized.current=true;queueMicrotask(()=>void syncAttempt(completed));}},[completed,sync,syncAttempt]);
  function quit(){if(!window.confirm('Keluar dari latihan? Progres akan tetap tersimpan di browser ini.'))return;onQuit();}
  const answeredCount=state?.index||0;
  if(loading) return <section className="white-panel center-message">Menyiapkan latihan VOKASI...</section>;
@@ -122,7 +158,7 @@ export default function QuizView({profile,category,history,onDone,onQuit}:{profi
    <div className="result-stats"><div><b>{completed.correct}</b><span>Jawaban benar</span></div><div><b>{completed.question_count}</b><span>Total soal</span></div><div><b>+{completed.earned_xp}</b><span>XP didapat</span></div></div>
    <div className={'alert '+(sync==='saved'?'success':sync==='failed'?'danger':'info')}>
      {sync==='saved'?'Nilai sudah TERVERIFIKASI dan tersimpan di Supabase.':sync==='failed'?`Nilai belum terkirim: ${syncError}`:'Mengirim dan memverifikasi nilai di Supabase...'}
-   </div><div className="result-actions">{sync==='failed'&&<button className="btn secondary" onClick={()=>void syncAttempt(completed)}><RefreshCw size={17}/> Coba sinkronkan lagi</button>}
+   </div>{state&&state.questions.length===completed.question_count?<ResultReview key={completed.session_key} attempt={completed} questions={state.questions}/>:<p className="muted-small">Pembahasan lengkap membutuhkan snapshot sesi yang masih tersimpan di browser. Riwayat nilai tersedia di Supabase.</p>}<div className="result-actions">{sync==='failed'&&<button className="btn secondary" onClick={()=>void syncAttempt(completed)}><RefreshCw size={17}/> Coba sinkronkan lagi</button>}
    <button className="btn primary" disabled={sync!=='saved'} onClick={onDone}>Kembali ke dashboard <ArrowRight size={16}/></button></div>
    {sync==='failed'&&<p className="muted-small">Jangan hapus data browser sebelum nilai tersimpan. Penyelesaian latihan tetap ada untuk dicoba ulang pada sesi ini.</p>}
  </section>;

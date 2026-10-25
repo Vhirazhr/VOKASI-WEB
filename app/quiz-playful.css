@@ -74,3 +74,26 @@
 .quiz-answer-feedback.wrong{background:#fff0f0;color:#b84a54;border:1px solid #f2cacf}
 .quiz-answer-feedback b{font-size:14px}.quiz-answer-feedback span{font-size:11px;color:#8297ab}
 @media(prefers-reduced-motion:reduce){.quiz-answer-feedback{animation:none}}
+
+
+.vokasi-review{text-align:left;margin:20px 0}.vokasi-review-grade{display:flex;flex-direction:column;align-items:center;gap:6px;background:#e8f2ff;padding:16px;border-radius:13px;color:#2c62bb}
+.vokasi-review-grade small{font-size:10px;font-weight:800;letter-spacing:.1em}.vokasi-review-grade strong{font-size:22px}
+.vokasi-review-overview{text-align:center;font-size:14px;font-weight:800;color:#2a4a73;margin:16px 0 5px}
+.vokasi-review-minor{text-align:center;color:#8399b2;font-size:11px;line-height:1.6;margin:10px 0 15px}
+.vokasi-review-toggle{display:flex;justify-content:center;width:100%;margin:13px 0}
+.vokasi-review-details{background:#f6f9ff;border:1px solid #dfebfa;border-radius:15px;padding:16px}
+.vokasi-review-details h3{color:#204679;font-size:17px;margin:0 0 15px}
+.vokasi-review-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.vokasi-review-filters button{border:1px solid #d9e5f5;border-radius:9px;background:white;color:#6e87a8;padding:10px 5px;font-size:11px;font-weight:800}
+.vokasi-review-filters button.active{background:#265cba;border-color:#265cba;color:#fff}
+.vokasi-review-card{margin-top:10px;background:white;border-radius:12px;border:1px solid #e4ebf6;padding:15px}
+.vokasi-review-label{display:flex;justify-content:space-between;gap:10px;align-items:center;color:#2c4c78;font-size:11px}
+.vokasi-review-label span{border-radius:99px;padding:7px 10px;font-size:10px;font-weight:800}
+.vokasi-review-label span.good{background:#e1f6ec;color:#19805b}.vokasi-review-label span.bad{background:#fff0f0;color:#ba525d}
+.vokasi-review-card h4{text-align:left;font-size:15px;color:#254568;line-height:1.6;margin:14px 0}
+.vokasi-review-card p{text-align:left;font-size:11px;color:#67829d;line-height:1.6;margin:7px 0}
+.vokasi-review-card p b{color:#305c8e}.vokasi-review-card .vokasi-review-explanation{border-radius:9px;background:#eaf3ff;padding:11px}
+.vokasi-review-card small{display:block;margin-top:12px;font-size:10px;color:#9baabd}
+.vokasi-review-pages{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:15px}
+.vokasi-review-pages span{font-size:10px;color:#718aaa}
+@media(max-width:600px){.vokasi-review-details{padding:10px}.vokasi-review-filters button{font-size:10px}.vokasi-review-card{padding:12px}}
