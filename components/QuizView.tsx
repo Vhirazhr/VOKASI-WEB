@@ -98,6 +98,8 @@ export default function QuizView({profile,category,onDone,onQuit}:{
                }
                setBusy(false);return;
              }
+             // A refresh during image preparation leaves a valid prepared session.
+             // Continue through idempotent prepare; never create a competing session.
            }
          }catch{/* Previous session was replaced, expired, or invalid. Create a fresh one. */}
          sessionStorage.removeItem(key(profile.authId));
@@ -113,6 +115,11 @@ export default function QuizView({profile,category,onDone,onQuit}:{
        // Timer starts on SERVER after selected image assets have loaded.
        const begun=await rpc<State>('vokasi_web_begin_session',{p_session:prepared.session_id});
        if(!active)return;
+       if(begun.status==='active'&&begun.question){
+         const extra=await signedImages(visualPaths(begun.question));
+         if(!active)return;
+         setImageUrls(current=>new Map([...current,...extra]));
+       }
        accept(begun);
      }catch(e){if(active)setError(errText(e));}
      finally{if(active)setBusy(false);}
