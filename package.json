@@ -8,7 +8,6 @@
     "start": "next start --hostname 0.0.0.0",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "sync:bank": "node scripts/sync-bank.mjs",
     "check:bank": "node scripts/check-bank.mjs",
     "check:new-bank-blueprint": "node scripts/check-new-bank-blueprint.mjs"
   },

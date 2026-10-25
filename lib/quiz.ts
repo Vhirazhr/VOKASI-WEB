@@ -22,11 +22,12 @@ export function buildQuiz(bank:BankQuestion[], category:string|null):SessionQues
       answerIndex:pairs.findIndex(p=>p.wasCorrect)};
   });
 }
+/** Never fall back to the old bank. New exercises may start only after an approved bank is published. */
 export async function fetchBank():Promise<BankQuestion[]> {
-  const response=await fetch('/data/vokasi_bank_500.json',{cache:'force-cache'});
-  if(!response.ok) throw new Error('Bank 500 soal belum terpasang. Jalankan npm run sync:bank di terminal Laragon.');
+  const response=await fetch('/data/vokasi_bank_active.json',{cache:'no-store'});
+  if(!response.ok) throw new Error('Bank soal lama sudah dihapus. Bank 500 soal baru belum diaktifkan; latihan sementara tidak tersedia.');
   const bank:unknown=await response.json();
-  if(!Array.isArray(bank)||bank.length!==500) throw new Error('Bank soal harus terdiri dari 500 soal asli.');
+  if(!Array.isArray(bank)||bank.length!==500) throw new Error('Bank soal baru belum divalidasi sebagai 500 soal; latihan ditangguhkan.');
   return bank as BankQuestion[];
 }
 export function earnedXp(ownHistory:Attempt[],now:number,practiceCategory:string|null,correct:number):number {

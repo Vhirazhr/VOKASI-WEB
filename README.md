@@ -17,14 +17,8 @@ Project terpisah dari APK Android di `Vhirazhr/VOKASI`. Pengembangan web tidak p
    ```
 
 4. Edit `.env.local` dan masukkan **Project URL** serta **publishable / anon key** dari proyek Supabase yang **sama** dengan Android. Jangan memasukkan `service_role` / secret key.
-5. Salin **500 soal asli** dari repo Android secara otomatis (memerlukan internet):
+5. Bank soal lama sudah **ditarik** dan tidak boleh disalin ulang. Bank soal bergambar baru masih berupa draft yang harus diperiksa dan diaktifkan oleh admin.
 
-   ```powershell
-   npm run sync:bank
-   npm run check:bank
-   ```
-
-   Alternatif jika akses GitHub raw gagal: salin file `app/src/main/assets/vokasi_bank_500.json` di repo Android ke `public/data/vokasi_bank_500.json` pada repo web, lalu jalankan `npm run check:bank`.
 6. Jalankan website:
 
    ```powershell
@@ -145,3 +139,8 @@ Source Android acuan: https://github.com/Vhirazhr/VOKASI
 ### Paket soal baru bergambar (2026)
 
 Blueprint 100 soal / 30 menit dan prosedur impor sebagai draft tersedia di [`docs/BLUEPRINT-SOAL-BARU.md`](docs/BLUEPRINT-SOAL-BARU.md). Soal baru belum mengganti ujian aktif web/Android.
+
+
+## Penghapusan bank lama
+
+Atas instruksi pemilik, file `public/data/vokasi_bank_500.json` dan script `scripts/sync-bank.mjs` sudah dihapus. Latihan wajib dan mandiri ditangguhkan sampai paket pengganti 500 soal diaktifkan. Jangan menjalankan `npm run sync:bank` atau menyalin asset lama dari APK. Riwayat nilai siswa di Supabase tidak dihapus. APK Android yang sudah terpasang tidak otomatis menerima perubahan repo; perlu instal versi APK baru.

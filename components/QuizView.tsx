@@ -7,13 +7,14 @@ import {buildQuiz,fetchBank,makeAttempt} from '@/lib/quiz';
 import type {Attempt,SessionQuestion,StudentProfile} from '@/lib/types';
 
 type QuizFeedback={questionId:number;correct:boolean;selectedIndex:number;until:number};
-type QuizState={questions:SessionQuestion[];index:number;answers:Record<number,number|null>;selected:number|null; startedAt:number;deadline:number;totalDeadline:number;category:string|null;
+type QuizState={questions:SessionQuestion[];index:number;answers:Record<number,number|null>;selected:number|null; startedAt:number;deadline:number;totalDeadline:number;category:string|null;bankVersion?:string;
   sessionKey?:string;questionStartedAt?:number;responseSeconds?:Record<number,number>;feedback?:QuizFeedback|null;};
 const key=(id:string)=>`vokasi-web-quiz-${id}`;
 const pendingKey=(id:string)=>`vokasi-web-pending-${id}`;
 const textClock=(seconds:number)=>`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
 function safeRestore(profile:StudentProfile):QuizState|null {try {const raw=sessionStorage.getItem(key(profile.authId));if(!raw)return null;
   const state=JSON.parse(raw) as QuizState;
+  if(!state.bankVersion?.startsWith('VOKASI-NEW-'))return null;
   if(!Array.isArray(state.questions)||![10,100].includes(state.questions.length)||!Number.isFinite(state.totalDeadline)||!Number.isFinite(state.startedAt)||state.index<0||state.index>state.questions.length) return null;
   return state;
 }catch{return null;}}
@@ -67,7 +68,7 @@ export default function QuizView({profile,category,history,onDone,onQuit}:{profi
    try {const bank=await fetchBank();if(!alive)return;
      const qs=buildQuiz(bank,category);const startTime=Date.now();
      const initial:QuizState={questions:qs,index:0,answers:{},selected:null,startedAt:startTime,
-       deadline:startTime+qs[0].timeLimitSeconds*1000,totalDeadline:startTime+qs.reduce((sum,q)=>sum+q.timeLimitSeconds,0)*1000,category,sessionKey:crypto.randomUUID(),questionStartedAt:startTime,responseSeconds:{},feedback:null};
+       deadline:startTime+qs[0].timeLimitSeconds*1000,totalDeadline:startTime+qs.reduce((sum,q)=>sum+q.timeLimitSeconds,0)*1000,category,bankVersion:'VOKASI-NEW-PENDING',sessionKey:crypto.randomUUID(),questionStartedAt:startTime,responseSeconds:{},feedback:null};
      setNow(startTime);setState(initial);
    }catch(e){if(alive)setError(e instanceof Error?e.message:'Bank soal tidak dapat dibuka.');}
    if(alive)setLoading(false);

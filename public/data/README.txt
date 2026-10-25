@@ -1,3 +1,2 @@
-Taruh file vokasi_bank_500.json dari Android pada folder ini.
-Cara otomatis (Laragon Terminal): npm run sync:bank
-Jangan mengedit jawaban atau ID soal.
+Bank soal lama sudah dihapus. Jangan mengembalikan vokasi_bank_500.json.
+Bank baru masih draft. Hanya bank pengganti yang sudah diperiksa dan disetujui admin yang boleh dipublikasikan sebagai vokasi_bank_active.json.
