@@ -34,16 +34,16 @@ export function earnedXp(ownHistory:Attempt[],now:number,practiceCategory:string
   if(correct<=0||today.some(a=>a.practice_category===practiceCategory && a.earned_xp>0)) return 0;
   return Math.min(5,remaining);
 }
-export function makeAttempt(profile:StudentProfile,questions:SessionQuestion[],answers:Record<number,number|null>,startedAt:number,category:string|null,history:Attempt[]):Attempt {
+export function makeAttempt(profile:StudentProfile,questions:SessionQuestion[],answers:Record<number,number|null>,startedAt:number,category:string|null,history:Attempt[],sessionKey?:string,responseSeconds:Record<number,number>={}):Attempt {
   const now=Date.now();const count=questions.length;
   const correct=questions.filter(q=>answers[q.id]===q.answerIndex).length;
   const elapsed=Math.min(7200,Math.round((now-startedAt)/1000));
-  return {auth_user_id:profile.authId,username:profile.username,session_key:crypto.randomUUID(),completed_at_ms:now,
-    signature:'vokasi-web-2026-10-v1',correct,answered:questions.filter(q=>answers[q.id]!==undefined&&answers[q.id]!==null).length,
+  return {auth_user_id:profile.authId,username:profile.username,session_key:sessionKey||crypto.randomUUID(),completed_at_ms:now,
+    signature:questions.map(q=>q.id).sort((a,b)=>a-b).join('-'),correct,answered:questions.filter(q=>answers[q.id]!==undefined&&answers[q.id]!==null).length,
     question_count:count,score:Math.floor(correct*100/count),earned_xp:earnedXp(history,now,category,correct),
     seconds_spent:Math.max(0,elapsed),practice_category:category,name_snapshot:profile.fullName,
     class_snapshot:profile.className,major_snapshot:profile.majorName,
     review_summary:questions.map(q=>({question_id:q.id,selected_index:answers[q.id]??null,
       status:answers[q.id]===undefined||answers[q.id]===null?'TIMEOUT':answers[q.id]===q.answerIndex?'BENAR':'SALAH',
-      response_seconds:0}))};
+      response_seconds:responseSeconds[q.id]??0}))};
 }
