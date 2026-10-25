@@ -26,7 +26,7 @@ Paket yang sudah dibuat dan diperiksa pada percakapan ini:
 
 Kelompok 1–300 dihitung dari operand perkalian/pembagian (aturan eksplisit pada \`BACA_DULU.txt\` paket). Kelompok 301–350 adalah numerasi campuran, 351–400 fisika dasar, 401–450 logika, dan 451–500 pola gambar. Ini klasifikasi awal dari rumus dan urutan dokumen, bukan audit pedagogis final.
 
-Satu soal diketahui bermasalah di sumber: **no. 339** memiliki pilihan **A=Jumat, B=Jumat** yang sama. Pilihan tersebut tidak diubah diam-diam. Koreksi melalui editor sebelum aktivasi. Kunci jawaban dan ilustrasi pada bagian nonaritmetika wajib diperiksa manusia.
+Dua soal bermasalah telah diketahui di sumber: **no. 339** memiliki pilihan **A=Jumat, B=Jumat** yang sama; **no. 350** menyatakan **4x − 7 = 29** tetapi kuncinya menunjuk **8** padahal jawabannya **9**. Pilihan tersebut tidak diubah diam-diam. Koreksi melalui editor sebelum aktivasi. Kunci jawaban dan ilustrasi pada bagian nonaritmetika wajib diperiksa manusia.
 
 ## Menggunakan fitur impor (admin)
 

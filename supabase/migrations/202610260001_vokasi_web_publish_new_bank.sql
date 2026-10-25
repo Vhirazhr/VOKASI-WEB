@@ -90,6 +90,14 @@ BEGIN
     RAISE EXCEPTION 'Ada teks pilihan jawaban yang sama. Periksa soal nomor 339 dan soal lainnya.';
   END IF;
 
+  IF EXISTS (
+    SELECT 1 FROM public.vokasi_question_drafts d
+    WHERE d.source_number=350 AND d.question LIKE '%4x%29%'
+      AND COALESCE(d.options->d.correct_index->>'text','') <> '9'
+  ) THEN
+    RAISE EXCEPTION 'Soal nomor 350: 4x - 7 = 29, maka x = 9. Periksa kunci.';
+  END IF;
+
   FOR group_name,needed,expected_time IN
     SELECT * FROM (VALUES
       ('HITUNG_DASAR',30,5),
