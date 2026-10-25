@@ -39,7 +39,7 @@ export function inspectApprovedBank(questions:TimedDraft[]):BlueprintInspection{
    if(new Set(normalized).size!==normalized.length)
      warnings.push('Soal '+q.source_number+': ada pilihan jawaban yang sama; harus diperiksa sebelum aktivasi.');
    if(q.source_number===350 && q.question.includes('4x') && q.question.includes('29')
-      && q.options[q.correct_index]?.text?.trim()!=='9')
+      && q.options[q.correct_index??-1]?.text?.trim()!=='9')
      warnings.push('Soal 350: 4x − 7 = 29 menghasilkan x = 9. Kunci pada dokumen perlu diperbaiki sebelum aktivasi.');
    if(group==='POLA_GAMBAR'&&q.question_image_files.length===0)
      errors.push('Soal pola gambar '+q.source_number+' kehilangan ilustrasinya.');
