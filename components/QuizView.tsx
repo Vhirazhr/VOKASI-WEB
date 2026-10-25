@@ -140,7 +140,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      }
    }catch(e){if(live.current)setError('Gagal menyinkronkan timer: '+errText(e));}
    finally{inFlight.current=false;}
- },[state?.session_id,state?.status,state?.index,feedback,busy,accept,imageUrls]);
+ },[state,feedback,busy,accept,imageUrls]);
 
  useEffect(()=>{
    if(!state||state.status!=='active'||busy||feedback)return;
