@@ -341,7 +341,7 @@ GRANT EXECUTE ON FUNCTION public.vokasi_web_completed_review(uuid) TO authentica
 
 -- Storage RLS must test publication through SECURITY DEFINER now that key rows are admin-only.
 CREATE OR REPLACE FUNCTION public.vokasi_web_can_read_figure(p_path text)
-RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,public,storage AS $
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,public,storage AS $figure$
  SELECT auth.uid() IS NOT NULL
    AND EXISTS(SELECT 1 FROM public.student_roster r
      WHERE r.auth_user_id=auth.uid() AND r.registration_status='registered')
@@ -350,7 +350,7 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,
       WHERE q.question_image_path=p_path
        OR EXISTS(SELECT 1 FROM jsonb_array_elements(q.options) x
          WHERE x->>'image_path'=p_path));
-$;
+$figure$;
 REVOKE ALL ON FUNCTION public.vokasi_web_can_read_figure(text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.vokasi_web_can_read_figure(text) TO authenticated;
 DROP POLICY IF EXISTS vokasi_published_figure_student_read ON storage.objects;
