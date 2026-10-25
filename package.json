@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "check:bank": "node scripts/check-bank.mjs",
-    "check:new-bank-blueprint": "node scripts/check-new-bank-blueprint.mjs"
+    "check:new-bank-blueprint": "node scripts/check-new-bank-blueprint.mjs",
+    "check:security": "node scripts/check-security-contract.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",

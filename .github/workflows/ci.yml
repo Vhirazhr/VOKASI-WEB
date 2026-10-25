@@ -24,6 +24,8 @@ jobs:
         run: npm run check:bank
       - name: Verify approved 100-question / 30-minute blueprint
         run: npm run check:new-bank-blueprint
+      - name: Verify exam security contract
+        run: npm run check:security
       - name: Lint source
         run: npm run lint
       - name: Typecheck

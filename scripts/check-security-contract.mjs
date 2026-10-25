@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const file=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+const quiz=file('components/QuizView.tsx');
+const school=file('lib/school.ts');
+const migration=file('supabase/migrations/202610260007_vokasi_verified_only_scoring.sql');
+const secure=file('supabase/migrations/202610260002_vokasi_secure_web_sessions.sql');
+const safe=file('supabase/migrations/202610260006_vokasi_resume_with_quarantined_visuals.sql');
+assert(!quiz.includes('makeAttempt('),'Browser must not generate authoritative scores');
+assert(!quiz.includes('fetchBank('),'Student must not download complete answer key bank');
+assert(quiz.includes('vokasi_web_submit_answer'),'Student answers must be server graded');
+assert(school.includes("allRows<Attempt>('vokasi_verified_attempts'"),'Admin grades must be server verified');
+assert(school.includes("allRows<AttemptSummary>('vokasi_verified_attempts'"),'Analytics must be server verified');
+assert(migration.includes('REVOKE INSERT ON TABLE public.student_attempts FROM authenticated'),'Direct client scores must be revoked');
+assert(migration.includes('FROM public.vokasi_verified_attempts AS a'),'Leaderboard must use verified attempts');
+assert(secure.includes('auth_user_id=auth.uid() FOR UPDATE'),'Session write must lock and check ownership');
+assert(safe.includes('vokasi_visual_asset_blocks'),'Known defective diagrams must be quarantined');
+console.log('OK: security contract checks passed (code + migrations; database runtime tested separately).');
