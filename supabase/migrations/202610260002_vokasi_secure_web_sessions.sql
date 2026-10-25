@@ -175,7 +175,7 @@ BEGIN
  SELECT COALESCE(jsonb_agg(q ORDER BY random()),'[]'::jsonb) INTO v_raw
  FROM jsonb_array_elements(v_raw) q;
  v_len=jsonb_array_length(v_raw);
- IF v_len<>CASE WHEN p_category IS NULL THEN 100 ELSE 10 END THEN
+ IF v_len <> (CASE WHEN p_category IS NULL THEN 100 ELSE 10 END) THEN
   RAISE EXCEPTION 'Jumlah soal pada kategori kurang.'; END IF;
  FOR v_q IN SELECT value FROM jsonb_array_elements(v_raw) LOOP
   SELECT jsonb_agg(jsonb_build_object('text',e->>'text','image_path',e->>'image_path',
