@@ -32,6 +32,12 @@ export interface Attempt {
   major_snapshot: string;
   review_summary: {question_id:number; selected_index:number|null; status:string; response_seconds:number}[];
 }
+export interface AttemptSummary {
+  id?: string;
+  auth_user_id: string|null;
+  completed_at_ms: number;
+  score: number;
+}
 export interface BankQuestion {
   id:number; category:string; question:string; options:string[];
   correctAnswer:string; correctOption:string; difficultyCode:string; timeLimitSeconds:number; explanation:string;

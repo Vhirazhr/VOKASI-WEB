@@ -32,6 +32,7 @@ export default function LoginPage(){
       <label>Password<div className="input-icon"><LockKeyhole size={18}/><input value={password} onChange={e=>setPassword(e.target.value)} type={visible?'text':'password'} required autoComplete="current-password" placeholder="Masukkan password"/><button type="button" className="reveal" aria-label={visible?'Sembunyikan password':'Lihat password'} onClick={()=>setVisible(!visible)}>{visible?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>
       {error&&<div className="alert danger" role="alert">{error}</div>}
       <button className="btn primary login-submit" type="submit" disabled={pending||!configured()}>{pending?'Memeriksa akun...':'Masuk ke VOKASI'} <ArrowRight size={18}/></button></form>
+      {embed&&<div className="alert info" role="note"><b>Login di website sekolah bermasalah?</b> Beberapa browser membatasi login di iframe. <a href={`/login?role=${role}`} target="_blank" rel="noopener noreferrer" style={{textDecoration:'underline',fontWeight:800}}>Buka VOKASI langsung di tab baru.</a></div>}
       <p className="login-note">Akun siswa dikelola sekolah. Hubungi admin jika mengalami kendala masuk.</p>
     </div></main>
   </div>;

@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { Attempt, RosterRow, SchoolStudent, StudentProfile, LeaderboardEntry } from './types';
+import type { Attempt, AttemptSummary, RosterRow, SchoolStudent, StudentProfile, LeaderboardEntry } from './types';
 
 const BATCH = 500;
 type RowQuery = {
@@ -68,6 +68,17 @@ export function wibRange(date:string): [number,number] {
 export async function getAdminAttempts(date:string):Promise<Attempt[]> {
   const [start,end]=wibRange(date);
   return allRows<Attempt>('student_attempts','*',{lowerBound:{column:'completed_at_ms',value:start},upperBound:{column:'completed_at_ms',value:end},nullColumn:'practice_category',order:[{column:'completed_at_ms',ascending:false},{column:'id',ascending:false}]});
+}
+/** Minimal columns for school analytics: only compulsory sessions, no answer keys or review payload. */
+export async function getAdminAnalyticsAttempts(endDate:string,days:number):Promise<AttemptSummary[]> {
+  if(!Number.isInteger(days)||days<1||days>31)throw new Error('Periode analitik harus 1 hingga 31 hari.');
+  const [,end]=wibRange(endDate);
+  return allRows<AttemptSummary>('student_attempts',
+    'id,auth_user_id,completed_at_ms,score',
+    {lowerBound:{column:'completed_at_ms',value:end-days*86400000},
+     upperBound:{column:'completed_at_ms',value:end},
+     nullColumn:'practice_category',
+     order:[{column:'completed_at_ms',ascending:false},{column:'id',ascending:false}]});
 }
 export async function getOwnAttempts(authId:string): Promise<Attempt[]> {
   return allRows<Attempt>('student_attempts','*',{equals:{column:'auth_user_id',value:authId},order:[{column:'completed_at_ms',ascending:false},{column:'id',ascending:false}]});

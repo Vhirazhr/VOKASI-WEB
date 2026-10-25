@@ -122,3 +122,21 @@ scripts/         sinkronisasi & validasi bank
 ```
 
 Source Android acuan: https://github.com/Vhirazhr/VOKASI
+
+
+## 6. Pembaruan dashboard web (Oktober 2026)
+
+- Landing page sekolah memiliki preview interaktif dan podium DEMO anonim; data siswa tidak dipublikasikan.
+- Siswa memiliki halaman riwayat, peringkat nilai latihan wajib, dan profil. Mode kuis pastel hanya mengganti visual, bukan logika seleksi soal, timer, scoring, XP, atau sinkronisasi.
+- Admin memiliki direktori siswa, kelas/jurusan, serta bank soal dalam mode baca saja.
+- Analitik admin tersedia di /admin/analitik: rentang 7/14/30 hari, filter jurusan/kelas, partisipasi WIB, sebaran nilai, dan ringkasan kelas. Siswa tanpa nilai bukan dianggap nol.
+- Dashboard admin dan ekspor Excel kelas/tanggal lama tetap tersedia.
+- Embed memiliki navigasi internal berbasis tautan saat sidebar disembunyikan, dan login memberi alternatif membuka tab baru jika browser membatasi login iframe.
+
+### Pengujian yang masih harus dilakukan sekolah
+
+1. Gunakan URL dan anon key Supabase project APK yang sama; jangan simpan kunci rahasia di repo.
+2. Tes akun siswa nyata: login, sesi 100 soal, expiry/timer, keluar, nilai tersimpan, riwayat, dan ranking.
+3. Tes akun admin nyata: seluruh menu, akses tidak sah, filter, ekspor kelas/tanggal, dan analitik dari tanggal dengan nilai.
+4. Uji route /embed pada website HTTPS yang diizinkan melalui EMBED_ALLOWED_ORIGINS; cek browser dan third-party cookies.
+5. Jangan gunakan untuk ujian berisiko tinggi sampai kunci jawaban dipindah dari JSON publik dan skor/timer diperiksa di server. CI sukses tidak membuktikan keamanan penilaian.
