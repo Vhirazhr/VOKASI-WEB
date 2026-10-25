@@ -17,7 +17,7 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
   void loadRoster();return()=>{active=false;};
  },[loading,error]);
  const refresh=useCallback(async()=>{if(loading||error)return;const request=++requestId.current;setBusy(true);setNotice('');
-  try{const result=await getAdminAttempts(date);if(request===requestId.current)setAttempts(result);}catch(e){if(request===requestId.current){setAttempts([]);setNotice('Nilai belum terverifikasi: '+(e instanceof Error?e.message:'Tidak dapat mengambil nilai Supabase.'));}}finally{if(request===requestId.current)setBusy(false);}
+  try{const result=await getAdminAttempts(date);if(request===requestId.current)setAttempts(result);}catch(e){if(request===requestId.current){setAttempts([]);setNotice('Gagal mengambil nilai terverifikasi: '+(e instanceof Error?e.message:'Tidak dapat mengambil nilai Supabase.'));}}finally{if(request===requestId.current)setBusy(false);}
  },[date,loading,error]);
  useEffect(()=>{queueMicrotask(()=>void refresh());const id=setInterval(()=>void refresh(),20000);return()=>clearInterval(id);},[refresh,refreshKey]);
  const allGrades=useMemo(()=>latestGrades(attempts,students),[attempts,students]);

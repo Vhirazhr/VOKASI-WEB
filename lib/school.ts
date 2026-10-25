@@ -67,13 +67,13 @@ export function wibRange(date:string): [number,number] {
 }
 export async function getAdminAttempts(date:string):Promise<Attempt[]> {
   const [start,end]=wibRange(date);
-  return allRows<Attempt>('student_attempts','*',{lowerBound:{column:'completed_at_ms',value:start},upperBound:{column:'completed_at_ms',value:end},nullColumn:'practice_category',order:[{column:'completed_at_ms',ascending:false},{column:'id',ascending:false}]});
+  return allRows<Attempt>('vokasi_verified_attempts','*',{lowerBound:{column:'completed_at_ms',value:start},upperBound:{column:'completed_at_ms',value:end},nullColumn:'practice_category',order:[{column:'completed_at_ms',ascending:false},{column:'id',ascending:false}]});
 }
 /** Minimal columns for school analytics: only compulsory sessions, no answer keys or review payload. */
 export async function getAdminAnalyticsAttempts(endDate:string,days:number):Promise<AttemptSummary[]> {
   if(!Number.isInteger(days)||days<1||days>31)throw new Error('Periode analitik harus 1 hingga 31 hari.');
   const [,end]=wibRange(endDate);
-  return allRows<AttemptSummary>('student_attempts',
+  return allRows<AttemptSummary>('vokasi_verified_attempts',
     'id,auth_user_id,completed_at_ms,score',
     {lowerBound:{column:'completed_at_ms',value:end-days*86400000},
      upperBound:{column:'completed_at_ms',value:end},
