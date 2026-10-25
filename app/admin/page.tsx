@@ -31,16 +31,19 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
    (status==='all'||(status==='complete'?allGrades.has(s.authId):!allGrades.has(s.authId)))).sort((a,b)=>a.fullName.localeCompare(b.fullName,'id')),[scope,search,status,allGrades]);
  const pages=Math.max(1,Math.ceil(filtered.length/PAGE));const rows=filtered.slice(Math.min(page,pages-1)*PAGE,(Math.min(page,pages-1)+1)*PAGE);
  
- async function exportExcel(){if(notice||busy)return;setExporting(true);
+ async function exportExcel(){if(notice||busy||!klass)return;setExporting(true);
   try{const ExcelJS=(await import('exceljs')).default;const book=new ExcelJS.Workbook();book.creator='VOKASI Web';
     const sheet=book.addWorksheet('Nilai Siswa');sheet.columns=[
       {header:'No',key:'no',width:8},{header:'Nama Siswa',key:'name',width:38},{header:'Kelas',key:'class',width:22},
       {header:'Tanggal',key:'date',width:19},{header:'Nilai',key:'score',width:13},{header:'Status',key:'status',width:22}
     ];sheet.getRow(1).font={bold:true,color:{argb:'FFFFFFFF'}};sheet.getRow(1).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF17345D'}};
-    filtered.forEach((s,i)=>{const score=allGrades.get(s.authId)?.score;sheet.addRow({no:i+1,name:s.fullName,class:s.className,date,score:score??'',status:score!==undefined?'Selesai':'Belum Tercatat'});});
-    sheet.autoFilter={from:'A1',to:`F${filtered.length+1}`};sheet.views=[{state:'frozen',ySplit:1}];
+    scope.forEach((s,i)=>{const score=allGrades.get(s.authId)?.score;
+      const safe=(value:string)=>/^[=+\-@\t\r]/.test(value)?("'"+value):value;
+      sheet.addRow({no:i+1,name:safe(s.fullName),class:safe(s.className),date,score:score??'',status:score!==undefined?'Selesai':'Belum Mengerjakan'});
+    });
+    sheet.autoFilter={from:'A1',to:`F${scope.length+1}`};sheet.views=[{state:'frozen',ySplit:1}];
     const bytes=await book.xlsx.writeBuffer();const blob=new Blob([bytes as BlobPart],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`VOKASI_Nilai_${date}.xlsx`;a.click();URL.revokeObjectURL(url);
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`VOKASI_Nilai_${klass.replace(/[^a-zA-Z0-9_-]/g,'_')}_${date}.xlsx`;a.click();URL.revokeObjectURL(url);
   }catch(e){setNotice('Ekspor Excel gagal: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}finally{setExporting(false);}
  }
  if(loading)return <main className="page-loader">Memverifikasi akses admin...</main>;
@@ -48,7 +51,7 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
  return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()} embed={embed}>
    <div className="dashboard-heading"><div><div className="section-kicker">PANEL ADMINISTRASI</div><h1>Ringkasan sekolah <span>📊</span></h1><p>Data nilai terintegrasi dengan akun Supabase VOKASI.</p></div><span className="today-tag"><School size={16}/> Tahun ajaran 2026/2027</span></div>
    <div className="admin-banner"><div><span className="welcome-eyebrow">PEMANTAUAN AKADEMIK</span><h2>Semua perkembangan siswa,<br/>dalam satu dashboard.</h2><p>Filter nilai berdasarkan tanggal, jurusan, kelas, dan status pengerjaan.</p></div><ChartColumnIncreasing size={98}/></div>
-   <section className="white-panel filters-panel"><div className="panel-heading"><div><span className="section-kicker">FILTER DATA</span><h2>Laporan nilai harian</h2></div><span className="muted-small"><Clock3 size={15}/> WIB (UTC+7)</span></div>
+   <section id="hasil" className="white-panel filters-panel"><div className="panel-heading"><div><span className="section-kicker">FILTER DATA</span><h2>Laporan nilai harian</h2></div><span className="muted-small"><Clock3 size={15}/> WIB (UTC+7)</span></div>
      <div className="filter-grid"><label>Tanggal <div className="filter-input"><CalendarDays size={16}/><input aria-label="Tanggal nilai" type="date" value={date} onChange={e=>{setDate(e.target.value);setPage(0);}}/></div></label>
        <label>Jurusan <select value={major} onChange={e=>{setMajor(e.target.value);setKlass('');setPage(0);}}><option value="">Semua jurusan</option>{majors.map(m=><option key={m} value={m}>{m}</option>)}</select></label>
        <label>Kelas <select value={klass} onChange={e=>{setKlass(e.target.value);setPage(0);}}><option value="">Semua kelas</option>{classes.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
@@ -59,9 +62,9 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
      <div className="metric"><span className="metric-icon green"><CheckCircle2 size={21}/></span><small>Sudah latihan</small><strong>{busy||!!notice?'—':complete}</strong><span className="metric-foot">{date} • wajib</span></div>
      <div className="metric"><span className="metric-icon orange"><Clock3 size={21}/></span><small>Belum tercatat</small><strong>{busy||!!notice?'—':scope.length-complete}</strong><span className="metric-foot">Belum ada nilai hari ini</span></div>
      <div className="metric"><span className="metric-icon purple"><TrendingUp size={21}/></span><small>Rata-rata nilai</small><strong>{busy||!!notice?'—':avgScores.length?avg:'—'}</strong><span className="metric-foot">Dari nilai terverifikasi</span></div></div>
-   <section className="white-panel"><div className="panel-heading"><div><span className="section-kicker">AKTIVITAS SISWA</span><h2>Nilai siswa</h2><p className="muted-small">{!notice&&!busy?`${attempts.length} sesi wajib • ${new Set(attempts.map(a=>a.auth_user_id)).size} akun siswa mengirim`:'Menunggu data server terverifikasi'}</p></div>
+   <section id="siswa" className="white-panel"><div className="panel-heading"><div><span className="section-kicker">AKTIVITAS SISWA</span><h2>Nilai siswa</h2><p className="muted-small">{!notice&&!busy?`${attempts.length} sesi wajib • ${new Set(attempts.map(a=>a.auth_user_id)).size} akun siswa mengirim`:'Menunggu data server terverifikasi'}</p></div>
      <div className="panel-actions"><button className="btn secondary small" onClick={()=>setRefreshKey(v=>v+1)} disabled={busy}><RefreshCw size={16}/> Segarkan</button>
-     <button className="btn primary small" onClick={()=>void exportExcel()} disabled={busy||!!notice||exporting||!students.length}><ArrowDownToLine size={16}/> {exporting?'Mengekspor...':'Unduh Excel'}</button></div></div>
+     <button title={!klass?'Pilih satu kelas sebelum mengunduh laporan':undefined} className="btn primary small" onClick={()=>void exportExcel()} disabled={busy||!!notice||exporting||!students.length||!klass}><ArrowDownToLine size={16}/> {exporting?'Mengekspor...':'Unduh Excel'}</button></div></div>
      <div className="table-search"><Search size={17}/><input placeholder="Cari nama atau username siswa..." value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/></div>
      {busy?<div className="empty-state">Mengambil nilai resmi dari Supabase...</div>:<div className="table-wrap"><table className="grade-table"><thead><tr><th>No.</th><th>Nama siswa</th><th>Jurusan</th><th>Kelas</th><th>Nilai</th><th>Status</th></tr></thead><tbody>
       {rows.map((s,i)=>{const record=allGrades.get(s.authId);return <tr key={s.id}><td>{Math.min(page,pages-1)*PAGE+i+1}</td><td><b>{s.fullName}</b><small>@{s.username||'belum terdaftar'}</small></td><td>{s.majorName}</td><td>{s.className}</td><td>{record?<span className="score-chip positive">{record.score}/100</span>:'—'}</td><td>{record?<span className="status-label done"><CheckCircle2 size={13}/> Selesai</span>:<span className="status-label pending"><XCircle size={13}/> Belum tercatat</span>}</td></tr>})}
