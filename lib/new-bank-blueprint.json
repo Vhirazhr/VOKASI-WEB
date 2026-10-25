@@ -1,0 +1,43 @@
+{
+  "version": "VOKASI-2026-10-BARU-100-1800-v1",
+  "bankCount": 500,
+  "sessionCount": 100,
+  "sessionSeconds": 1800,
+  "groups": {
+    "HITUNG_DASAR": {
+      "label": "Hitung dasar",
+      "quota": 30,
+      "seconds": 5
+    },
+    "HITUNG_MENENGAH": {
+      "label": "Hitung menengah",
+      "quota": 20,
+      "seconds": 10
+    },
+    "HITUNG_LANJUT": {
+      "label": "Hitung lanjut",
+      "quota": 10,
+      "seconds": 15
+    },
+    "NUMERASI_CAMPURAN": {
+      "label": "Numerasi campuran",
+      "quota": 10,
+      "seconds": 30
+    },
+    "FISIKA_DASAR": {
+      "label": "Fisika dasar",
+      "quota": 10,
+      "seconds": 35
+    },
+    "LOGIKA": {
+      "label": "Logika & penalaran",
+      "quota": 10,
+      "seconds": 25
+    },
+    "POLA_GAMBAR": {
+      "label": "Pola gambar",
+      "quota": 10,
+      "seconds": 40
+    }
+  }
+}

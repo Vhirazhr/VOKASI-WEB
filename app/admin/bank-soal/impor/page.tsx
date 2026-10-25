@@ -7,15 +7,16 @@ import JSZip from 'jszip';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {supabase} from '@/lib/supabase';
+import {APPROVED_BLUEPRINT,APPROVED_GROUPS,inspectApprovedBank,type BlueprintInspection} from '@/lib/new-bank-blueprint';
 import '@/app/admin-visual-questions.css';
 
 const BUCKET='vokasi-question-figures';
 type IncomingChoice={text:string;image_file:string|null};
 type Incoming={
- source_number:number;category:string;question:string;question_image_files:string[];
- options:IncomingChoice[];correct_index:number|null;time_limit_seconds:number|null;explanation:string;
+ source_number:number;category:string;question:string;question_image_files:string[];blueprint_group:string;review_notes?:string[];
+ options:IncomingChoice[];correct_index:number|null;time_limit_seconds:number;explanation:string;
 };
-type Bundle={zip:JSZip;questions:Incoming[];images:number};
+type Bundle={zip:JSZip;questions:Incoming[];images:number;inspection:BlueprintInspection};
 const textError=(e:unknown)=>e instanceof Error?e.message:String(e);
 const safePath=(s:string)=>/^gambar\/[A-Za-z0-9_.-]+\.(png|jpe?g|webp)$/i.test(s);
 function validate(raw:unknown,zip:JSZip):Incoming[]{
@@ -60,9 +61,12 @@ export default function ImportQuestionBundle(){
      if(!entry)throw new Error('Paket ZIP harus mempunyai soal_baru_500_DRAFT.json.');
      const parsed:unknown=JSON.parse(await entry.async('string'));
      const questions=validate(parsed,zip);
+     const inspection=inspectApprovedBank(questions);
+     if(inspection.errors.length)throw new Error('Blueprint 100 soal / 30 menit tidak sesuai: '+inspection.errors.slice(0,5).join(' • '));
      const images=questions.reduce((n,q)=>n+q.question_image_files.length+q.options.filter(x=>!!x.image_file).length,0);
-     setBundle({zip,questions,images});
-     setNotice('Paket berhasil dibaca. Semua nomor dan kunci ada, tetapi konten tetap perlu ditinjau admin sebelum jadi soal aktif.');
+     setBundle({zip,questions,images,inspection});
+     setNotice('Paket tervalidasi: '+inspection.sessionQuestions+' soal per sesi, '+inspection.sessionSeconds+' detik (30 menit).'+
+       (inspection.warnings.length?' Ada '+inspection.warnings.length+' soal yang wajib dikoreksi sebelum aktivasi.':' Semua opsi dan timer lolos pemeriksaan struktur.'));
    }catch(e){setNotice('Paket tidak dapat dibaca: '+textError(e));}
    finally{setReading(false);}
  }
@@ -85,12 +89,33 @@ export default function ImportQuestionBundle(){
      const {data:{user},error:authError}=await supabase().auth.getUser();
      if(authError||!user)throw new Error('Harus login sebagai admin.');
      const {data:existing,error:readError}=await supabase().from('vokasi_question_drafts')
-       .select('source_number').not('source_number','is',null).limit(5000);
+       .select('source_number,question,time_limit_seconds,difficulty_code').not('source_number','is',null).limit(5000);
      if(readError)throw new Error('Tabel draft belum siap. Jalankan migrasi SQL lebih dulu. '+readError.message);
-     const numbers=new Set((existing||[]).map(d=>Number(d.source_number)));
-     const pending=bundle.questions.filter(q=>!numbers.has(q.source_number));
+     const oldRows=new Map((existing||[]).map(d=>[Number(d.source_number),d]));
+     const conflicts=bundle.questions.filter(q=>{
+       const old=oldRows.get(q.source_number);
+       return old&&old.question.trim()!==q.question.trim();
+     });
+     if(conflicts.length)throw new Error('Terdapat '+conflicts.length+' nomor draft yang sudah digunakan untuk teks berbeda (contoh no. '+conflicts[0].source_number+'). Tinjau manual untuk mencegah data tertimpa.');
+     const pending=bundle.questions.filter(q=>!oldRows.has(q.source_number));
+     const toRetiming=bundle.questions.filter(q=>{
+       const old=oldRows.get(q.source_number);
+       return old&&(old.time_limit_seconds!==q.time_limit_seconds||old.difficulty_code!==q.blueprint_group);
+     });
      setProgress({done:0,total:pending.length});
-     if(!pending.length){setNotice('Seluruh nomor dalam paket sudah ada pada daftar draft. Tidak ada data yang ditimpa.');return;}
+     let retimed=0;
+     // Existing draft from the older package may have received 20 seconds by default.
+     // Correct ONLY its timer and approved group. Never overwrite its image, options or key.
+     for(const group of APPROVED_GROUPS){
+       const numbers=toRetiming.filter(q=>q.blueprint_group===group).map(q=>q.source_number);
+       if(!numbers.length)continue;
+       const {error:timerError}=await supabase().from('vokasi_question_drafts')
+         .update({difficulty_code:group,time_limit_seconds:APPROVED_BLUEPRINT.groups[group].seconds})
+         .in('source_number',numbers);
+       if(timerError)throw new Error('Sinkronisasi timer kelompok '+group+' gagal: '+timerError.message);
+       retimed+=numbers.length;
+     }
+     if(!pending.length){setNotice('Semua nomor sudah ada: '+retimed+' draft diperbarui timer dan kelompoknya saja. Tidak ada soal yang ditimpa.');return;}
      const importId=crypto.randomUUID();
      for(let i=0;i<pending.length;i+=25){
        const batch=pending.slice(i,i+25);
@@ -113,7 +138,7 @@ export default function ImportQuestionBundle(){
              source_number:q.source_number,category:q.category.trim(),question:q.question.trim(),
              // Every source figure stays accessible in Storage. Question UI currently displays the first.
              question_image_path:images[0]||null,options:choices,
-             correct_index:q.correct_index,time_limit_seconds:q.time_limit_seconds??20,
+             difficulty_code:q.blueprint_group,correct_index:q.correct_index,time_limit_seconds:q.time_limit_seconds,
              explanation:q.explanation||'',created_by:user.id
            });
          }
@@ -125,7 +150,7 @@ export default function ImportQuestionBundle(){
          throw new Error('Batch soal '+batch[0].source_number+'–'+batch[batch.length-1].source_number+' gagal: '+textError(e));
        }
      }
-     setNotice('Selesai: '+done+' soal baru berhasil diimpor sebagai DRAFT. '+(bundle.questions.length-pending.length)+' nomor lama dilewati. Belum dipublikasikan ke siswa.');
+     setNotice('Selesai: '+done+' draft baru tersimpan, '+retimed+' draft lama disinkronkan timernya. '+(bundle.questions.length-pending.length)+' nomor sudah ada. Konten dan kunci lama tidak ditimpa; soal belum dipublikasikan.');
    }catch(e){
      setNotice('Impor berhenti: '+textError(e)+'. '+done+' soal sebelumnya sudah tersimpan. Jalankan ulang paket untuk melanjutkan; nomor yang sudah ada dilewati.');
    }finally{setSaving(false);}
@@ -139,7 +164,7 @@ export default function ImportQuestionBundle(){
     <p>Impor paket ZIP hasil ekstraksi Word: nomor, teks, gambar, pilihan A–C, dan kunci jawaban. Seluruhnya menjadi draft admin.</p></div>
     <span className="admin-workspace-pill"><ShieldCheck size={14}/> Khusus admin</span>
    </div>
-   <div className="vqe-note"><b>Penting:</b> jangan unggah DOCX mentah ke sini. Gunakan paket ZIP berisi <code>soal_baru_500_DRAFT.json</code> dan folder gambar. Semua impor disimpan sebagai draft. Format waktu soal baru masih perlu disepakati sebelum aktif.</div>
+   <div className="vqe-note"><b>Penting:</b> jangan unggah DOCX mentah ke sini. Gunakan paket ZIP berisi <code>soal_baru_500_DRAFT.json</code> dan folder gambar. Semua impor disimpan sebagai draft. Waktu soal sudah ditentukan dalam 7 kelompok (5–40 detik). Total sesi wajib tetap 100 soal / 30 menit. Paket lama tanpa timer final akan ditolak.</div>
    <section className="vqe-card vqe-import">
      <h2>Pilih paket ZIP</h2><label className="vqe-upload"><FileUp size={20}/><span>Unggah file paket ZIP (maks. 25 MB)</span>
        <input type="file" accept=".zip,application/zip" disabled={saving||reading} onChange={e=>{void inspect(e.target.files?.[0]);e.target.value='';}}/>
@@ -150,6 +175,19 @@ export default function ImportQuestionBundle(){
        <div><CheckCircle2 size={18}/><strong>{bundle.questions.filter(x=>x.correct_index!==null).length}</strong><span>Kunci jawaban</span></div>
        <div><FileUp size={18}/><strong>{bundle.images}</strong><span>Gambar pada paket</span></div>
      </div>}
+     {bundle&&<div className="vqe-blueprint-summary">
+       <h3>Blueprint sesi wajib • {bundle.inspection.sessionQuestions} soal / {bundle.inspection.sessionSeconds/60} menit</h3>
+       <div className="vqe-blueprint-scroll"><table><thead><tr><th>Jenis soal</th><th>Jumlah</th><th>Detik/soal</th><th>Total</th><th>Stok</th></tr></thead><tbody>
+         {APPROVED_GROUPS.map(group=>{const rule=APPROVED_BLUEPRINT.groups[group];
+           return <tr key={group}><td>{rule.label}</td><td>{rule.quota}</td><td>{rule.seconds} dtk</td>
+             <td>{rule.quota*rule.seconds} dtk</td><td>{bundle.inspection.available[group]} soal</td></tr>;
+         })}</tbody></table></div>
+       {bundle.inspection.warnings.length>0&&<div className="vqe-blueprint-warning" role="alert">
+         <b>{bundle.inspection.warnings.length} soal perlu ditinjau manual.</b>
+         {bundle.inspection.warnings.map((message,i)=><p key={i}>{message}</p>)}
+         <p>Impor sebagai draft diperbolehkan, tetapi soal ini tidak boleh dipublikasikan sebelum diperbaiki.</p>
+       </div>}
+     </div>}
      {notice&&<p role="status" className="vqe-alert">{notice}</p>}
      {saving&&<div className="vqe-import-progress"><p>Impor {progress.done} dari {progress.total} soal...</p>
        <div><span style={{width:(progress.total?Math.round(progress.done/progress.total*100):0)+'%'}}/></div></div>}
@@ -158,7 +196,7 @@ export default function ImportQuestionBundle(){
          <FileUp size={16}/>{saving?'Mengimpor...':'Impor ke draft Supabase'}
        </button></div>
    </section>
-   <div className="vqe-note">Nomor dokumen yang sudah ada tidak ditimpa. Jika terjadi kegagalan jaringan, ulangi dengan paket yang sama untuk melanjutkan nomor yang belum berhasil. Soal wajib dan nilai Android tetap tidak berubah.</div>
+   <div className="vqe-note">Nomor dokumen yang sudah ada tidak ditimpa. Jika pernah mengimpor versi awal dengan timer 20 detik, paket baru ini akan memperbarui kolom kelompok dan timer saja setelah teks soal terverifikasi sama. Konten soal dan jawaban tidak ditimpa. Bank aktif Android/web serta nilai siswa tetap tidak berubah.</div>
   </main>
  </AppShell>;
 }

@@ -5,12 +5,13 @@ import {ArrowLeft,ImagePlus,Plus,Save,Trash2,UploadCloud} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {supabase} from '@/lib/supabase';
+import {APPROVED_BLUEPRINT,APPROVED_GROUPS,approvedGroup,type ApprovedGroup} from '@/lib/new-bank-blueprint';
 import '@/app/admin-visual-questions.css';
 
 const BUCKET='vokasi-question-figures';
 type Answer={text:string;image_path:string|null;file:File|null};
 type SavedAnswer={text:string;image_path:string|null};
-type Draft={id:string;source_number:number|null;category:string;question:string;question_image_path:string|null;
+type Draft={id:string;source_number:number|null;category:string;difficulty_code:string|null;question:string;question_image_path:string|null;
  options:SavedAnswer[];correct_index:number;time_limit_seconds:number;explanation:string;created_at:string};
 const blank=():Answer=>({text:'',image_path:null,file:null});
 function UploadField({title,file,path,setImage,remove}:{title:string;file:File|null;path:string|null;setImage:(f:File)=>void;remove:()=>void}){
@@ -45,12 +46,13 @@ export default function CreatePictureQuestion(){
  const [sourceNo,setSourceNo]=useState(''),[category,setCategory]=useState('Pola Gambar');
  const [question,setQuestion]=useState(''),[image,setImage]=useState<File|null>(null),[imagePath,setImagePath]=useState<string|null>(null);
  const [options,setOptions]=useState<Answer[]>([blank(),blank(),blank()]);
- const [correct,setCorrect]=useState(0),[seconds,setSeconds]=useState(20),[explanation,setExplanation]=useState('');
+ const [correct,setCorrect]=useState(0),[group,setGroup]=useState<ApprovedGroup>('POLA_GAMBAR'),[explanation,setExplanation]=useState('');
+ const seconds=APPROVED_BLUEPRINT.groups[group].seconds;
  const [showPreview,setShowPreview]=useState(false);
  async function refresh(){
    setBusy(true);
    const {data,error:dbError}=await supabase().from('vokasi_question_drafts')
-     .select('id,source_number,category,question,question_image_path,options,correct_index,time_limit_seconds,explanation,created_at')
+     .select('id,source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation,created_at')
      .order('created_at',{ascending:false}).limit(1000);
    if(dbError){setIssue(dbError.message);setDrafts([]);}else{setIssue('');setDrafts((data||[]) as Draft[]);}
    setBusy(false);
@@ -59,12 +61,12 @@ export default function CreatePictureQuestion(){
  const setOption=(i:number,patch:Partial<Answer>)=>setOptions(a=>a.map((v,j)=>j===i?{...v,...patch}:v));
  function clear(){
    setEditing(null);setSourceNo('');setCategory('Pola Gambar');setQuestion('');setImage(null);setImagePath(null);
-   setOptions([blank(),blank(),blank()]);setCorrect(0);setSeconds(20);setExplanation('');setShowPreview(false);
+   setOptions([blank(),blank(),blank()]);setCorrect(0);setGroup('POLA_GAMBAR');setExplanation('');setShowPreview(false);
  }
  function edit(d:Draft){
    setEditing(d.id);setSourceNo(d.source_number?.toString()||'');setCategory(d.category);setQuestion(d.question);
    setImage(null);setImagePath(d.question_image_path);setOptions(d.options.map(o=>({text:o.text,image_path:o.image_path,file:null})));
-   setCorrect(d.correct_index);setSeconds(d.time_limit_seconds);setExplanation(d.explanation);setNotice('');
+   setCorrect(d.correct_index);setGroup(approvedGroup(d.difficulty_code||'')?d.difficulty_code as ApprovedGroup:'POLA_GAMBAR');setExplanation(d.explanation);setNotice('');
    window.scrollTo({top:0,behavior:'smooth'});
  }
  async function upload(f:File,userId:string){
@@ -80,6 +82,8 @@ export default function CreatePictureQuestion(){
    if(!question.trim()&&!image&&!imagePath){setNotice('Isi teks atau gambar soal.');return;}
    if(!category.trim()){setNotice('Kategori wajib diisi.');return;}
    if(options.length<2||options.length>6||options.some(o=>!o.text.trim()&&!o.file&&!o.image_path)){setNotice('Isi 2–6 pilihan, masing-masing perlu teks atau gambar.');return;}
+   const texts=options.map(o=>o.text.trim().toLocaleLowerCase('id-ID')).filter(Boolean);
+   if(new Set(texts).size!==texts.length){setNotice('Teks pilihan jawaban tidak boleh sama. Periksa setiap opsi terlebih dahulu.');return;}
    if(!Number.isInteger(seconds)||seconds<5||seconds>180){setNotice('Waktu soal harus 5–180 detik.');return;}
    const no=sourceNo.trim()?Number(sourceNo):null;
    if(no!==null&&(!Number.isInteger(no)||no<1||no>100000)){setNotice('Nomor soal dokumen tidak valid.');return;}
@@ -97,7 +101,7 @@ export default function CreatePictureQuestion(){
        saved.push({text:option.text.trim(),image_path:path});
      }
      const values={source_number:no,category:category.trim(),question:question.trim(),question_image_path:imageLocation,
-       options:saved,correct_index:correct,time_limit_seconds:seconds,explanation:explanation.trim()};
+       options:saved,difficulty_code:group,correct_index:correct,time_limit_seconds:seconds,explanation:explanation.trim()};
      const request=editing?
        await supabase().from('vokasi_question_drafts').update(values).eq('id',editing):
        await supabase().from('vokasi_question_drafts').insert({...values,created_by:user.id});
@@ -126,7 +130,7 @@ export default function CreatePictureQuestion(){
  return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()}>
   <div className="vqe">
    <Link href="/admin/bank-soal" className="vqe-back"><ArrowLeft size={17}/> Kembali ke bank soal</Link><Link href="/admin/bank-soal/impor" className="vqe-back"><FileUpFallback/> Impor massal dari Word</Link>
-   <div className="vqe-heading"><div><span className="section-kicker">BANK SOAL BARU</span><h1>Editor soal bergambar</h1><p>Teks, gambar soal, gambar pilihan A–C atau A–D, dan kunci jawaban.</p></div><span className="admin-workspace-pill">Khusus admin</span></div>
+   <div className="vqe-heading"><div><span className="section-kicker">BANK SOAL BARU</span><h1>Editor soal bergambar</h1><p>Teks, gambar soal, gambar pilihan A–C atau A–D, dan kunci jawaban. Waktu per soal terkunci sesuai tujuh kelompok yang sudah disetujui.</p></div><span className="admin-workspace-pill">Khusus admin</span></div>
    <div className="vqe-note"><b>Mode draft:</b> bank lama, timer dan nilai siswa tidak berubah. Soal baru baru dapat dipakai setelah seluruh bank dan aturan sesi diperiksa.</div>
    {issue&&<div role="alert" className="vqe-alert">Penyimpanan draft belum siap: {issue}. Jalankan berkas SQL <code>supabase/migrations/202610250001_vokasi_visual_question_drafts.sql</code> melalui SQL Editor Supabase sekolah.</div>}
    {notice&&<div role="status" className="vqe-alert">{notice}</div>}
@@ -136,7 +140,12 @@ export default function CreatePictureQuestion(){
      <label>Nomor dari dokumen (opsional)<input type="number" min="1" value={sourceNo} onChange={e=>setSourceNo(e.target.value)} placeholder="451"/></label>
      <label>Kategori<input value={category} onChange={e=>setCategory(e.target.value)} list="vqe-categories" required/>
       <datalist id="vqe-categories">{['Pola Gambar','Penalaran Visual','Perkalian','Pembagian','Penjumlahan','Pengurangan','Campuran'].map(v=><option key={v} value={v}/>)}</datalist></label>
-     <label>Waktu per soal (detik)<input type="number" min="5" max="180" value={seconds} onChange={e=>setSeconds(Number(e.target.value))}/></label>
+     <label>Kelompok soal &amp; waktu
+       <select value={group} onChange={e=>setGroup(e.target.value as ApprovedGroup)}>
+         {APPROVED_GROUPS.map(g=><option key={g} value={g}>{APPROVED_BLUEPRINT.groups[g].label} — {APPROVED_BLUEPRINT.groups[g].seconds} detik</option>)}
+       </select>
+     </label>
+     <label>Waktu otomatis (detik)<input type="number" value={seconds} readOnly aria-label="Batas waktu sesuai kelompok soal"/></label>
     </div>
     <label className="vqe-label">Pertanyaan<textarea rows={3} value={question} onChange={e=>setQuestion(e.target.value)} placeholder="Perhatikan urutan gambar. Bentuk apa yang melanjutkan pola?"/></label>
     <UploadField title="Gambar soal" file={image} path={imagePath} setImage={setImage} remove={()=>{setImage(null);setImagePath(null);}}/>
@@ -163,7 +172,9 @@ export default function CreatePictureQuestion(){
    <section className="vqe-card vqe-list"><div className="vqe-row-heading"><h2>Draft tersimpan ({drafts.length})</h2><button type="button" className="btn secondary small" disabled={busy} onClick={()=>void refresh()}>Segarkan</button></div>
     {busy?<p>Mengambil data...</p>:drafts.length===0?<p>Belum ada soal baru tersimpan.</p>:
      drafts.map(d=><article key={d.id}><div><b>{d.source_number?('No. '+d.source_number+' · '):''}{d.question||'Soal bergambar'}</b>
-       <p>{d.category} · {d.options.length} pilihan · {d.time_limit_seconds} detik {d.question_image_path?'· Ada gambar':''}</p></div>
+       <p>{d.category} · {d.options.length} pilihan · {d.time_limit_seconds} detik {d.question_image_path?'· Ada gambar':''}
+         {new Set(d.options.map(o=>o.text.trim().toLocaleLowerCase('id-ID')).filter(Boolean)).size<
+           d.options.filter(o=>o.text.trim()).length?' · ⚠ Pilihan duplikat: perlu koreksi':''}</p></div>
        <div><button type="button" onClick={()=>edit(d)}>Sunting</button><button type="button" onClick={()=>void discard(d)}><Trash2 size={15}/> Hapus</button></div>
      </article>)}
    </section>

@@ -140,3 +140,8 @@ Source Android acuan: https://github.com/Vhirazhr/VOKASI
 3. Tes akun admin nyata: seluruh menu, akses tidak sah, filter, ekspor kelas/tanggal, dan analitik dari tanggal dengan nilai.
 4. Uji route /embed pada website HTTPS yang diizinkan melalui EMBED_ALLOWED_ORIGINS; cek browser dan third-party cookies.
 5. Jangan gunakan untuk ujian berisiko tinggi sampai kunci jawaban dipindah dari JSON publik dan skor/timer diperiksa di server. CI sukses tidak membuktikan keamanan penilaian.
+
+
+### Paket soal baru bergambar (2026)
+
+Blueprint 100 soal / 30 menit dan prosedur impor sebagai draft tersedia di [`docs/BLUEPRINT-SOAL-BARU.md`](docs/BLUEPRINT-SOAL-BARU.md). Soal baru belum mengganti ujian aktif web/Android.
