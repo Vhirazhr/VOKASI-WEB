@@ -158,4 +158,16 @@ Bank lama telah dicabut. Aktivasi bank baru hanya mengubah WEBSITE, bukan Androi
 
 Blueprint: 30×5 detik hitung dasar, 20×10 menengah, 10×15 lanjut, 10×30 numerasi campuran, 10×35 fisika, 10×25 logika, 10×40 pola gambar; total 1.800 detik.
 
-**Batas keamanan:** Scoring untuk saat ini tetap dihitung di aplikasi klien sebagaimana Android sebelumnya. Kunci pada bank aktif dapat dibaca akun siswa terautentikasi, sehingga sistem ini cocok untuk latihan, bukan ujian resmi yang membutuhkan pencegahan kecurangan dan verifikasi skor server. Proses SQL, impor dan uji akun asli perlu dilakukan di project sekolah; berhasil build saja tidak membuktikan aktivasi.
+**Implementasi terbaru (26 Oktober 2026):** penilaian dan timer VOKASI-WEB kini diverifikasi server lewat RPC Supabase, kunci tidak dikirim selama pengerjaan. Enam gambar 479–484 yang tidak lengkap tetap dikarantina. Nilai langsung dari klien sudah diblokir; APK Android lama masih perlu diperbarui bila diharapkan menyimpan nilai baru.
+
+
+## Audit keamanan & pengelolaan sekolah (26 Oktober 2026)
+
+- Laporan admin, analitik, Excel, dan leaderboard kini hanya memakai \`public.vokasi_verified_attempts\`. Hasil sebelum verifikasi tetap tersimpan sebagai riwayat *belum terverifikasi* pada akun siswa. Pengumpulan XP leaderboard juga hanya berasal dari nilai terverifikasi.
+- INSERT langsung oleh akun terautentikasi ke \`student_attempts\` sekarang **DILARANG**. Ini sengaja memblokir pengiriman nilai palsu. **Perhatian:** Android lama masih menyimpan nilai melalui jalur yang sebelumnya digunakan; sampai update Android berbasis RPC keamanan, penyimpanan nilai dari APK lama dapat gagal. Data Android yang sudah ada tidak dihapus.
+- Siswa melihat pembahasan sesi terverifikasi dari menu Riwayat pada perangkat mana pun. Sesi yang belum diselesaikan tetap tidak dapat mengungkapkan kunci.
+- Admin dapat menambah kelas dan memindahkan siswa ke kelas lain **dalam jurusan yang sama**. Setiap perubahan tercatat dalam \`vokasi_admin_change_log\`. Pembuatan akun auth, perubahan jurusan, dan hapus massal tidak diotomatisasi karena memerlukan validasi administratif.
+- Regression SQL: \`supabase/tests/web_exam_security_regression.sql\`. Script dibungkus \`BEGIN ... ROLLBACK\` agar tidak meninggalkan sesi atau nilai testing. Tes struktural otomatis di CI: \`npm run check:security\`.
+- Enam diagram visual 479–484 tetap dikecualikan sampai diperoleh file sumber lengkap. Jangan menyusun ulang gambar yang hilang dengan tebakan.
+- Security Advisor Supabase masih memperingatkan penggunaan SECURITY DEFINER pada RPC yang memang secara sengaja diekspos kepada pengguna berotorisasi. Semua RPC penting harus mempertahankan validasi \`auth.uid()\`/role dan pembatasan ownership. Peringatan ini tidak otomatis berarti eksploit.
+- **Pengaturan akun manual yang belum otomatis:** buka Supabase Dashboard → Authentication → Settings → Password Security, lalu aktifkan **Leaked Password Protection** jika tersedia untuk paket project. Konektor SQL tidak menyediakan perubahan konfigurasi Auth ini. Setelah diaktifkan, ulangi Security Advisor.

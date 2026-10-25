@@ -49,7 +49,8 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
  if(loading)return <main className="page-loader">Memverifikasi akses admin...</main>;
  if(error)return <main className="page-loader">{error}</main>;
  return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()} embed={embed}>
-   <div className="dashboard-heading"><div><div className="section-kicker">PANEL ADMINISTRASI</div><h1>Ringkasan sekolah <span>📊</span></h1><p>Data nilai terintegrasi dengan akun Supabase VOKASI.</p></div><span className="today-tag"><School size={16}/> Tahun ajaran 2026/2027</span></div>
+   <div className="dashboard-heading"><div><div className="section-kicker">PANEL ADMINISTRASI</div><h1>Ringkasan sekolah <span>📊</span></h1><p>Hanya nilai yang telah diverifikasi oleh server Supabase masuk laporan resmi.</p></div><span className="today-tag"><School size={16}/> Tahun ajaran 2026/2027</span></div>
+   <div className="alert success">Laporan ini hanya memakai <b>hasil terverifikasi server</b>. Riwayat lama tetap ada di akun siswa, tetapi tidak memengaruhi rekap nilai dan ekspor Excel.</div>
    <div className="admin-banner"><div><span className="welcome-eyebrow">PEMANTAUAN AKADEMIK</span><h2>Semua perkembangan siswa,<br/>dalam satu dashboard.</h2><p>Filter nilai berdasarkan tanggal, jurusan, kelas, dan status pengerjaan.</p></div><ChartColumnIncreasing size={98}/></div>
    <section id="hasil" className="white-panel filters-panel"><div className="panel-heading"><div><span className="section-kicker">FILTER DATA</span><h2>Laporan nilai harian</h2></div><span className="muted-small"><Clock3 size={15}/> WIB (UTC+7)</span></div>
      <div className="filter-grid"><label>Tanggal <div className="filter-input"><CalendarDays size={16}/><input aria-label="Tanggal nilai" type="date" value={date} onChange={e=>{setDate(e.target.value);setPage(0);}}/></div></label>
