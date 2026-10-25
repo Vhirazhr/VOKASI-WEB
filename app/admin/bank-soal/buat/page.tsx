@@ -40,6 +40,7 @@ function FileUpFallback(){return <span aria-hidden="true">📦</span>;}
 export default function CreatePictureQuestion(){
  const {loading,error,logout}=useSchoolAuth('admin');
  const [drafts,setDrafts]=useState<Draft[]>([]);
+ const [searchNumber,setSearchNumber]=useState('');
  const [busy,setBusy]=useState(true),[saving,setSaving]=useState(false);
  const [issue,setIssue]=useState(''),[notice,setNotice]=useState('');
  const [editing,setEditing]=useState<string|null>(null);
@@ -170,8 +171,10 @@ export default function CreatePictureQuestion(){
      </div>)}
      <p>Pratinjau tidak memengaruhi hasil atau waktu ujian.</p></section>}
    <section className="vqe-card vqe-list"><div className="vqe-row-heading"><h2>Draft tersimpan ({drafts.length})</h2><button type="button" className="btn secondary small" disabled={busy} onClick={()=>void refresh()}>Segarkan</button></div>
+    <label className="vqe-label">Cari nomor soal yang ingin diperbaiki<input type="number" min="1" max="500" value={searchNumber} onChange={e=>setSearchNumber(e.target.value)} placeholder="Misalnya 479"/></label>
+    <p className="vqe-note">Periksa dan ganti gambar matriks soal 479–484. File asli dari Word hanya 700 × 115 piksel dan bagian bawah pola hilang. Jangan gunakan gambar yang sama.</p>
     {busy?<p>Mengambil data...</p>:drafts.length===0?<p>Belum ada soal baru tersimpan.</p>:
-     drafts.map(d=><article key={d.id}><div><b>{d.source_number?('No. '+d.source_number+' · '):''}{d.question||'Soal bergambar'}</b>
+     drafts.filter(d=>!searchNumber||String(d.source_number||'').includes(searchNumber)).map(d=><article key={d.id}><div><b>{d.source_number?('No. '+d.source_number+' · '):''}{d.question||'Soal bergambar'}</b>
        <p>{d.category} · {d.options.length} pilihan · {d.time_limit_seconds} detik {d.question_image_path?'· Ada gambar':''}
          {new Set(d.options.map(o=>o.text.trim().toLocaleLowerCase('id-ID')).filter(Boolean)).size<
            d.options.filter(o=>o.text.trim()).length?' · ⚠ Pilihan duplikat: perlu koreksi':''}</p></div>

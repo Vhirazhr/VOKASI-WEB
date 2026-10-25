@@ -73,6 +73,7 @@ export default function PublishQuestionBank(){
      <span className="section-kicker">PENERBITAN SOAL WEB</span><h1>Aktifkan 500 soal baru</h1>
      <p>Periksa seluruh draft, kuota, gambar, dan timer. Setelah dipublikasikan, siswa web memakai salinan bank baru dari Supabase.</p>
    </div><span className="admin-workspace-pill"><ShieldCheck size={15}/> Khusus admin</span></div>
+   <div className="vqe-alert" role="alert"><b>Gambar soal matriks 479–484 perlu diganti.</b> File gambar dari dokumen Word hanya berisi bagian atas pola. Latihan telah dijeda untuk menghindari penilaian dari soal yang tidak lengkap. Buka <Link href="/admin/bank-soal/buat">Editor soal</Link>, cari setiap nomor 479 hingga 484, lalu unggah gambar utuh dan terbitkan ulang. Nilai lama tidak dihapus.</div>
    <div className="vqe-note">
      Pengaktifan ini <b>hanya untuk VOKASI-WEB</b>, tidak mengubah Android atau nilai siswa. Data aktif merupakan salinan tetap dari draft saat tombol Aktifkan ditekan.
    </div>
