@@ -138,7 +138,8 @@ BEGIN
     THEN RAISE EXCEPTION 'Ada file gambar pilihan jawaban yang hilang.'; END IF;
 
   -- Snapshot is atomic. Later changes to admin drafts cannot silently alter active questions.
-  DELETE FROM public.vokasi_web_published_questions;
+  DELETE FROM public.vokasi_web_published_questions
+  WHERE source_number BETWEEN 1 AND 500;
   INSERT INTO public.vokasi_web_published_questions (
       source_number,category,difficulty_code,question,question_image_path,
       options,correct_index,time_limit_seconds,explanation)
