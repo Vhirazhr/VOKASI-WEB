@@ -39,7 +39,8 @@
 .admin-overview{width:100%;max-width:1420px;margin:0 auto;}
 .admin-overview .section-kicker{color:#316bd0;letter-spacing:.13em;}
 .admin-overview-hero{
-  position:relative;isolation:isolate;
+  /* Keep the school banner in view as report cards scroll underneath. */
+  position:sticky;top:12px;z-index:20;isolation:isolate;
   display:grid;grid-template-columns:minmax(0,1fr) minmax(185px,245px);
   gap:28px;align-items:center;min-height:215px;overflow:hidden;
   padding:32px clamp(27px,3.2vw,43px);
@@ -344,22 +345,8 @@
 }
 
 
-/* 2026-10-26: fixed school-photo backdrop and unobtrusive blue glass.
-   These overrides are scoped to the admin dashboard, not student routes. */
-.school-shell.admin-overview-shell {
-  background:#d6e6f9;
-}
-.school-shell.admin-overview-shell::before {
-  background-image:
-    linear-gradient(130deg,
-      rgba(203,225,250,.60) 0%,
-      rgba(222,235,252,.61) 45%,
-      rgba(208,227,252,.70) 100%),
-    url('/assets/foto-bersama-depan-stema-scaled.jpeg');
-  background-position:center 45%;
-  background-size:cover;
-  background-repeat:no-repeat;
-}
+/* Calm, clean backdrop: the school photo belongs only in the sticky blue banner.
+   Keep a subtle glass finish on the content cards, without imagery behind tables. */
 .admin-overview-shell>.sidebar {
   background:rgba(248,252,255,.77);
   border-right:1px solid rgba(255,255,255,.68);
@@ -425,7 +412,8 @@
 }
 .admin-overview-performance-card .admin-overview-trend-note {margin-top:12px;}
 @media(max-width:600px) {
-  .school-shell.admin-overview-shell::before {background-position:49% center;}
+  /* A 300px sticky banner would obscure the form on short phone screens. */
+  .admin-overview-hero {position:relative;top:auto;z-index:1;}
 }
 @media(prefers-reduced-transparency:reduce) {
   .admin-overview-shell>.sidebar,.admin-overview-shell .topbar {background:#f9fbff;-webkit-backdrop-filter:none;backdrop-filter:none;}
