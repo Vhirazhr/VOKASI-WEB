@@ -5,8 +5,9 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import SchoolMark from './SchoolMark';
 import { schoolIdentity } from './identity';
+import { scenePose } from './scene-motion';
 
-/** One renderer for the entire hero-to-introduction scroll sequence. */
+/** One renderer for the entire hero-to-ranking scroll sequence. */
 export default function LogoScene() {
   const host = useRef<HTMLDivElement>(null);
   const paused = useRef(false);
@@ -20,41 +21,50 @@ export default function LogoScene() {
     renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 700 ? 1.25 : 1.75));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = .95;
     element.appendChild(renderer.domElement);
     renderer.domElement.setAttribute('aria-hidden', 'true');
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(35, 1, .1, 60);
-    camera.position.set(0, 2.6, 9);
-    camera.lookAt(0, 0, 0);
+    const camera = new THREE.PerspectiveCamera(34, 1, .1, 100);
+    camera.position.set(0, 1.9, 10);
+    camera.lookAt(0, .2, 0);
     const pmrem = new THREE.PMREMGenerator(renderer);
     const room = new RoomEnvironment();
     const environment = pmrem.fromScene(room, .04);
     scene.environment = environment.texture;
     room.dispose(); pmrem.dispose();
-    scene.add(new THREE.HemisphereLight(0xdceeff, 0x283d68, 3));
-    const key = new THREE.DirectionalLight(0xffffff, 4); key.position.set(-3, 5, 6); scene.add(key);
-    const rim = new THREE.DirectionalLight(0x87c7ff, 3); rim.position.set(4, 1, -2); scene.add(rim);
+    scene.add(new THREE.HemisphereLight(0xdceeff, 0x607487, 2));
+    const key = new THREE.DirectionalLight(0xffffff, 2.5); key.position.set(-3, 5, 6); scene.add(key);
+    const rim = new THREE.DirectionalLight(0xd5eaff, 1.5); rim.position.set(4, 1, -2); scene.add(rim);
     const logo = new THREE.Group(); scene.add(logo);
     const materials: THREE.Material[] = [];
     const geometries: THREE.BufferGeometry[] = [];
     let texture: THREE.Texture | undefined;
     let alive = true, frame = 0, elapsed = 0, previous = 0, visible = true;
-    const waterGeometry = new THREE.PlaneGeometry(35, 35, 1, 1); geometries.push(waterGeometry);
+    const waterGeometry = new THREE.PlaneGeometry(70, 70, 128, 128); geometries.push(waterGeometry);
+    const wave = `float heightAt(vec2 p){float r=length(p); return sin(r*4.4-uTime*1.15)*.065*exp(-r*.12)+sin(r*2.1-uTime*.7)*.018;}`;
     const waterMaterial = new THREE.ShaderMaterial({ transparent: true, uniforms: { uTime: { value: 0 }, uFade: { value: 1 } },
-      vertexShader: `varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-      fragmentShader: `varying vec2 vUv; uniform float uTime; uniform float uFade;
-      void main(){vec2 p=(vUv-.5)*35.; float r=length(p); float phase=r*5.3-uTime*1.4;
-      float wave=sin(phase)*exp(-r*.14); float secondary=sin(r*2.7-uTime*.6)*.15;
-      float light=pow(max(0.,cos(phase)*.5+.5),9.)*exp(-r*.09);
-      vec3 color=mix(vec3(.12,.30,.50),vec3(.51,.72,.88),.54+wave*.23+secondary);
-      color+=vec3(.37,.50,.61)*light*.45;
-      float shadow=exp(-dot(p,p)*1.4); color*=1.-shadow*.55;
-      float alpha=(1.-smoothstep(8.,17.,r))*uFade;
-      gl_FragColor=vec4(color,alpha);}` });
+      vertexShader: `uniform float uTime; varying vec3 vWorld; ${wave}
+      void main(){vec3 p=position;p.z=heightAt(p.xy);vec4 world=modelMatrix*vec4(p,1.);vWorld=world.xyz;gl_Position=projectionMatrix*viewMatrix*world;}`,
+      fragmentShader: `uniform float uTime; uniform float uFade; varying vec3 vWorld; ${wave}
+      void main(){vec2 p=vec2(vWorld.x,-vWorld.z);float r=length(p);float e=.035;
+      float dx=(heightAt(p+vec2(e,0.))-heightAt(p-vec2(e,0.)))/(2.*e);
+      float dz=(heightAt(p+vec2(0.,e))-heightAt(p-vec2(0.,e)))/(2.*e);
+      vec3 normal=normalize(vec3(-dx,1.,dz));vec3 view=normalize(cameraPosition-vWorld);
+      vec3 reflection=reflect(-view,normal);float fresnel=pow(1.-max(dot(normal,view),0.),3.);
+      vec3 color=mix(vec3(.19,.34,.47),vec3(.49,.64,.74),fresnel);
+      float strip=pow(max(0.,1.-abs(reflection.y-.25)),35.);
+      float highlight=pow(max(dot(reflection,normalize(vec3(-.4,.7,.5))),0.),44.);
+      color+=vec3(.38,.44,.48)*strip*.48+vec3(.6)*highlight*.45;
+      color*=1.-exp(-dot(p,p)*1.1)*.28;
+      color=mix(color,vec3(.47,.61,.71),smoothstep(8.,25.,r));
+      gl_FragColor=vec4(color,(1.-smoothstep(24.,34.,r))*uFade);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+      }` });
     materials.push(waterMaterial);
     const water = new THREE.Mesh(waterGeometry, waterMaterial);
-    water.rotation.x = -Math.PI / 2; water.position.y = -1.35; scene.add(water);
+    water.rotation.x = -Math.PI / 2; water.position.y = -.85; scene.add(water);
 
     // Trace the actual image alpha boundary; never replace the school crest with a generic shape.
     new THREE.TextureLoader().load(schoolIdentity.logoSrc!, loaded => {
@@ -83,16 +93,23 @@ export default function LogoScene() {
     }, undefined, () => { element.dataset.fallback = 'true'; renderer.domElement.hidden = true; });
     function render() {
       const parent = element.closest('.vkw-journey') as HTMLElement;
-      const progress = THREE.MathUtils.clamp(-parent.getBoundingClientRect().top / Math.max(1, parent.offsetHeight - innerHeight), 0, 1);
-      const ease = progress * progress * (3 - 2 * progress);
+      const scroll = -parent.getBoundingClientRect().top;
+      const sections = Array.from(parent.querySelectorAll<HTMLElement>('[data-scene-stop]'));
+      const anchors = sections.map(section => section.offsetTop);
       const mobile = element.clientWidth < 700;
+      const pose = scenePose(scroll, anchors, mobile);
       const moving = !motion.matches;
-      logo.position.set(mobile ? 0 : -ease * 2.0, (mobile ? .55 : .35) + (moving ? Math.sin(elapsed * 1.3) * .16 : 0) + ease * (mobile ? .85 : .05), 0);
-      logo.rotation.set(.03 + (moving ? Math.sin(elapsed * .6) * .06 : 0), moving ? Math.sin(elapsed * .55) * .38 + ease * Math.PI * 2 : 0, moving ? Math.sin(elapsed * .4) * .035 : 0);
-      const scale = (mobile ? .75 : 1) * (1 - ease * (mobile ? .43 : .16)); logo.scale.setScalar(scale);
-      waterMaterial.uniforms.uTime.value = elapsed; waterMaterial.uniforms.uFade.value = 1 - ease;
+      const viewHeight = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * 10;
+      // Screen-space framing instead of fixed world X positions that crop on narrow displays.
+      logo.position.set(pose.x * viewHeight * camera.aspect, .2 + (.5 - pose.y) * viewHeight + (moving ? Math.sin(elapsed * 1.2) * .065 : 0), 0);
+      logo.rotation.set(.015, moving ? pose.turn + Math.sin(elapsed * .5) * .12 : 0, moving ? Math.sin(elapsed * .4) * .015 : 0);
+      logo.scale.setScalar(pose.scale);
+      waterMaterial.uniforms.uTime.value = elapsed; waterMaterial.uniforms.uFade.value = pose.water;
+      const fallback = element.querySelector<HTMLElement>('.vkw-fallback');
+      if (fallback) { fallback.style.left = `${(pose.x + .5) * 100}%`; fallback.style.top = `${pose.y * 100}%`; fallback.style.width = `${pose.scale * 2.5 / viewHeight * element.clientHeight}px`; }
       renderer.render(scene, camera);
-      element.dataset.progress = progress.toFixed(2);
+      element.dataset.progress = pose.progress.toFixed(3);
+      element.dataset.logoX = pose.x.toFixed(3);
     }
     function tick(now: number) {
       frame = 0;

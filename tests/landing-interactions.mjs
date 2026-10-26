@@ -21,7 +21,11 @@ try {
     assert.deepEqual(await canvas.screenshot(), before, 'Paused image is stable');
     await page.locator('#tentang').scrollIntoViewIfNeeded();
     await page.waitForTimeout(100);
-    assert.ok(Number(await canvas.getAttribute('data-progress')) > .5, 'Scroll advances scene even while paused');
+    assert.ok(Number(await canvas.getAttribute('data-progress')) > .25, 'Scroll advances scene even while paused');
+    assert.ok(Number(await canvas.getAttribute('data-logo-x')) < 0, 'Crest accompanies About on left');
+    await page.locator('#peringkat').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(100);
+    assert.ok(Number(await canvas.getAttribute('data-logo-x')) > 0, 'Crest accompanies ranking on right');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.waitForTimeout(100);
     const reduced = await canvas.screenshot(); await page.waitForTimeout(200);
