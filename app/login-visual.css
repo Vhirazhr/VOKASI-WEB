@@ -1,6 +1,5 @@
-/* Scoped school-photo login. Does not change Auth, Supabase or other routes.
-   The campus photo is currently a reference image from a third-party publication;
-   replace the URL with a school-owned /public asset before production deployment. */
+/* Scoped school-photo login using the user-provided school photo and official school logo.
+   Images are stored locally. Authentication, roles, and routing are unchanged. */
 .login-photo {
   --login-ink: #102a49;
   position: relative;
@@ -14,10 +13,11 @@
   background-color: #184879;
   background-image:
     linear-gradient(90deg,rgba(4,24,51,.88) 0%,rgba(8,40,73,.61) 40%,rgba(11,47,78,.18) 76%,rgba(13,45,77,.24) 100%),
-    url('https://assets-a1.kompasiana.com/items/album/2023/06/11/smkn-1-singosari-6485d3474d498a3be811bca2.jpeg?t=o&v=1200');
-  background-position: center, center 44%;
-  background-size: cover;
-  background-repeat: no-repeat;
+    url('/assets/stema-school-photo.avif');
+  /* The entire uploaded school photo stays visible; never crop with cover. */
+  background-position: center, center;
+  background-size: cover, contain;
+  background-repeat: no-repeat, no-repeat;
   overflow-x: clip;
   padding: clamp(24px, 5vw, 92px);
   padding-top: clamp(132px, 15vh, 185px);
@@ -39,11 +39,11 @@
 }
 .login-photo .login-photo-brand {display:inline-flex;align-items:center;gap:18px;color:#fff;}
 .login-photo .login-photo-brand-mark {
-  width:66px;height:66px;border-radius:17px;display:grid;place-items:center;
-  background:linear-gradient(140deg,rgba(113,177,243,.43),rgba(26,73,132,.42));
-  border:1px solid rgba(220,243,255,.56);
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.20),0 12px 35px rgba(4,25,50,.2);
-  font-size:31px;font-weight:800;letter-spacing:-.05em;
+  width:66px;height:66px;display:grid;place-items:center;flex-shrink:0;
+  filter:drop-shadow(0 5px 12px rgba(3,25,50,.24));
+}
+.login-photo .login-photo-brand-logo-image {
+  width:100%;height:100%;object-fit:contain;display:block;
 }
 .login-photo .login-photo-brand strong {display:block;font-size:26px;letter-spacing:-.055em;line-height:1.05;}
 .login-photo .login-photo-brand small {display:block;margin-top:8px;font-size:11px;letter-spacing:.22em;font-weight:800;color:#cbdfff;}

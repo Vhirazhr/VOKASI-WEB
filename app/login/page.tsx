@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {useRouter} from 'next/navigation';
 import {ArrowRight,Eye,EyeOff,LockKeyhole,ShieldCheck,UserRound} from 'lucide-react';
 import {configured} from '@/lib/supabase';
@@ -25,7 +26,7 @@ export default function LoginPage(){
     <div className="login-photo-overlay" aria-hidden="true"/>
     <header className="login-photo-header">
       <Link href="/" className="login-photo-brand" aria-label="VOKASI - Beranda">
-        <span className="login-photo-brand-mark">V</span>
+        <span className="login-photo-brand-mark"><Image src="/assets/stema-official-logo.webp" alt="Logo resmi SMKN 1 Singosari" width={66} height={64} priority className="login-photo-brand-logo-image"/></span>
         <span><strong>VOKASI</strong><small>LEARNING PLATFORM</small></span>
       </Link>
     </header>
