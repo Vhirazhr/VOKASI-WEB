@@ -47,3 +47,13 @@ node tests/landing-interactions.mjs
 ## Scope
 
 Only homepage, its new scoped stylesheet/components, this guide, and browser regression script are changed. Existing academic routes, login logic, database, RPC, RLS, environment configuration, dependency manifest and lockfile are unchanged. The old landing stylesheet remains in the repo but is no longer imported by the homepage.
+
+## 3D ranking podium
+
+The scene now opens on a real six-face CSS 3D podium (2–1–3 visually, 1–2–3 in accessible reading order). The scene switch restores the school logo. Both views share mouse tracking, touch drag, keyboard controls and motion preferences.
+
+Ranking uses the existing `getLeaderboard()` adapter: verified compulsory average descending, then completed compulsory days descending, then display name. XP never decides position. The backend currently supplies the current-quarter average of each day's latest verified compulsory attempt, **not the highest single attempt**; the UI labels the metric as average. Neither the RPC nor scoring is modified.
+
+The public, signed-out homepage shows labelled positions without names or invented scores. Real rows are loaded only after an authenticated school role is resolved; access remains enforced by the existing RPC. Empty, loading and error states are explicit. Logout/account changes immediately clear rows and invalidate stale requests. An auth listener is unsubscribed on unmount and schedules network work outside the auth callback.
+
+`node tests/landing-ranking.mjs` verifies the actual adapter with mock RPC data: a low-XP/high-score student outranks a high-XP/low-score student; missing/unverified scores are excluded. This is not a production database integration test. Browser tests cover the anonymous podium, scene switch and existing interactions; authenticated production data requires a real configured school account.

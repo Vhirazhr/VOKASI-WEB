@@ -10,6 +10,9 @@ try {
   await page.goto(baseURL);
   const stage = page.locator('.vkl3-stage');
   await stage.waitFor();
+  assert.equal(await page.locator('.vkl3-podium-place').count(), 3);
+  await page.getByText('Masuk untuk melihat siapa yang ada di podium.').waitFor();
+  assert.equal(await page.locator('.vkl3-winner strong').first().textContent(), 'Peringkat 1');
   const angle = name => stage.evaluate((el, key) => parseFloat(el.style.getPropertyValue(key)) || 0, name);
   await page.mouse.move(50, 450);
   await page.waitForTimeout(600);
@@ -47,7 +50,12 @@ try {
   await page.getByRole('button', { name: 'Aktifkan gerakan' }).click();
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.waitForTimeout(100);
+  const reduced = await page.locator('.vkl3-object').evaluate(el => getComputedStyle(el).transform);
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator('.vkl3-object').evaluate(el => getComputedStyle(el).transform), reduced);
+  await page.getByRole('button', {name:'Logo sekolah',exact:true}).click();
   assert.equal(await page.locator('.vkl3-object').evaluate(el => getComputedStyle(el).transform), 'none');
+  await page.getByRole('button', {name:'Podium 3D',exact:true}).click();
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   for (const size of [{width:1440,height:900},{width:390,height:844},{width:360,height:640},{width:320,height:568},{width:844,height:390}]) {
     await page.setViewportSize(size);

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import SchoolMark from './SchoolMark';
+import { RankingPodium, RankingCaption, useLandingRanking } from './RankingPodium';
 
 const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value));
 
@@ -9,6 +10,8 @@ const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit,
 export default function LogoScene() {
   const stage = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(false);
+  const [view, setView] = useState<'ranking' | 'logo'>('ranking');
+  const ranking = useLandingRanking();
 
   useEffect(() => {
     const element = stage.current;
@@ -119,19 +122,26 @@ export default function LogoScene() {
   }, [paused]);
 
   return <div className="vkl3-visual">
-    <div className="vkl3-stage" ref={stage} tabIndex={0} role="group"
-      aria-label="Objek logo sekolah 3D interaktif" aria-describedby="vkl3-instructions" data-paused={paused}>
+    <div className="vkl3-scene-switch" role="group" aria-label="Pilih tampilan 3D">
+      <button type="button" aria-pressed={view === 'ranking'} onClick={() => setView('ranking')}>Podium 3D</button>
+      <button type="button" aria-pressed={view === 'logo'} onClick={() => setView('logo')}>Logo sekolah</button>
+    </div>
+    <div className={`vkl3-stage${view === 'ranking' ? ' vkl3-ranking-stage' : ''}`} ref={stage} tabIndex={0} role="group"
+      aria-label={view === 'ranking' ? 'Podium peringkat 3D interaktif' : 'Objek logo sekolah 3D interaktif'} aria-describedby="vkl3-instructions" data-paused={paused}>
       <div className="vkl3-orbit" aria-hidden="true" />
       <div className="vkl3-shadow" aria-hidden="true" />
       <div className="vkl3-object">
+        {view === 'ranking' ? <RankingPodium state={ranking} /> : <>
         <div className="vkl3-face vkl3-back" aria-hidden="true" />
         <div className="vkl3-face vkl3-left" aria-hidden="true" />
         <div className="vkl3-face vkl3-right" aria-hidden="true" />
         <div className="vkl3-face vkl3-top" aria-hidden="true" />
         <div className="vkl3-face vkl3-bottom" aria-hidden="true" />
         <div className="vkl3-face vkl3-front"><SchoolMark /></div>
+        </>}
       </div>
     </div>
+    {view === 'ranking' && <RankingCaption state={ranking} />}
     <div className="vkl3-scene-tools">
       <p id="vkl3-instructions">Geser untuk memutar <span aria-hidden="true">·</span> tombol panah saat fokus</p>
       <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused}>
