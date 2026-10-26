@@ -1,6 +1,7 @@
 'use client';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
-import {ArrowDownToLine,BookOpen,CalendarDays,ChartColumnIncreasing,CheckCircle2,Clock3,RefreshCw,School,Search,TrendingUp,Users,XCircle} from 'lucide-react';
+import {ArrowDownToLine,BookOpen,CalendarDays,CheckCircle2,Clock3,RefreshCw,School,Search,ShieldCheck,TrendingUp,Users,XCircle} from 'lucide-react';
+import '@/app/admin-dashboard.css';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {getAdminAttempts,getSchoolStudents,latestGrades,wibDate} from '@/lib/school';
@@ -46,32 +47,116 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
     const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`VOKASI_Nilai_${klass.replace(/[^a-zA-Z0-9_-]/g,'_')}_${date}.xlsx`;a.click();URL.revokeObjectURL(url);
   }catch(e){setNotice('Ekspor Excel gagal: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}finally{setExporting(false);}
  }
+
+ const completionRate=scope.length?Math.round(complete/scope.length*100):0;
+ const valuesAvailable=!busy&&!notice;
  if(loading)return <main className="page-loader">Memverifikasi akses admin...</main>;
  if(error)return <main className="page-loader">{error}</main>;
- return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()} embed={embed}>
-   <div className="dashboard-heading"><div><div className="section-kicker">PANEL ADMINISTRASI</div><h1>Ringkasan sekolah <span>📊</span></h1><p>Hanya nilai yang telah diverifikasi oleh server Supabase masuk laporan resmi.</p></div><span className="today-tag"><School size={16}/> Tahun ajaran 2026/2027</span></div>
-   <div className="alert success">Laporan ini hanya memakai <b>hasil terverifikasi server</b>. Riwayat lama tetap ada di akun siswa, tetapi tidak memengaruhi rekap nilai dan ekspor Excel.</div>
-   <div className="admin-banner"><div><span className="welcome-eyebrow">PEMANTAUAN AKADEMIK</span><h2>Semua perkembangan siswa,<br/>dalam satu dashboard.</h2><p>Filter nilai berdasarkan tanggal, jurusan, kelas, dan status pengerjaan.</p></div><ChartColumnIncreasing size={98}/></div>
-   <section id="hasil" className="white-panel filters-panel"><div className="panel-heading"><div><span className="section-kicker">FILTER DATA</span><h2>Laporan nilai harian</h2></div><span className="muted-small"><Clock3 size={15}/> WIB (UTC+7)</span></div>
-     <div className="filter-grid"><label>Tanggal <div className="filter-input"><CalendarDays size={16}/><input aria-label="Tanggal nilai" type="date" value={date} onChange={e=>{setDate(e.target.value);setPage(0);}}/></div></label>
-       <label>Jurusan <select value={major} onChange={e=>{setMajor(e.target.value);setKlass('');setPage(0);}}><option value="">Semua jurusan</option>{majors.map(m=><option key={m} value={m}>{m}</option>)}</select></label>
-       <label>Kelas <select value={klass} onChange={e=>{setKlass(e.target.value);setPage(0);}}><option value="">Semua kelas</option>{classes.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
-       <label>Status <select value={status} onChange={e=>{setStatus(e.target.value);setPage(0);}}><option value="all">Semua siswa</option><option value="complete">Sudah mengerjakan</option><option value="missing">Belum mengerjakan</option></select></label></div>
-   </section>
-   {notice&&<div className="alert danger" role="alert">{notice} <button className="link-action" onClick={()=>setRefreshKey(v=>v+1)}>Ulangi</button></div>}
-   <div className="metric-grid"><div className="metric"><span className="metric-icon blue"><Users size={21}/></span><small>Jumlah siswa</small><strong>{scope.length}</strong><span className="metric-foot">Dalam filter sekolah</span></div>
-     <div className="metric"><span className="metric-icon green"><CheckCircle2 size={21}/></span><small>Sudah latihan</small><strong>{busy||!!notice?'—':complete}</strong><span className="metric-foot">{date} • wajib</span></div>
-     <div className="metric"><span className="metric-icon orange"><Clock3 size={21}/></span><small>Belum tercatat</small><strong>{busy||!!notice?'—':scope.length-complete}</strong><span className="metric-foot">Belum ada nilai hari ini</span></div>
-     <div className="metric"><span className="metric-icon purple"><TrendingUp size={21}/></span><small>Rata-rata nilai</small><strong>{busy||!!notice?'—':avgScores.length?avg:'—'}</strong><span className="metric-foot">Dari nilai terverifikasi</span></div></div>
-   <section id="siswa" className="white-panel"><div className="panel-heading"><div><span className="section-kicker">AKTIVITAS SISWA</span><h2>Nilai siswa</h2><p className="muted-small">{!notice&&!busy?`${attempts.length} sesi wajib • ${new Set(attempts.map(a=>a.auth_user_id)).size} akun siswa mengirim`:'Menunggu data server terverifikasi'}</p></div>
-     <div className="panel-actions"><button className="btn secondary small" onClick={()=>setRefreshKey(v=>v+1)} disabled={busy}><RefreshCw size={16}/> Segarkan</button>
-     <button title={!klass?'Pilih satu kelas sebelum mengunduh laporan':undefined} className="btn primary small" onClick={()=>void exportExcel()} disabled={busy||!!notice||exporting||!students.length||!klass}><ArrowDownToLine size={16}/> {exporting?'Mengekspor...':'Unduh Excel'}</button></div></div>
-     <div className="table-search"><Search size={17}/><input placeholder="Cari nama atau username siswa..." value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/></div>
-     {busy?<div className="empty-state">Mengambil nilai resmi dari Supabase...</div>:<div className="table-wrap"><table className="grade-table"><thead><tr><th>No.</th><th>Nama siswa</th><th>Jurusan</th><th>Kelas</th><th>Nilai</th><th>Status</th></tr></thead><tbody>
-      {rows.map((s,i)=>{const record=allGrades.get(s.authId);return <tr key={s.id}><td>{Math.min(page,pages-1)*PAGE+i+1}</td><td><b>{s.fullName}</b><small>@{s.username||'belum terdaftar'}</small></td><td>{s.majorName}</td><td>{s.className}</td><td>{record?<span className="score-chip positive">{record.score}/100</span>:'—'}</td><td>{record?<span className="status-label done"><CheckCircle2 size={13}/> Selesai</span>:<span className="status-label pending"><XCircle size={13}/> Belum tercatat</span>}</td></tr>})}
-      {!rows.length&&<tr><td colSpan={6} className="table-empty">Tidak ada siswa yang sesuai dengan filter.</td></tr>}</tbody></table></div>}
-      <div className="table-footer"><span>Menampilkan {rows.length} dari {filtered.length} siswa</span><div><button className="btn secondary small" disabled={page<=0} onClick={()=>setPage(v=>Math.max(0,v-1))}>Sebelumnya</button><span>{Math.min(page,pages-1)+1} / {pages}</span><button className="btn secondary small" disabled={page>=pages-1} onClick={()=>setPage(v=>v+1)}>Berikutnya</button></div></div>
-   </section>
-   <div className="admin-help"><BookOpen size={20}/><p><b>Info sinkronisasi:</b> nilai wajib dimuat langsung dari Supabase setiap 20 detik. Data ditautkan menggunakan ID Auth siswa agar tidak tertukar saat username berubah. Hanya akun admin yang terdaftar di <code>school_admins</code> yang diberi akses baca data sekolah.</p></div>
+ return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()} embed={embed} dashboardStyle>
+  <div className="admin-overview">
+    <header className="admin-overview-intro">
+      <div>
+        <span className="section-kicker">PANEL ADMINISTRASI</span>
+        <h1>Ringkasan sekolah</h1>
+        <p>Pantau nilai dan aktivitas pembelajaran dalam satu tampilan.</p>
+      </div>
+      <span className="admin-overview-year"><School size={16}/> Tahun ajaran 2026/2027</span>
+    </header>
+
+    <section className="admin-overview-hero" aria-label="Ringkasan akademik">
+      <div className="admin-overview-hero-copy">
+        <span className="admin-overview-eyebrow">VOKASI · PEMANTAUAN AKADEMIK</span>
+        <h2>Perkembangan siswa,<br/>dalam satu pandangan.</h2>
+        <p>Nilai latihan wajib yang ditampilkan berasal dari hasil terverifikasi server.</p>
+      </div>
+      <div className="admin-overview-hero-stat">
+        <span>Jumlah siswa dalam filter</span>
+        <strong>{scope.length.toLocaleString('id-ID')}</strong>
+        <small>{!valuesAvailable?'Memuat hasil terverifikasi...':`${complete.toLocaleString('id-ID')} siswa sudah latihan`}</small>
+        <div className="admin-overview-hero-track" role="progressbar" aria-label="Proporsi siswa selesai latihan wajib" aria-valuemin={0} aria-valuemax={100} aria-valuenow={valuesAvailable?completionRate:0}><span style={{width:(valuesAvailable?completionRate:0)+'%'}}/></div>
+      </div>
+    </section>
+
+    {notice&&<div className="alert danger admin-overview-alert" role="alert">{notice} <button type="button" className="link-action" onClick={()=>setRefreshKey(v=>v+1)}>Ulangi</button></div>}
+    <div className="admin-overview-grid">
+      <section className="white-panel admin-overview-report" id="hasil" aria-labelledby="admin-overview-title">
+        <div className="admin-overview-panel-heading">
+          <div>
+            <span className="section-kicker">NILAI & LAPORAN</span>
+            <h2 id="admin-overview-title">Laporan nilai harian</h2>
+            <p>Filter data siswa berdasarkan tanggal, jurusan, kelas, dan status.</p>
+          </div>
+          <span className="admin-overview-time"><Clock3 size={15}/> WIB (UTC+7)</span>
+        </div>
+        <div className="admin-overview-filters">
+          <label>Tanggal
+            <div className="admin-overview-date"><CalendarDays size={15}/><input aria-label="Tanggal nilai" type="date" value={date} onChange={e=>{setDate(e.target.value);setPage(0);}}/></div>
+          </label>
+          <label>Jurusan
+            <select value={major} onChange={e=>{setMajor(e.target.value);setKlass('');setPage(0);}}><option value="">Semua jurusan</option>{majors.map(m=><option key={m} value={m}>{m}</option>)}</select>
+          </label>
+          <label>Kelas
+            <select value={klass} onChange={e=>{setKlass(e.target.value);setPage(0);}}><option value="">Semua kelas</option>{classes.map(c=><option key={c} value={c}>{c}</option>)}</select>
+          </label>
+          <label>Status
+            <select value={status} onChange={e=>{setStatus(e.target.value);setPage(0);}}><option value="all">Semua siswa</option><option value="complete">Sudah mengerjakan</option><option value="missing">Belum mengerjakan</option></select>
+          </label>
+        </div>
+
+        <div className="admin-overview-table-area" id="siswa">
+          <div className="admin-overview-table-top">
+            <div>
+              <span className="section-kicker">AKTIVITAS SISWA</span>
+              <h2>Nilai siswa</h2>
+              <p>{valuesAvailable?`${attempts.length} sesi wajib • ${new Set(attempts.map(a=>a.auth_user_id)).size} akun mengirim`:'Menunggu hasil terverifikasi dari server'}</p>
+            </div>
+            <div className="admin-overview-actions">
+              <button type="button" className="btn secondary small" onClick={()=>setRefreshKey(v=>v+1)} disabled={busy}><RefreshCw size={15}/> Segarkan</button>
+              <button type="button" title={!klass?'Pilih satu kelas sebelum mengunduh laporan':undefined} className="btn primary small" onClick={()=>void exportExcel()} disabled={busy||!!notice||exporting||!students.length||!klass}><ArrowDownToLine size={15}/> {exporting?'Mengekspor...':'Unduh Excel'}</button>
+            </div>
+          </div>
+          <label className="admin-overview-search"><Search size={17}/><input aria-label="Cari siswa pada laporan" placeholder="Cari nama atau username siswa..." value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label>
+          {busy?<div className="empty-state">Mengambil nilai resmi dari Supabase...</div>:
+            <div className="table-wrap admin-overview-table-wrap">
+              <table className="grade-table"><thead><tr><th>No.</th><th>Nama siswa</th><th>Jurusan</th><th>Kelas</th><th>Nilai</th><th>Status</th></tr></thead><tbody>
+              {rows.map((s,i)=>{const record=allGrades.get(s.authId);return <tr key={s.id}>
+                <td>{Math.min(page,pages-1)*PAGE+i+1}</td>
+                <td><b>{s.fullName}</b><small>@{s.username||'belum terdaftar'}</small></td>
+                <td>{s.majorName}</td><td>{s.className}</td>
+                <td>{record?<span className="score-chip positive">{record.score}/100</span>:'—'}</td>
+                <td>{record?<span className="status-label done"><CheckCircle2 size={13}/> Selesai</span>:<span className="status-label pending"><XCircle size={13}/> Belum tercatat</span>}</td>
+              </tr>})}
+              {!rows.length&&<tr><td colSpan={6} className="table-empty">Tidak ada siswa yang sesuai dengan filter.</td></tr>}
+              </tbody></table>
+            </div>}
+          <div className="table-footer admin-overview-pagination">
+            <span>Menampilkan {rows.length} dari {filtered.length} siswa</span>
+            <div><button type="button" className="btn secondary small" disabled={page<=0} onClick={()=>setPage(v=>Math.max(0,v-1))}>Sebelumnya</button><span>{Math.min(page,pages-1)+1} / {pages}</span><button type="button" className="btn secondary small" disabled={page>=pages-1} onClick={()=>setPage(v=>v+1)}>Berikutnya</button></div>
+          </div>
+        </div>
+      </section>
+
+      <aside className="white-panel admin-overview-summary" aria-label="Status pembelajaran">
+        <div className="admin-overview-panel-heading">
+          <div><span className="section-kicker">RINGKASAN</span><h2>Status pada {date}</h2></div>
+          <TrendingUp size={21} className="admin-overview-summary-icon"/>
+        </div>
+        <div className="admin-overview-stats">
+          <div className="admin-overview-stat"><span className="admin-overview-stat-icon blue"><Users size={18}/></span><div><small>Jumlah siswa</small><strong>{scope.length.toLocaleString('id-ID')}</strong></div></div>
+          <div className="admin-overview-stat"><span className="admin-overview-stat-icon green"><CheckCircle2 size={18}/></span><div><small>Sudah latihan</small><strong>{valuesAvailable?complete.toLocaleString('id-ID'):'—'}</strong></div></div>
+          <div className="admin-overview-stat"><span className="admin-overview-stat-icon orange"><Clock3 size={18}/></span><div><small>Belum tercatat</small><strong>{valuesAvailable?(scope.length-complete).toLocaleString('id-ID'):'—'}</strong></div></div>
+          <div className="admin-overview-stat"><span className="admin-overview-stat-icon purple"><TrendingUp size={18}/></span><div><small>Rata-rata nilai</small><strong>{valuesAvailable&&avgScores.length?avg:'—'}</strong></div></div>
+        </div>
+        <div className="admin-overview-performance">
+          <span className="section-kicker">CAPAIAN HARIAN</span>
+          <div className="admin-overview-performance-heading"><span>Siswa sudah latihan</span><strong>{valuesAvailable?completionRate+'%':'—'}</strong></div>
+          <div className="admin-overview-performance-track"><span style={{width:(valuesAvailable?completionRate:0)+'%'}}/></div>
+          <p>{!valuesAvailable?'Menunggu laporan server.':scope.length?`${complete} dari ${scope.length} siswa memiliki nilai wajib yang tercatat.`:'Belum ada siswa pada filter ini.'}</p>
+        </div>
+        <div className="admin-overview-trust"><ShieldCheck size={17}/><p>Hanya nilai yang telah diverifikasi oleh server masuk rekap dan ekspor Excel. Riwayat lama tidak memengaruhi laporan resmi.</p></div>
+      </aside>
+    </div>
+    <footer className="admin-overview-footnote"><BookOpen size={16}/><p>Nilai otomatis diperbarui dari Supabase setiap 20 detik. Identitas siswa ditautkan menggunakan ID Auth, bukan username.</p></footer>
+  </div>
  </AppShell>;
 }
