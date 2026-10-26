@@ -26,7 +26,7 @@ export default function LoginPage(){
     <div className="login-photo-overlay" aria-hidden="true"/>
     <header className="login-photo-header">
       <Link href="/" className="login-photo-brand" aria-label="VOKASI - Beranda">
-        <span className="login-photo-brand-mark"><Image src="/assets/stema-official-logo.webp" alt="Logo resmi SMKN 1 Singosari" width={66} height={64} priority className="login-photo-brand-logo-image"/></span>
+        <span className="login-photo-brand-mark"><Image src="/assets/smkn1sgs-166x166-1.png" alt="Logo resmi SMKN 1 Singosari" width={166} height={159} unoptimized priority className="login-photo-brand-logo-image"/></span>
         <span><strong>VOKASI</strong><small>LEARNING PLATFORM</small></span>
       </Link>
     </header>

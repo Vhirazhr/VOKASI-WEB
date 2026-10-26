@@ -13,7 +13,7 @@
   background-color: #184879;
   background-image:
     linear-gradient(90deg,rgba(4,24,51,.88) 0%,rgba(8,40,73,.61) 40%,rgba(11,47,78,.18) 76%,rgba(13,45,77,.24) 100%),
-    url('/assets/stema-school-photo.avif');
+    url('/assets/foto-bersama-depan-stema-scaled.jpeg');
   /* The entire uploaded school photo stays visible; never crop with cover. */
   background-position: center, center;
   background-size: cover, contain;
@@ -39,11 +39,11 @@
 }
 .login-photo .login-photo-brand {display:inline-flex;align-items:center;gap:18px;color:#fff;}
 .login-photo .login-photo-brand-mark {
-  width:66px;height:66px;display:grid;place-items:center;flex-shrink:0;
+  width:54px;height:54px;display:grid;place-items:center;flex-shrink:0;
   filter:drop-shadow(0 5px 12px rgba(3,25,50,.24));
 }
 .login-photo .login-photo-brand-logo-image {
-  width:100%;height:100%;object-fit:contain;display:block;
+  width:100%;height:100%;object-fit:contain;display:block;image-rendering:auto;
 }
 .login-photo .login-photo-brand strong {display:block;font-size:26px;letter-spacing:-.055em;line-height:1.05;}
 .login-photo .login-photo-brand small {display:block;margin-top:8px;font-size:11px;letter-spacing:.22em;font-weight:800;color:#cbdfff;}
@@ -109,7 +109,7 @@
 @media (max-width:1000px) {
   .login-photo {grid-template-columns:minmax(0,1fr) minmax(330px,490px);gap:28px;padding:140px 36px 45px;}
   .login-photo .login-photo-header {left:36px;top:30px;}
-  .login-photo .login-photo-brand-mark{width:54px;height:54px;font-size:26px}
+  .login-photo .login-photo-brand-mark{width:48px;height:48px;font-size:26px}
   .login-photo .login-photo-copy h1{font-size:clamp(47px,6.2vw,70px)}
   .login-photo .login-photo-card {padding:34px;border-radius:29px;}
   .login-photo .login-photo-tabs button {min-height:53px;font-size:15px;}
@@ -120,7 +120,7 @@
   .login-photo {display:flex;flex-direction:column;min-height:100dvh;gap:24px;align-items:stretch;justify-content:center;padding:102px 18px 25px;background-position:center,center;}
   .login-photo .login-photo-header {top:20px;left:20px;}
   .login-photo .login-photo-brand {gap:10px;}
-  .login-photo .login-photo-brand-mark {width:42px;height:42px;border-radius:12px;font-size:20px;}
+  .login-photo .login-photo-brand-mark {width:40px;height:40px;border-radius:12px;font-size:20px;}
   .login-photo .login-photo-brand strong {font-size:19px;}
   .login-photo .login-photo-brand small {font-size:8px;letter-spacing:.12em;margin-top:5px;}
   .login-photo .login-photo-copy {align-self:stretch;max-width:540px;}
