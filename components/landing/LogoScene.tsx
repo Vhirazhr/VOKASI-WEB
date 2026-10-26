@@ -1,152 +1,124 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import SchoolMark from './SchoolMark';
-import { RankingPodium, RankingCaption, useLandingRanking } from './RankingPodium';
+import { schoolIdentity } from './identity';
 
-const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value));
-
-/** Six CSS planes form a solid plaque. Artwork stays intact on its front face. */
+/** One renderer for the entire hero-to-introduction scroll sequence. */
 export default function LogoScene() {
-  const stage = useRef<HTMLDivElement>(null);
-  const [paused, setPaused] = useState(false);
-  const [view, setView] = useState<'ranking' | 'logo'>('ranking');
-  const ranking = useLandingRanking();
-
+  const host = useRef<HTMLDivElement>(null);
+  const paused = useRef(false);
+  const [isPaused, setPaused] = useState(false);
   useEffect(() => {
-    const element = stage.current;
-    if (!element) return;
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let frame = 0, last = 0, time = 0, lastInput = 0;
-    let targetX = 0, targetY = 0, x = 0, y = 0, hover = 0, targetHover = 0;
-    let pointer: number | null = null, startX = 0, startY = 0;
-    let dragX = 0, dragY = 0, originX = 0, originY = 0;
-    const enabled = () => !paused && !media.matches;
-    const reset = () => { targetX = targetY = dragX = dragY = targetHover = 0; };
-    const release = () => {
-      if (pointer !== null && element.hasPointerCapture(pointer)) element.releasePointerCapture(pointer);
-      pointer = null;
-      element.removeAttribute('data-dragging');
-      reset();
-    };
-    const move = (event: PointerEvent) => {
-      if (!enabled()) return;
-      lastInput = performance.now();
-      if (pointer !== null) {
-        if (event.pointerId !== pointer) return;
-        dragY = clamp(originY + (event.clientX - startX) * .14, 26);
-        dragX = clamp(originX - (event.clientY - startY) * .14, 20);
-      } else if (event.pointerType === 'mouse') {
-        targetY = clamp((event.clientX / window.innerWidth - .5) * 18, 9);
-        targetX = clamp((.5 - event.clientY / window.innerHeight) * 12, 6);
-      }
-    };
-    const down = (event: PointerEvent) => {
-      if (!enabled() || pointer !== null || !event.isPrimary || event.button !== 0) return;
-      pointer = event.pointerId;
-      startX = event.clientX; startY = event.clientY;
-      originX = x; originY = y;
-      dragX = x; dragY = y;
-      element.setPointerCapture(pointer);
-      element.setAttribute('data-dragging', 'true');
-      lastInput = performance.now();
-    };
-    const enter = () => { targetHover = enabled() ? 1 : 0; };
-    const leave = () => { targetHover = 0; };
-    const key = (event: KeyboardEvent) => {
-      if (!enabled() || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home'].includes(event.key)) return;
-      event.preventDefault();
-      lastInput = performance.now();
-      if (event.key === 'Home') reset();
-      if (event.key === 'ArrowLeft') targetY = clamp(targetY - 6, 26);
-      if (event.key === 'ArrowRight') targetY = clamp(targetY + 6, 26);
-      if (event.key === 'ArrowUp') targetX = clamp(targetX - 6, 20);
-      if (event.key === 'ArrowDown') targetX = clamp(targetX + 6, 20);
-    };
-    const draw = (now: number) => {
-      const dt = last ? Math.min((now - last) / 1000, .05) : 0;
-      last = now;
-      time += dt;
-      if (pointer === null && now - lastInput > 1100) { targetX = targetY = 0; }
-      const ease = 1 - Math.exp(-7 * dt);
-      x += ((pointer !== null ? dragX : targetX) - x) * ease;
-      y += ((pointer !== null ? dragY : targetY) - y) * ease;
-      hover += (targetHover - hover) * ease;
-      element.style.setProperty('--rx', `${x + Math.sin(time * .55) * 1.2}deg`);
-      element.style.setProperty('--ry', `${y + Math.sin(time * .4) * 1.8}deg`);
-      element.style.setProperty('--float', `${Math.sin(time * .85) * 7}px`);
-      element.style.setProperty('--shift', `${y * .55}px`);
-      element.style.setProperty('--back-shift', `${-y * .9}px`);
-      element.style.setProperty('--lift', `${hover * 14}px`);
-      element.style.setProperty('--light', `${50 + y * 1.2}%`);
-      frame = requestAnimationFrame(draw);
-    };
-    const sync = () => {
-      cancelAnimationFrame(frame);
-      release(); last = 0;
-      if (enabled() && !document.hidden) frame = requestAnimationFrame(draw);
-      else {
-        x = y = hover = 0;
-        ['--rx', '--ry', '--float', '--shift', '--back-shift', '--lift', '--light'].forEach(name => element.style.removeProperty(name));
-      }
-    };
-    window.addEventListener('pointermove', move, { passive: true });
-    window.addEventListener('blur', release);
-    document.addEventListener('visibilitychange', sync);
-    document.documentElement.addEventListener('pointerleave', reset);
-    element.addEventListener('pointerdown', down);
-    element.addEventListener('pointerup', release);
-    element.addEventListener('pointercancel', release);
-    element.addEventListener('lostpointercapture', release);
-    element.addEventListener('pointerenter', enter);
-    element.addEventListener('pointerleave', leave);
-    element.addEventListener('keydown', key);
-    media.addEventListener('change', sync);
-    sync();
-    return () => {
-      cancelAnimationFrame(frame);
-      release();
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('blur', release);
-      document.removeEventListener('visibilitychange', sync);
-      document.documentElement.removeEventListener('pointerleave', reset);
-      element.removeEventListener('pointerdown', down);
-      element.removeEventListener('pointerup', release);
-      element.removeEventListener('pointercancel', release);
-      element.removeEventListener('lostpointercapture', release);
-      element.removeEventListener('pointerenter', enter);
-      element.removeEventListener('pointerleave', leave);
-      element.removeEventListener('keydown', key);
-      media.removeEventListener('change', sync);
-    };
-  }, [paused]);
+    const element = host.current!;
+    const motion = matchMedia('(prefers-reduced-motion: reduce)');
+    let renderer: THREE.WebGLRenderer;
+    try { renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' }); }
+    catch { element.dataset.fallback = 'true'; return; }
+    renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 700 ? 1.25 : 1.75));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    element.appendChild(renderer.domElement);
+    renderer.domElement.setAttribute('aria-hidden', 'true');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, .1, 60);
+    camera.position.set(0, 2.6, 9);
+    camera.lookAt(0, 0, 0);
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const room = new RoomEnvironment();
+    const environment = pmrem.fromScene(room, .04);
+    scene.environment = environment.texture;
+    room.dispose(); pmrem.dispose();
+    scene.add(new THREE.HemisphereLight(0xdceeff, 0x283d68, 3));
+    const key = new THREE.DirectionalLight(0xffffff, 4); key.position.set(-3, 5, 6); scene.add(key);
+    const rim = new THREE.DirectionalLight(0x87c7ff, 3); rim.position.set(4, 1, -2); scene.add(rim);
+    const logo = new THREE.Group(); scene.add(logo);
+    const materials: THREE.Material[] = [];
+    const geometries: THREE.BufferGeometry[] = [];
+    let texture: THREE.Texture | undefined;
+    let alive = true, frame = 0, elapsed = 0, previous = 0, visible = true;
+    const waterGeometry = new THREE.PlaneGeometry(35, 35, 1, 1); geometries.push(waterGeometry);
+    const waterMaterial = new THREE.ShaderMaterial({ transparent: true, uniforms: { uTime: { value: 0 }, uFade: { value: 1 } },
+      vertexShader: `varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+      fragmentShader: `varying vec2 vUv; uniform float uTime; uniform float uFade;
+      void main(){vec2 p=(vUv-.5)*35.; float r=length(p); float phase=r*5.3-uTime*1.4;
+      float wave=sin(phase)*exp(-r*.14); float secondary=sin(r*2.7-uTime*.6)*.15;
+      float light=pow(max(0.,cos(phase)*.5+.5),9.)*exp(-r*.09);
+      vec3 color=mix(vec3(.12,.30,.50),vec3(.51,.72,.88),.54+wave*.23+secondary);
+      color+=vec3(.37,.50,.61)*light*.45;
+      float shadow=exp(-dot(p,p)*1.4); color*=1.-shadow*.55;
+      float alpha=(1.-smoothstep(8.,17.,r))*uFade;
+      gl_FragColor=vec4(color,alpha);}` });
+    materials.push(waterMaterial);
+    const water = new THREE.Mesh(waterGeometry, waterMaterial);
+    water.rotation.x = -Math.PI / 2; water.position.y = -1.35; scene.add(water);
 
-  return <div className="vkl3-visual">
-    <div className="vkl3-scene-switch" role="group" aria-label="Pilih tampilan 3D">
-      <button type="button" aria-pressed={view === 'ranking'} onClick={() => setView('ranking')}>Podium 3D</button>
-      <button type="button" aria-pressed={view === 'logo'} onClick={() => setView('logo')}>Logo sekolah</button>
-    </div>
-    <div className={`vkl3-stage${view === 'ranking' ? ' vkl3-ranking-stage' : ''}`} ref={stage} tabIndex={0} role="group"
-      aria-label={view === 'ranking' ? 'Podium peringkat 3D interaktif' : 'Objek logo sekolah 3D interaktif'} aria-describedby="vkl3-instructions" data-paused={paused}>
-      <div className="vkl3-orbit" aria-hidden="true" />
-      <div className="vkl3-shadow" aria-hidden="true" />
-      <div className="vkl3-object">
-        {view === 'ranking' ? <RankingPodium state={ranking} /> : <>
-        <div className="vkl3-face vkl3-back" aria-hidden="true" />
-        <div className="vkl3-face vkl3-left" aria-hidden="true" />
-        <div className="vkl3-face vkl3-right" aria-hidden="true" />
-        <div className="vkl3-face vkl3-top" aria-hidden="true" />
-        <div className="vkl3-face vkl3-bottom" aria-hidden="true" />
-        <div className="vkl3-face vkl3-front"><SchoolMark /></div>
-        </>}
-      </div>
-    </div>
-    {view === 'ranking' && <RankingCaption state={ranking} />}
-    <div className="vkl3-scene-tools">
-      <p id="vkl3-instructions">Geser untuk memutar <span aria-hidden="true">·</span> tombol panah saat fokus</p>
-      <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused}>
-        {paused ? 'Aktifkan gerakan' : 'Jeda gerakan'}
-      </button>
-    </div>
-  </div>;
+    // Trace the actual image alpha boundary; never replace the school crest with a generic shape.
+    new THREE.TextureLoader().load(schoolIdentity.logoSrc!, loaded => {
+      if (!alive) { loaded.dispose(); return; }
+      texture = loaded; texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+      const sampling = document.createElement('canvas'); sampling.width = sampling.height = 256;
+      const ctx = sampling.getContext('2d')!; ctx.drawImage(loaded.image, 0, 0, 256, 256);
+      const pixels = ctx.getImageData(0, 0, 256, 256).data;
+      const left: THREE.Vector2[] = [], right: THREE.Vector2[] = [];
+      for (let y = 0; y < 256; y += 3) {
+        let lo = -1, hi = -1;
+        for (let x = 0; x < 256; x++) if (pixels[(y * 256 + x) * 4 + 3] > 180) { if (lo < 0) lo = x; hi = x; }
+        if (lo >= 0) { left.push(new THREE.Vector2((lo / 256 - .5) * 2.5, (.5 - y / 256) * 2.5)); right.push(new THREE.Vector2((hi / 256 - .5) * 2.5, (.5 - y / 256) * 2.5)); }
+      }
+      const outline = new THREE.Shape([...left, ...right.reverse()]);
+      const solid = new THREE.ExtrudeGeometry(outline, { depth: .12, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: .012, bevelThickness: .015 });
+      const metal = new THREE.MeshStandardMaterial({ color: 0xbad5e9, metalness: .95, roughness: .19 });
+      const enamel = new THREE.MeshPhysicalMaterial({ map: texture, transparent: true, alphaTest: .1, roughness: .35, metalness: .08, clearcoat: 1, clearcoatRoughness: .17 });
+      const faceGeometry = new THREE.PlaneGeometry(2.5, 2.5);
+      const front = new THREE.Mesh(faceGeometry, enamel); front.position.z = .14;
+      const back = new THREE.Mesh(faceGeometry, enamel); back.rotation.y = Math.PI; back.position.z = -.02;
+      logo.add(new THREE.Mesh(solid, metal), front, back);
+      geometries.push(solid, faceGeometry); materials.push(metal, enamel);
+      element.dataset.ready = 'true'; render();
+    }, undefined, () => { element.dataset.fallback = 'true'; renderer.domElement.hidden = true; });
+    function render() {
+      const parent = element.closest('.vkw-journey') as HTMLElement;
+      const progress = THREE.MathUtils.clamp(-parent.getBoundingClientRect().top / Math.max(1, parent.offsetHeight - innerHeight), 0, 1);
+      const ease = progress * progress * (3 - 2 * progress);
+      const mobile = element.clientWidth < 700;
+      const moving = !motion.matches;
+      logo.position.set(mobile ? 0 : -ease * 2.0, (mobile ? .55 : .35) + (moving ? Math.sin(elapsed * 1.3) * .16 : 0) + ease * (mobile ? .85 : .05), 0);
+      logo.rotation.set(.03 + (moving ? Math.sin(elapsed * .6) * .06 : 0), moving ? Math.sin(elapsed * .55) * .38 + ease * Math.PI * 2 : 0, moving ? Math.sin(elapsed * .4) * .035 : 0);
+      const scale = (mobile ? .75 : 1) * (1 - ease * (mobile ? .43 : .16)); logo.scale.setScalar(scale);
+      waterMaterial.uniforms.uTime.value = elapsed; waterMaterial.uniforms.uFade.value = 1 - ease;
+      renderer.render(scene, camera);
+      element.dataset.progress = progress.toFixed(2);
+    }
+    function tick(now: number) {
+      frame = 0;
+      if (!alive || !visible || document.hidden) return;
+      if (previous && !paused.current && !motion.matches) elapsed += Math.min((now - previous) / 1000, .05);
+      previous = now; render();
+      if (!paused.current && !motion.matches) frame = requestAnimationFrame(tick);
+    }
+    function wake() { if (!frame && alive && visible && !document.hidden) { previous = 0; frame = requestAnimationFrame(tick); } }
+    function resize() { renderer.setSize(element.clientWidth, element.clientHeight); camera.aspect = element.clientWidth / element.clientHeight; camera.updateProjectionMatrix(); wake(); }
+    function contextLost(event: Event) { event.preventDefault(); element.dataset.fallback = 'true'; delete element.dataset.ready; cancelAnimationFrame(frame); frame = 0; }
+    const resizeObserver = new ResizeObserver(resize); resizeObserver.observe(element);
+    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (visible) wake(); else { cancelAnimationFrame(frame); frame = 0; } }); observer.observe(element);
+    renderer.domElement.addEventListener('webglcontextlost', contextLost);
+    window.addEventListener('scroll', wake, { passive: true });
+    window.addEventListener('vokasi-motion', wake);
+    document.addEventListener('visibilitychange', wake); motion.addEventListener('change', wake);
+    resize();
+    return () => {
+      alive = false; cancelAnimationFrame(frame); resizeObserver.disconnect(); observer.disconnect();
+      window.removeEventListener('scroll', wake); window.removeEventListener('vokasi-motion', wake);
+      document.removeEventListener('visibilitychange', wake); motion.removeEventListener('change', wake);
+      renderer.domElement.removeEventListener('webglcontextlost', contextLost);
+      geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); texture?.dispose(); environment.dispose(); renderer.dispose(); renderer.domElement.remove();
+    };
+  }, []);
+  return <><div className="vkw-canvas" ref={host} role="img" aria-label="Logo SMKN 1 Singosari tiga dimensi di atas riak air biru"><div className="vkw-fallback"><SchoolMark /></div></div>
+    <button type="button" className="vkw-motion" aria-pressed={isPaused} onClick={() => { paused.current = !paused.current; setPaused(paused.current); window.dispatchEvent(new Event('vokasi-motion')); }}>{isPaused ? 'Putar animasi' : 'Jeda animasi'} <span aria-hidden="true">{isPaused ? '▷' : 'Ⅱ'}</span></button></>;
 }

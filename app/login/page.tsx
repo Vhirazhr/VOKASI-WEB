@@ -1,11 +1,13 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {useRouter} from 'next/navigation';
-import {ArrowLeft,ArrowRight,BookOpen,Eye,EyeOff,LockKeyhole,ShieldCheck,UserRound} from 'lucide-react';
+import {ArrowRight,Eye,EyeOff,LockKeyhole,ShieldCheck,UserRound} from 'lucide-react';
 import {configured} from '@/lib/supabase';
 import {signIn,currentRole} from '@/lib/auth';
 import type {UserRole} from '@/lib/types';
+import '@/app/login-visual.css';
 
 export default function LoginPage(){
   const router=useRouter();const [role,setRole]=useState<UserRole>('student');const [embed,setEmbed]=useState(false);
@@ -20,20 +22,54 @@ export default function LoginPage(){
     try{await signIn(identity,password,role);router.replace((role==='admin'?'/admin':'/siswa')+(embed?'?embed=1':''));}
     catch(e){setError(e instanceof Error?e.message:'Login gagal.');}finally{setPending(false);}
   }
-  return <div className={'login-page '+(embed?'login-embedded':'')}><section className="login-aside"><Link href="/" className="brand"><span className="brand-mark">V</span><span>VOKASI<span className="brand-dot">.</span></span></Link>
-    <div className="login-aside-inner"><div className="login-emblem"><BookOpen size={39}/></div><h1>Ruang belajar<br/>untuk masa depan.</h1><p>Belajar numerasi, tingkatkan kemampuan, dan pantau perkembanganmu dalam satu tempat.</p><span>VOKASI LEARNING PLATFORM • 2026/2027</span></div></section>
-    <main className="login-main"><div className="login-card"><Link className="back-link" href="/"><ArrowLeft size={15}/> Kembali ke beranda</Link>
-      <div className="login-mobile-brand brand"><span className="brand-mark">V</span> VOKASI.</div>
-      <div className="login-intro"><span className="login-kicker">SELAMAT DATANG KEMBALI</span><h2>Masuk ke akunmu<span className="accent-dot">.</span></h2><p>Pilih akses yang sesuai untuk melanjutkan.</p></div>
-      <div className="role-switch"><button type="button" className={role==='student'?'active':''} onClick={()=>{setRole('student');setError('');}}><UserRound size={18}/> Siswa</button><button type="button" className={role==='admin'?'active':''} onClick={()=>{setRole('admin');setError('');}}><ShieldCheck size={18}/> Admin</button></div>
-      {!configured()&&<div className="alert danger">Supabase belum disetel. Isi <code>.env.local</code> sesuai README sebelum login.</div>}
-      <form onSubmit={submit} className="login-form"><label>{role==='student'?'Nama lengkap / username':'Email admin'}<div className="input-icon"><UserRound size={18}/><input value={identity} onChange={e=>setIdentity(e.target.value)} required autoComplete="username" placeholder={role==='student'?'Masukkan nama lengkapmu':'nama@sekolah.sch.id'}/></div></label>
-      {role==='student'&&<p className="form-help">Jika nama sama dengan siswa lain: <b>Nama Lengkap | Kelas</b></p>}
-      <label>Password<div className="input-icon"><LockKeyhole size={18}/><input value={password} onChange={e=>setPassword(e.target.value)} type={visible?'text':'password'} required autoComplete="current-password" placeholder="Masukkan password"/><button type="button" className="reveal" aria-label={visible?'Sembunyikan password':'Lihat password'} onClick={()=>setVisible(!visible)}>{visible?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>
-      {error&&<div className="alert danger" role="alert">{error}</div>}
-      <button className="btn primary login-submit" type="submit" disabled={pending||!configured()}>{pending?'Memeriksa akun...':'Masuk ke VOKASI'} <ArrowRight size={18}/></button></form>
-      {embed&&<div className="alert info" role="note"><b>Login di website sekolah bermasalah?</b> Beberapa browser membatasi login di iframe. <a href={`/login?role=${role}`} target="_blank" rel="noopener noreferrer" style={{textDecoration:'underline',fontWeight:800}}>Buka VOKASI langsung di tab baru.</a></div>}
-      <p className="login-note">Akun siswa dikelola sekolah. Hubungi admin jika mengalami kendala masuk.</p>
-    </div></main>
+  return <div className={'login-page login-photo '+(embed?'login-embedded':'')}>
+    <div className="login-photo-overlay" aria-hidden="true"/>
+    <header className="login-photo-header">
+      <Link href="/" className="login-photo-brand" aria-label="VOKASI - Beranda">
+        <span className="login-photo-brand-mark"><Image src="/assets/smkn1sgs-166x166-1.png" alt="Logo resmi SMKN 1 Singosari" width={166} height={159} unoptimized priority className="login-photo-brand-logo-image"/></span>
+        <span><strong>VOKASI</strong><small>SMKN 1 SINGOSARI</small></span>
+      </Link>
+    </header>
+
+    <section className="login-photo-copy" aria-label="Tentang VOKASI">
+      <span className="login-photo-eyebrow"><span className="login-photo-eyebrow-dot" aria-hidden="true"/> PLATFORM PEMBELAJARAN DIGITAL</span>
+      <h1>Belajar<br/><span>lebih mudah</span></h1>
+      <p>Ruang belajar numerasi untuk siswa SMKN 1 Singosari. Lebih ringkas, lebih nyaman, dan mudah diakses.</p>
+    </section>
+
+    <main className="login-photo-main">
+      <div className="login-photo-card">
+        <div className="login-photo-card-heading">
+          <span className="login-photo-card-eyebrow">AKSES VOKASI</span>
+          <h2>Selamat datang</h2>
+          <p>Masuk dengan akun sekolah untuk melanjutkan.</p>
+        </div>
+        <div className="login-photo-tabs" role="group" aria-label="Pilih jenis akun">
+          <button type="button" aria-pressed={role==='student'} className={role==='student'?'active':''} onClick={()=>{setRole('student');setError('');}}><UserRound size={23}/> Siswa</button>
+          <button type="button" aria-pressed={role==='admin'} className={role==='admin'?'active':''} onClick={()=>{setRole('admin');setError('');}}><ShieldCheck size={23}/> Admin</button>
+        </div>
+        {!configured()&&<div className="alert danger" role="alert">Supabase belum disetel. Isi <code>.env.local</code> terlebih dahulu.</div>}
+        <form onSubmit={submit} className="login-photo-form">
+          <label htmlFor="vokasi-login-identity">{role==='student'?'Username':'Email Admin'}</label>
+          <div className="login-photo-field">
+            <UserRound size={23} aria-hidden="true"/>
+            <input id="vokasi-login-identity" value={identity} onChange={e=>setIdentity(e.target.value)} required autoComplete="username" placeholder={role==='student'?'Nama lengkap atau username':'Email admin sekolah'} />
+          </div>
+          {role==='student'&&<p className="login-photo-help">Jika nama sama, gunakan format <b>Nama Lengkap | Kelas</b>.</p>}
+          <label htmlFor="vokasi-login-password">Password</label>
+          <div className="login-photo-field">
+            <LockKeyhole size={22} aria-hidden="true"/>
+            <input id="vokasi-login-password" value={password} onChange={e=>setPassword(e.target.value)} type={visible?'text':'password'} required autoComplete="current-password" placeholder="Masukkan password"/>
+            <button type="button" className="login-photo-reveal" aria-label={visible?'Sembunyikan password':'Lihat password'} aria-pressed={visible} onClick={()=>setVisible(!visible)}>{visible?<EyeOff size={23}/>:<Eye size={23}/>}</button>
+          </div>
+          {error&&<div className="alert danger" role="alert">{error}</div>}
+          <button className="login-photo-submit" type="submit" disabled={pending||!configured()}>
+            {pending?'Memeriksa akun...':'Masuk'} <ArrowRight size={23}/>
+          </button>
+        </form>
+        {embed&&<div className="alert info" role="note"><b>Login di website sekolah bermasalah?</b> Sebagian browser membatasi login melalui iframe. <a href={'/login?role='+role} target="_blank" rel="noopener noreferrer">Buka di tab baru.</a></div>}
+        <div className="login-photo-footer"><ShieldCheck size={15} aria-hidden="true"/><span>Akun dikelola oleh sekolah</span></div>
+      </div>
+    </main>
   </div>;
 }

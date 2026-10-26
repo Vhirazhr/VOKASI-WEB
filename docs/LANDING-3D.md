@@ -1,59 +1,32 @@
-# Landing VOKASI 3D
-
-Homepage `/` uses a six-face CSS 3D plaque, `perspective`, and `preserve-3d`. It is not a WebGL/Three.js mesh. The official logo is rendered intact on the front plane with `object-fit: contain`. This deliberately uses the permitted layered 3D approach without adding a rendering dependency. No device-pixel-ratio canvas or texture allocation is required.
-
-## Official artwork
-
-No logo or mascot asset exists in the source snapshot used for this change. The navbar and hero therefore explicitly show a placeholder, not an invented school identity. Add the approved logo to `public/branding/smkn-1-singosari.png` (prefer a transparent PNG/WebP at 512–1024 px), then set `logoSrc` in `components/landing/identity.ts` to `/branding/smkn-1-singosari.png`. The same configuration updates both placements. Missing/broken images revert to the labelled placeholder. No mascot is displayed until an official asset is supplied.
-
-## Interaction and accessibility
-
-- Mouse position tracks across the viewport with frame-rate-independent interpolation.
-- Six faces, a rear ring and a floor shadow create separate depth planes.
-- Idle float and subtle rotation; pointer inactivity returns to neutral after 1.1 seconds.
-- Mouse/touch horizontal drag uses pointer capture; rotation is capped at 26° horizontally / 20° vertically. Vertical touch scrolling is preserved (`touch-action: pan-y`); browser scroll cancellation safely releases drag.
-- Focus the scene and use arrow keys to rotate, Home to reset.
-- Pause button resets and stops the frame loop. Reduced-motion preference disables movement. Background tabs stop rendering, with cleanup on unmount.
-- No WebGL requirement; static front face fallback for browsers without CSS preserve-3d. Links and heading remain server-rendered without JavaScript.
-- Single viewport on standard desktop/phone sizes; small or landscape screens and zoom may scroll vertically rather than clipping actions.
+# VOKASI water / crest landing
 
 ## Run
 
-```sh
-npm ci
-npm run dev
-```
+Node >=20.9: `npm ci`, then `npm run dev`. Open http://localhost:3000.
+Production: `npm run build` then `npm start`.
+Keep the existing local Supabase environment for authenticated features. No new credentials or configuration are required by the scene.
 
-Open http://localhost:3000. Landing itself needs no credentials; use the existing `.env.local` instructions for authenticated routes.
+## Implementation
 
-```sh
-npm run lint
-npm run typecheck
-npm run check:security
-npm run build
-npm run start -- -p 3100
-```
+- `app/page.tsx` and `app/landing-3d.css`: full-viewport hero, a second viewport for a short introduction, score ranking, FAQ, footer. All styles are scoped.
+- `components/landing/LogoScene.tsx`: lazily loaded Three.js WebGL renderer; actual extruded geometry traced from the supplied logo alpha boundary, original-color textured front/back, metallic sidewalls and clearcoat lighting. A procedural radial water shader gives the blue ripple surface. No external model/HDR downloads or React Three Fiber/Drei dependencies.
+- Scroll advances the logo from hero center to the introduction, with one full turn; idle motion gently bounces and rocks. No cursor tracking is required in this revision. The crest is not recolored or replaced by a sphere.
+- `public/assets/vokasi-school-logo-hd.png`: exact attached PNG, unedited. The original `/assets/smkn1sgs-166x166-1.png` remains untouched for existing login usage. Change `components/landing/identity.ts` to use another official asset.
+- DPR capped at 1.25 on phones / 1.75 elsewhere. Rendering stops outside the viewport, when the tab is hidden, when paused, and after a reduced-motion frame. Resize/scroll events render on demand. Resources, event listeners and observers are disposed on unmount.
+- WebGL failure or context loss falls back to the school image. Navigation, content and FAQ are HTML. Reduced motion disables idle animation and scroll rotation (position still follows scroll). Pause stops time-based animation; scroll remains usable.
 
-The optional browser regression script requires Playwright and its Chromium browser, installed separately (no runtime dependency added):
+## Ranking and factual content
 
-```sh
-npm install --no-save --package-lock=false playwright
-npx playwright install chromium
-node tests/landing-interactions.mjs
-```
+The existing `getLeaderboard()` adapter is reused without modifying RPC, RLS, grading, timer, XP or database configuration. Ranking is descending **verified mandatory average**, not XP and not best individual attempt. Signed-out visitors see a sign-in prompt and no student names/scores. No fake leader data, contact details or testimonials are included. FAQ describes existing app capabilities only.
 
-`LANDING_BASE_URL` overrides port 3100. `PLAYWRIGHT_MODULE` accepts an absolute module path. `CHROMIUM_EXECUTABLE` optionally supplies a locally installed Chromium. The test disables WebGL deliberately and covers tracking, drag/release, keyboard, pause, reduced motion, overflow, login links, touch drag, and no-JS navigation.
+## Verification for this revision
 
-## Scope
+- `npm run typecheck`: passed.
+- `npm run lint`: passed, 10 pre-existing warnings outside landing code.
+- `npm run check:security`: passed static contract checks; not a live database audit.
+- `node tests/landing-ranking.mjs`: passed mocked ranking adapter checks (high average outranks high XP; missing/unverified excluded).
+- `npm run build`: passed, all 17 routes.
+- Browser/visual QA: NOT verified in this environment. Managed preview appends Vite flags (`--host`, `--strictPort`) to Next dev, which rejects `--host`. No visual/performance claim is made from build results.
+- `tests/landing-interactions.mjs` is updated for this design but NOT run here. With Playwright installed separately and a local server running, use `LANDING_BASE_URL=http://localhost:3000 node tests/landing-interactions.mjs`; repeat with `DISABLE_WEBGL=1` for fallback. Manually inspect desktop/mobile, scroll transition, texture fidelity, contrast, pause, reduced motion and FAQ before merging.
 
-Only homepage, its new scoped stylesheet/components, this guide, and browser regression script are changed. Existing academic routes, login logic, database, RPC, RLS, environment configuration, dependency manifest and lockfile are unchanged. The old landing stylesheet remains in the repo but is no longer imported by the homepage.
-
-## 3D ranking podium
-
-The scene now opens on a real six-face CSS 3D podium (2–1–3 visually, 1–2–3 in accessible reading order). The scene switch restores the school logo. Both views share mouse tracking, touch drag, keyboard controls and motion preferences.
-
-Ranking uses the existing `getLeaderboard()` adapter: verified compulsory average descending, then completed compulsory days descending, then display name. XP never decides position. The backend currently supplies the current-quarter average of each day's latest verified compulsory attempt, **not the highest single attempt**; the UI labels the metric as average. Neither the RPC nor scoring is modified.
-
-The public, signed-out homepage shows labelled positions without names or invented scores. Real rows are loaded only after an authenticated school role is resolved; access remains enforced by the existing RPC. Empty, loading and error states are explicit. Logout/account changes immediately clear rows and invalidate stale requests. An auth listener is unsubscribed on unmount and schedules network work outside the auth callback.
-
-`node tests/landing-ranking.mjs` verifies the actual adapter with mock RPC data: a low-XP/high-score student outranks a high-XP/low-score student; missing/unverified scores are excluded. This is not a production database integration test. Browser tests cover the anonymous podium, scene switch and existing interactions; authenticated production data requires a real configured school account.
+Existing main updates (including login glass styling) are retained. No academic/auth implementation is edited by this landing change.
