@@ -1,0 +1,150 @@
+/* Scoped school-photo login. Does not change Auth, Supabase or other routes.
+   The campus photo is currently a reference image from a third-party publication;
+   replace the URL with a school-owned /public asset before production deployment. */
+.login-photo {
+  --login-ink: #102a49;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(380px, 565px);
+  column-gap: clamp(28px, 5vw, 90px);
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  background-color: #184879;
+  background-image:
+    linear-gradient(90deg,rgba(4,24,51,.88) 0%,rgba(8,40,73,.61) 40%,rgba(11,47,78,.18) 76%,rgba(13,45,77,.24) 100%),
+    url('https://assets-a1.kompasiana.com/items/album/2023/06/11/smkn-1-singosari-6485d3474d498a3be811bca2.jpeg?t=o&v=1200');
+  background-position: center, center 44%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  overflow-x: clip;
+  padding: clamp(24px, 5vw, 92px);
+  padding-top: clamp(132px, 15vh, 185px);
+  padding-bottom: clamp(40px, 7vh, 94px);
+}
+.login-photo .login-photo-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(circle at 77% 6%,rgba(222,242,255,.24),transparent 36%),
+    linear-gradient(0deg,rgba(5,22,40,.32),transparent 35%);
+}
+.login-photo .login-photo-header {
+  position: absolute;
+  top: clamp(26px, 6vw, 98px);
+  left: clamp(24px, 7vw, 100px);
+  z-index: 2;
+}
+.login-photo .login-photo-brand {display:inline-flex;align-items:center;gap:18px;color:#fff;}
+.login-photo .login-photo-brand-mark {
+  width:66px;height:66px;border-radius:17px;display:grid;place-items:center;
+  background:linear-gradient(140deg,rgba(113,177,243,.43),rgba(26,73,132,.42));
+  border:1px solid rgba(220,243,255,.56);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.20),0 12px 35px rgba(4,25,50,.2);
+  font-size:31px;font-weight:800;letter-spacing:-.05em;
+}
+.login-photo .login-photo-brand strong {display:block;font-size:26px;letter-spacing:-.055em;line-height:1.05;}
+.login-photo .login-photo-brand small {display:block;margin-top:8px;font-size:11px;letter-spacing:.22em;font-weight:800;color:#cbdfff;}
+.login-photo .login-photo-copy {align-self:center;z-index:1;max-width:630px;color:#fff;}
+.login-photo .login-photo-eyebrow {color:#acd7ff;font-size:15px;font-weight:800;letter-spacing:.32em;}
+.login-photo .login-photo-copy h1 {
+  font-weight:800;font-size:clamp(55px,6.2vw,92px);line-height:1.06;
+  letter-spacing:-.065em;margin:18px 0 22px;text-wrap:balance;
+  text-shadow:0 6px 18px rgba(5,27,55,.28);
+}
+.login-photo .login-photo-copy h1 span {color:#96ceff;}
+.login-photo .login-photo-copy p {color:#e0eafa;line-height:1.65;font-size:clamp(17px,1.65vw,24px);font-weight:500;margin:0;}
+.login-photo .login-photo-main {display:flex;align-items:center;justify-content:center;position:relative;z-index:1;min-width:0;}
+.login-photo .login-photo-card {
+  width:100%;max-width:565px;
+  background:linear-gradient(147deg,rgba(242,249,255,.60),rgba(223,238,252,.42));
+  border:1.5px solid rgba(255,255,255,.68);
+  box-shadow:0 26px 72px rgba(3,28,57,.30), inset 0 1px 0 rgba(255,255,255,.58);
+  -webkit-backdrop-filter:blur(27px) saturate(145%);
+  backdrop-filter:blur(27px) saturate(145%);
+  border-radius:35px;padding:clamp(27px,4.2vw,57px);
+  color:var(--login-ink);
+}
+.login-photo .login-photo-card h2 {font-size:clamp(29px,3vw,43px);letter-spacing:-.06em;line-height:1.2;color:#0c274a;margin:0 0 27px;font-weight:800;}
+.login-photo .login-photo-tabs {display:grid;grid-template-columns:1fr 1fr;padding:6px;gap:4px;border:1px solid rgba(255,255,255,.32);border-radius:18px;background:rgba(233,243,255,.19);margin-bottom:30px;}
+.login-photo .login-photo-tabs button {
+  display:flex;align-items:center;justify-content:center;gap:12px;border:1px solid transparent;border-radius:14px;
+  min-height:60px;background:transparent;color:#4b678a;font-weight:800;font-size:17px;
+  transition:background .18s ease,box-shadow .18s ease,color .18s ease;
+}
+.login-photo .login-photo-tabs button.active {background:rgba(255,255,255,.89);border-color:rgba(255,255,255,.75);box-shadow:0 8px 20px rgba(26,67,120,.09);color:#1462bf;}
+.login-photo .login-photo-tabs button:hover:not(.active) {background:rgba(255,255,255,.30);}
+.login-photo .login-photo-form {display:flex;flex-direction:column;}
+.login-photo .login-photo-form label {font-size:16px;font-weight:800;color:#173456;margin:0 0 12px;}
+.login-photo .login-photo-field {position:relative;display:flex;align-items:center;margin-bottom:22px;}
+.login-photo .login-photo-field>svg {position:absolute;left:21px;pointer-events:none;color:#6683a8;}
+.login-photo .login-photo-field input {
+  width:100%;min-width:0;min-height:68px;border-radius:16px;
+  border:1px solid rgba(255,255,255,.68);background:rgba(255,255,255,.84);
+  color:#102e52;font-size:15px;padding:18px 56px 18px 69px;
+  box-shadow:0 4px 17px rgba(28,72,116,.045);
+}
+.login-photo .login-photo-field input::placeholder {color:#778da9;opacity:1;}
+.login-photo .login-photo-field input:focus-visible {outline:3px solid rgba(25,107,220,.54);outline-offset:2px;}
+.login-photo .login-photo-help {font-size:11px;color:#34577c;line-height:1.55;margin:-14px 0 16px;}
+.login-photo .login-photo-reveal {position:absolute;right:15px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#6683a8;padding:9px;display:flex;align-items:center;}
+.login-photo .login-photo-submit {
+  width:100%;display:flex;justify-content:center;align-items:center;gap:22px;min-height:72px;
+  margin-top:9px;background:#146bc9;color:#fff;border:1px solid rgba(255,255,255,.13);
+  border-radius:15px;font-size:21px;font-weight:800;
+  box-shadow:0 12px 25px rgba(17,84,173,.20);transition:background .18s, transform .18s;
+}
+.login-photo .login-photo-submit:not(:disabled):hover {background:#0f5aab;transform:translateY(-1px);}
+.login-photo .login-photo-submit:disabled {opacity:.6;}
+.login-photo :is(a,button,input):focus-visible {outline:3px solid #1d7fea;outline-offset:3px;}
+.login-photo .login-photo-footer {display:flex;align-items:center;gap:16px;margin-top:32px;font-size:12px;font-weight:700;color:#426182;white-space:nowrap;text-align:center;}
+.login-photo .login-photo-footer:before,.login-photo .login-photo-footer:after {content:"";flex:1;min-width:15px;height:1px;background:rgba(80,126,172,.25);}
+.login-photo .login-photo-card .alert {margin:0 0 15px;border-radius:12px;font-size:12px;}
+.login-photo .login-photo-card .alert a {text-decoration:underline;}
+.login-photo.login-embedded {display:flex;align-items:center;justify-content:center;padding:26px;background-position:center;}
+.login-photo.login-embedded .login-photo-header,.login-photo.login-embedded .login-photo-copy {display:none;}
+.login-photo.login-embedded .login-photo-main {width:min(100%,565px);}
+@media (max-width:1000px) {
+  .login-photo {grid-template-columns:minmax(0,1fr) minmax(330px,490px);gap:28px;padding:140px 36px 45px;}
+  .login-photo .login-photo-header {left:36px;top:30px;}
+  .login-photo .login-photo-brand-mark{width:54px;height:54px;font-size:26px}
+  .login-photo .login-photo-copy h1{font-size:clamp(47px,6.2vw,70px)}
+  .login-photo .login-photo-card {padding:34px;border-radius:29px;}
+  .login-photo .login-photo-tabs button {min-height:53px;font-size:15px;}
+  .login-photo .login-photo-field input {min-height:59px;}
+  .login-photo .login-photo-submit {min-height:61px;}
+}
+@media (max-width:720px) {
+  .login-photo {display:flex;flex-direction:column;min-height:100dvh;gap:24px;align-items:stretch;justify-content:center;padding:102px 18px 25px;background-position:center,center;}
+  .login-photo .login-photo-header {top:20px;left:20px;}
+  .login-photo .login-photo-brand {gap:10px;}
+  .login-photo .login-photo-brand-mark {width:42px;height:42px;border-radius:12px;font-size:20px;}
+  .login-photo .login-photo-brand strong {font-size:19px;}
+  .login-photo .login-photo-brand small {font-size:8px;letter-spacing:.12em;margin-top:5px;}
+  .login-photo .login-photo-copy {align-self:stretch;max-width:540px;}
+  .login-photo .login-photo-eyebrow {font-size:10px;letter-spacing:.24em;}
+  .login-photo .login-photo-copy h1 {font-size:clamp(37px,10vw,54px);margin:10px 0 10px;line-height:1.09;}
+  .login-photo .login-photo-copy p {font-size:12px;}
+  .login-photo .login-photo-copy p br {display:none;}
+  .login-photo .login-photo-card {margin:auto;padding:24px;max-width:540px;border-radius:24px;}
+  .login-photo .login-photo-card h2 {font-size:27px;margin-bottom:18px;}
+  .login-photo .login-photo-tabs {margin-bottom:19px;}
+  .login-photo .login-photo-tabs button {font-size:13px;min-height:46px;}
+  .login-photo .login-photo-form label {font-size:13px;margin-bottom:8px;}
+  .login-photo .login-photo-field {margin-bottom:17px;}
+  .login-photo .login-photo-field input {min-height:53px;font-size:13px;padding-left:54px;}
+  .login-photo .login-photo-field>svg {left:16px;width:19px;height:19px;}
+  .login-photo .login-photo-submit {min-height:54px;font-size:16px;margin-top:2px;}
+  .login-photo .login-photo-footer {font-size:10px;margin-top:23px;}
+}
+@media(prefers-reduced-transparency:reduce) {
+ .login-photo .login-photo-card {background:rgba(238,246,255,.95);-webkit-backdrop-filter:none;backdrop-filter:none;}
+}
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))) {
+ .login-photo .login-photo-card {background:rgba(237,245,255,.94);}
+}
+@media(prefers-reduced-motion:reduce) {
+ .login-photo .login-photo-tabs button,.login-photo .login-photo-submit {transition:none!important;}
+}
