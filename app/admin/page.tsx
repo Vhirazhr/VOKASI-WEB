@@ -1,7 +1,7 @@
 'use client';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
-import {ArrowDownToLine,ArrowRight,BookOpen,CalendarDays,CheckCircle2,Clock3,RefreshCw,Search,TrendingUp,Users,XCircle} from 'lucide-react';
+import {ArrowDownToLine,ArrowRight,CalendarDays,CheckCircle2,Clock3,RefreshCw,Search,TrendingUp,Users,XCircle} from 'lucide-react';
 import '@/app/admin-dashboard.css';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
@@ -208,7 +208,6 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
       </section>
       </div>
     </div>
-    <footer className="admin-overview-footnote"><BookOpen size={16}/><p>Nilai otomatis diperbarui dari Supabase setiap 20 detik. Identitas siswa ditautkan menggunakan ID Auth, bukan username.</p></footer>
   </div>
  </AppShell>;
 }
