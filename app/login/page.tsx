@@ -27,19 +27,23 @@ export default function LoginPage(){
     <header className="login-photo-header">
       <Link href="/" className="login-photo-brand" aria-label="VOKASI - Beranda">
         <span className="login-photo-brand-mark"><Image src="/assets/smkn1sgs-166x166-1.png" alt="Logo resmi SMKN 1 Singosari" width={166} height={159} unoptimized priority className="login-photo-brand-logo-image"/></span>
-        <span><strong>VOKASI</strong><small>LEARNING PLATFORM</small></span>
+        <span><strong>VOKASI</strong><small>SMKN 1 SINGOSARI</small></span>
       </Link>
     </header>
 
     <section className="login-photo-copy" aria-label="Tentang VOKASI">
-      <span className="login-photo-eyebrow">SMKN 1 SINGOSARI</span>
+      <span className="login-photo-eyebrow"><span className="login-photo-eyebrow-dot" aria-hidden="true"/> PLATFORM PEMBELAJARAN DIGITAL</span>
       <h1>Belajar<br/><span>lebih mudah</span></h1>
-      <p>Platform pembelajaran digital<br/>untuk siswa dan admin sekolah.</p>
+      <p>Ruang belajar numerasi untuk siswa SMKN 1 Singosari. Lebih ringkas, lebih nyaman, dan mudah diakses.</p>
     </section>
 
     <main className="login-photo-main">
       <div className="login-photo-card">
-        <h2>Selamat Datang!</h2>
+        <div className="login-photo-card-heading">
+          <span className="login-photo-card-eyebrow">AKSES VOKASI</span>
+          <h2>Selamat datang</h2>
+          <p>Masuk dengan akun sekolah untuk melanjutkan.</p>
+        </div>
         <div className="login-photo-tabs" role="group" aria-label="Pilih jenis akun">
           <button type="button" aria-pressed={role==='student'} className={role==='student'?'active':''} onClick={()=>{setRole('student');setError('');}}><UserRound size={23}/> Siswa</button>
           <button type="button" aria-pressed={role==='admin'} className={role==='admin'?'active':''} onClick={()=>{setRole('admin');setError('');}}><ShieldCheck size={23}/> Admin</button>
@@ -64,7 +68,7 @@ export default function LoginPage(){
           </button>
         </form>
         {embed&&<div className="alert info" role="note"><b>Login di website sekolah bermasalah?</b> Sebagian browser membatasi login melalui iframe. <a href={'/login?role='+role} target="_blank" rel="noopener noreferrer">Buka di tab baru.</a></div>}
-        <div className="login-photo-footer"><span>Akun dikelola oleh sekolah</span></div>
+        <div className="login-photo-footer"><ShieldCheck size={15} aria-hidden="true"/><span>Akun dikelola oleh sekolah</span></div>
       </div>
     </main>
   </div>;

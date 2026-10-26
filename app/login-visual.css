@@ -1,169 +1,444 @@
-/* Scoped school-photo login using the user-provided school photo and official school logo.
-   Images are stored locally. Authentication, roles, and routing are unchanged. */
-.login-photo {
-  --login-ink: #102a49;
+/* VOKASI — login-only visual system.
+   One crisp photo, restrained typography and readable, frosted login surface.
+   Deliberately scoped to .login-page.login-photo, without touching other views. */
+
+.login-page.login-photo {
+  --login-ink: #132940;
+  --login-muted: #63748a;
+  --login-blue: #226ac9;
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(0,1fr) minmax(380px, 565px);
-  column-gap: clamp(28px, 5vw, 90px);
+  grid-template-columns: minmax(0, 1fr) minmax(375px, 470px);
+  align-items: center;
+  column-gap: clamp(34px, 5vw, 110px);
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
-  /* Dark neutral backdrop, never an exposed flat blue strip. */
-  background: #0a1e32;
-  /* Real photo remains complete; a blurred copy fills unused aspect-ratio space. */
-  overflow-x: clip;
-  padding: clamp(24px, 5vw, 92px);
-  padding-top: clamp(132px, 15vh, 185px);
-  padding-bottom: clamp(40px, 7vh, 94px);
-}
-/* Two-layer photograph: a blurred cover behind an uncropped, sharp contain.
-   This avoids both oversized school photos and flat-colored side margins. */
-.login-photo::before,
-.login-photo::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.login-photo::before {
-  z-index: 0;
-  background: url('/assets/foto-bersama-depan-stema-scaled.jpeg') center / cover no-repeat;
-  filter: blur(18px) brightness(.64) saturate(.9);
-  transform: scale(1.06);
-  transform-origin: center;
-}
-.login-photo::after {
-  z-index: 1;
-  background: url('/assets/foto-bersama-depan-stema-scaled.jpeg') center / contain no-repeat;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+  overflow: hidden;
+  background-color: #142b40;
+  /* Keep the school photo sharp. Cover crops modestly to fill the screen;
+     no scaled double-image and no visible blue side strips. */
+  background-image:
+    linear-gradient(90deg,
+      rgba(7, 24, 42, .81) 0%,
+      rgba(9, 28, 45, .64) 35%,
+      rgba(8, 26, 44, .28) 64%,
+      rgba(6, 20, 36, .34) 100%),
+    url('/assets/foto-bersama-depan-stema-scaled.jpeg');
+  background-position: center, 50% 49%;
+  background-size: cover, cover;
+  background-repeat: no-repeat;
+  padding: clamp(102px, 12vh, 145px) clamp(28px, 6.5vw, 112px) clamp(55px, 8vh, 100px);
 }
 .login-photo .login-photo-overlay {
   position: absolute;
+  z-index: 0;
   inset: 0;
-  z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(5,20,37,.77) 0%, rgba(5,21,38,.53) 30%, rgba(7,26,45,.15) 59%, rgba(8,26,45,.31) 100%),
-    linear-gradient(0deg, rgba(6,20,32,.35), transparent 34%, rgba(4,16,27,.08));
-
+    linear-gradient(180deg, rgba(5, 17, 31, .12) 0%, transparent 28%, rgba(4, 18, 31, .26) 100%);
+  box-shadow: inset 0 0 110px rgba(5, 18, 32, .15);
 }
 .login-photo .login-photo-header {
   position: absolute;
-  top: clamp(26px, 6vw, 98px);
-  left: clamp(24px, 7vw, 100px);
-  z-index: 3;
+  z-index: 2;
+  top: clamp(28px, 5vh, 56px);
+  left: clamp(28px, 6.5vw, 112px);
 }
-.login-photo .login-photo-brand {display:inline-flex;align-items:center;gap:18px;color:#fff;}
+.login-photo .login-photo-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+  color: #fff;
+}
 .login-photo .login-photo-brand-mark {
-  width:54px;height:54px;display:grid;place-items:center;flex-shrink:0;
-  filter:drop-shadow(0 5px 12px rgba(3,25,50,.24));
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: none;
 }
 .login-photo .login-photo-brand-logo-image {
-  width:100%;height:100%;object-fit:contain;display:block;image-rendering:auto;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
-.login-photo .login-photo-brand strong {display:block;font-size:26px;letter-spacing:-.055em;line-height:1.05;}
-.login-photo .login-photo-brand small {display:block;margin-top:8px;font-size:11px;letter-spacing:.22em;font-weight:800;color:#cbdfff;}
-.login-photo .login-photo-copy {align-self:center;z-index:3;max-width:630px;color:#fff;}
-.login-photo .login-photo-eyebrow {color:#acd7ff;font-size:15px;font-weight:800;letter-spacing:.32em;}
+.login-photo .login-photo-brand strong {
+  display: block;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -.045em;
+}
+.login-photo .login-photo-brand small {
+  display: block;
+  margin-top: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: .17em;
+  color: rgba(255, 255, 255, .75);
+}
+.login-photo .login-photo-copy {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  min-width: 0;
+  max-width: 660px;
+  color: white;
+  padding-bottom: 13px;
+}
+.login-photo .login-photo-eyebrow {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 22px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  color: #c1dafa;
+}
+.login-photo .login-photo-eyebrow-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: #a9d4ff;
+  box-shadow: 0 0 0 4px rgba(170, 218, 255, .13);
+}
 .login-photo .login-photo-copy h1 {
-  font-weight:800;font-size:clamp(55px,6.2vw,92px);line-height:1.06;
-  letter-spacing:-.065em;margin:18px 0 22px;text-wrap:balance;
-  text-shadow:0 6px 18px rgba(5,27,55,.28);
+  margin: 0 0 24px;
+  font-size: clamp(50px, 5.8vw, 86px);
+  font-weight: 800;
+  line-height: 1.055;
+  letter-spacing: -.065em;
+  color: #fff;
+  text-wrap: balance;
+  text-shadow: 0 6px 35px rgba(8, 20, 31, .16);
 }
-.login-photo .login-photo-copy h1 span {color:#96ceff;}
-.login-photo .login-photo-copy p {color:#e0eafa;line-height:1.65;font-size:clamp(17px,1.65vw,24px);font-weight:500;margin:0;}
-.login-photo .login-photo-main {display:flex;align-items:center;justify-content:center;position:relative;z-index:3;min-width:0;}
+.login-photo .login-photo-copy h1 span {
+  color: #b6d9ff;
+}
+.login-photo .login-photo-copy p {
+  max-width: 375px;
+  margin: 0;
+  font-size: clamp(13px, 1.25vw, 16px);
+  line-height: 1.85;
+  color: rgba(239, 246, 255, .89);
+  font-weight: 500;
+}
+.login-photo .login-photo-main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  min-width: 0;
+}
 .login-photo .login-photo-card {
-  width:100%;max-width:565px;
-  background:linear-gradient(147deg,rgba(242,249,255,.60),rgba(223,238,252,.42));
-  border:1.5px solid rgba(255,255,255,.68);
-  box-shadow:0 26px 72px rgba(3,28,57,.30), inset 0 1px 0 rgba(255,255,255,.58);
-  -webkit-backdrop-filter:blur(27px) saturate(145%);
-  backdrop-filter:blur(27px) saturate(145%);
-  border-radius:35px;padding:clamp(27px,4.2vw,57px);
-  color:var(--login-ink);
+  width: 100%;
+  max-width: 470px;
+  padding: clamp(29px, 3.15vw, 46px);
+  border-radius: 23px;
+  border: 1px solid rgba(255, 255, 255, .73);
+  background: linear-gradient(150deg,
+    rgba(255, 255, 255, .87),
+    rgba(245, 250, 255, .78));
+  box-shadow:
+    0 24px 70px rgba(4, 20, 38, .24),
+    0 1px 0 rgba(255, 255, 255, .55) inset;
+  -webkit-backdrop-filter: blur(18px) saturate(115%);
+  backdrop-filter: blur(18px) saturate(115%);
+  color: var(--login-ink);
 }
-.login-photo .login-photo-card h2 {font-size:clamp(29px,3vw,43px);letter-spacing:-.06em;line-height:1.2;color:#0c274a;margin:0 0 27px;font-weight:800;}
-.login-photo .login-photo-tabs {display:grid;grid-template-columns:1fr 1fr;padding:6px;gap:4px;border:1px solid rgba(255,255,255,.32);border-radius:18px;background:rgba(233,243,255,.19);margin-bottom:30px;}
+.login-photo .login-photo-card-heading {
+  margin-bottom: 27px;
+}
+.login-photo .login-photo-card-eyebrow {
+  display: block;
+  margin-bottom: 11px;
+  color: #49769e;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .18em;
+}
+.login-photo .login-photo-card h2 {
+  margin: 0 0 9px;
+  color: #102942;
+  font-size: clamp(28px, 2.7vw, 35px);
+  font-weight: 800;
+  line-height: 1.16;
+  letter-spacing: -.065em;
+}
+.login-photo .login-photo-card-heading p {
+  margin: 0;
+  color: #61758d;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+.login-photo .login-photo-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(163, 185, 208, .32);
+  background: rgba(215, 226, 239, .42);
+  border-radius: 12px;
+}
 .login-photo .login-photo-tabs button {
-  display:flex;align-items:center;justify-content:center;gap:12px;border:1px solid transparent;border-radius:14px;
-  min-height:60px;background:transparent;color:#4b678a;font-weight:800;font-size:17px;
-  transition:background .18s ease,box-shadow .18s ease,color .18s ease;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 9px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #60738a;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background-color .18s ease, box-shadow .18s ease, color .18s ease;
 }
-.login-photo .login-photo-tabs button.active {background:rgba(255,255,255,.89);border-color:rgba(255,255,255,.75);box-shadow:0 8px 20px rgba(26,67,120,.09);color:#1462bf;}
-.login-photo .login-photo-tabs button:hover:not(.active) {background:rgba(255,255,255,.30);}
-.login-photo .login-photo-form {display:flex;flex-direction:column;}
-.login-photo .login-photo-form label {font-size:16px;font-weight:800;color:#173456;margin:0 0 12px;}
-.login-photo .login-photo-field {position:relative;display:flex;align-items:center;margin-bottom:22px;}
-.login-photo .login-photo-field>svg {position:absolute;left:21px;pointer-events:none;color:#6683a8;}
+.login-photo .login-photo-tabs button svg {
+  width: 17px;
+  height: 17px;
+}
+.login-photo .login-photo-tabs button.active {
+  background: rgba(255, 255, 255, .94);
+  border-color: rgba(255, 255, 255, .94);
+  box-shadow: 0 2px 9px rgba(30, 59, 90, .09);
+  color: #1865bd;
+}
+.login-photo .login-photo-tabs button:hover:not(.active) {
+  background: rgba(255, 255, 255, .39);
+  color: #284968;
+}
+.login-photo .login-photo-form {
+  display: flex;
+  flex-direction: column;
+}
+.login-photo .login-photo-form label {
+  margin-bottom: 8px;
+  color: #243e59;
+  font-size: 12px;
+  font-weight: 700;
+}
+.login-photo .login-photo-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 19px;
+}
+.login-photo .login-photo-field > svg {
+  position: absolute;
+  left: 16px;
+  width: 18px;
+  height: 18px;
+  color: #8194ac;
+  pointer-events: none;
+}
 .login-photo .login-photo-field input {
-  width:100%;min-width:0;min-height:68px;border-radius:16px;
-  border:1px solid rgba(255,255,255,.68);background:rgba(255,255,255,.84);
-  color:#102e52;font-size:15px;padding:18px 56px 18px 69px;
-  box-shadow:0 4px 17px rgba(28,72,116,.045);
+  width: 100%;
+  min-width: 0;
+  min-height: 53px;
+  padding: 12px 48px 12px 45px;
+  border: 1px solid rgba(158, 180, 206, .51);
+  border-radius: 11px;
+  outline: none;
+  background: rgba(255, 255, 255, .89);
+  color: #152e48;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(11, 43, 80, .035);
+  transition: border-color .18s ease, box-shadow .18s ease;
 }
-.login-photo .login-photo-field input::placeholder {color:#778da9;opacity:1;}
-.login-photo .login-photo-field input:focus-visible {outline:3px solid rgba(25,107,220,.54);outline-offset:2px;}
-.login-photo .login-photo-help {font-size:11px;color:#34577c;line-height:1.55;margin:-14px 0 16px;}
-.login-photo .login-photo-reveal {position:absolute;right:15px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#6683a8;padding:9px;display:flex;align-items:center;}
+.login-photo .login-photo-field input::placeholder {
+  color: #94a5b9;
+  opacity: 1;
+}
+.login-photo .login-photo-field input:focus {
+  border-color: #4f8cce !important;
+  box-shadow: 0 0 0 3px rgba(57, 121, 195, .12) !important;
+}
+.login-photo .login-photo-help {
+  margin: -12px 0 16px;
+  color: #566f88;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.login-photo .login-photo-reveal {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: #7890a8;
+}
+.login-photo .login-photo-reveal:hover { color: #205ca3; }
+.login-photo .login-photo-reveal svg { width: 19px; height: 19px; }
 .login-photo .login-photo-submit {
-  width:100%;display:flex;justify-content:center;align-items:center;gap:22px;min-height:72px;
-  margin-top:9px;background:#146bc9;color:#fff;border:1px solid rgba(255,255,255,.13);
-  border-radius:15px;font-size:21px;font-weight:800;
-  box-shadow:0 12px 25px rgba(17,84,173,.20);transition:background .18s, transform .18s;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 55px;
+  margin-top: 7px;
+  border: 1px solid rgba(11, 75, 162, .15);
+  border-radius: 11px;
+  background: #236ecb;
+  box-shadow: 0 9px 22px rgba(30, 99, 183, .17);
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+  transition: background-color .18s ease, transform .18s ease, box-shadow .18s ease;
 }
-.login-photo .login-photo-submit:not(:disabled):hover {background:#0f5aab;transform:translateY(-1px);}
-.login-photo .login-photo-submit:disabled {opacity:.6;}
-.login-photo :is(a,button,input):focus-visible {outline:3px solid #1d7fea;outline-offset:3px;}
-.login-photo .login-photo-footer {display:flex;align-items:center;gap:16px;margin-top:32px;font-size:12px;font-weight:700;color:#426182;white-space:nowrap;text-align:center;}
-.login-photo .login-photo-footer:before,.login-photo .login-photo-footer:after {content:"";flex:1;min-width:15px;height:1px;background:rgba(80,126,172,.25);}
-.login-photo .login-photo-card .alert {margin:0 0 15px;border-radius:12px;font-size:12px;}
-.login-photo .login-photo-card .alert a {text-decoration:underline;}
-.login-photo.login-embedded {display:flex;align-items:center;justify-content:center;padding:26px;}
-.login-photo.login-embedded .login-photo-header,.login-photo.login-embedded .login-photo-copy {display:none;}
-.login-photo.login-embedded .login-photo-main {width:min(100%,565px);}
-@media (max-width:1000px) {
-  .login-photo {grid-template-columns:minmax(0,1fr) minmax(330px,490px);gap:28px;padding:140px 36px 45px;}
-  .login-photo .login-photo-header {left:36px;top:30px;}
-  .login-photo .login-photo-brand-mark{width:48px;height:48px;font-size:26px}
-  .login-photo .login-photo-copy h1{font-size:clamp(47px,6.2vw,70px)}
-  .login-photo .login-photo-card {padding:34px;border-radius:29px;}
-  .login-photo .login-photo-tabs button {min-height:53px;font-size:15px;}
-  .login-photo .login-photo-field input {min-height:59px;}
-  .login-photo .login-photo-submit {min-height:61px;}
+.login-photo .login-photo-submit svg {
+  position: absolute;
+  right: 17px;
+  width: 18px;
+  height: 18px;
 }
-@media (max-width:720px) {
-  .login-photo {display:flex;flex-direction:column;min-height:100dvh;gap:24px;align-items:stretch;justify-content:center;padding:102px 18px 25px;}
-  .login-photo .login-photo-header {top:20px;left:20px;}
-  .login-photo .login-photo-brand {gap:10px;}
-  .login-photo .login-photo-brand-mark {width:40px;height:40px;border-radius:12px;font-size:20px;}
-  .login-photo .login-photo-brand strong {font-size:19px;}
-  .login-photo .login-photo-brand small {font-size:8px;letter-spacing:.12em;margin-top:5px;}
-  .login-photo .login-photo-copy {align-self:stretch;max-width:540px;}
-  .login-photo .login-photo-eyebrow {font-size:10px;letter-spacing:.24em;}
-  .login-photo .login-photo-copy h1 {font-size:clamp(37px,10vw,54px);margin:10px 0 10px;line-height:1.09;}
-  .login-photo .login-photo-copy p {font-size:12px;}
-  .login-photo .login-photo-copy p br {display:none;}
-  .login-photo .login-photo-card {margin:auto;padding:24px;max-width:540px;border-radius:24px;}
-  .login-photo .login-photo-card h2 {font-size:27px;margin-bottom:18px;}
-  .login-photo .login-photo-tabs {margin-bottom:19px;}
-  .login-photo .login-photo-tabs button {font-size:13px;min-height:46px;}
-  .login-photo .login-photo-form label {font-size:13px;margin-bottom:8px;}
-  .login-photo .login-photo-field {margin-bottom:17px;}
-  .login-photo .login-photo-field input {min-height:53px;font-size:13px;padding-left:54px;}
-  .login-photo .login-photo-field>svg {left:16px;width:19px;height:19px;}
-  .login-photo .login-photo-submit {min-height:54px;font-size:16px;margin-top:2px;}
-  .login-photo .login-photo-footer {font-size:10px;margin-top:23px;}
+.login-photo .login-photo-submit:not(:disabled):hover {
+  background: #175aaf;
+  box-shadow: 0 11px 24px rgba(30, 99, 183, .22);
+  transform: translateY(-1px);
 }
-@media(prefers-reduced-transparency:reduce) {
- .login-photo .login-photo-card {background:rgba(238,246,255,.95);-webkit-backdrop-filter:none;backdrop-filter:none;}
+.login-photo .login-photo-submit:disabled { opacity: .65; }
+.login-photo .login-photo-footer {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 27px;
+  padding-top: 19px;
+  border-top: 1px solid rgba(143, 165, 189, .29);
+  color: #71849b;
+  font-size: 10px;
+  font-weight: 600;
 }
-@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))) {
- .login-photo .login-photo-card {background:rgba(237,245,255,.94);}
+.login-photo .login-photo-footer svg {
+  color: #7a94ae;
 }
-@media(prefers-reduced-motion:reduce) {
- .login-photo .login-photo-tabs button,.login-photo .login-photo-submit {transition:none!important;}
+.login-photo .login-photo-card .alert {
+  border-radius: 10px;
+  font-size: 11px;
+}
+.login-photo .login-photo-card .alert a {
+  text-decoration: underline;
+}
+.login-photo :is(a,button,input):focus-visible {
+  outline: 3px solid #468ce0;
+  outline-offset: 3px;
+}
+
+/* The embedded view is compact but uses the same clean glass form. */
+.login-page.login-photo.login-embedded {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  min-height: 100dvh;
+}
+.login-photo.login-embedded .login-photo-header,
+.login-photo.login-embedded .login-photo-copy {
+  display: none;
+}
+.login-photo.login-embedded .login-photo-main {
+  justify-content: center;
+  width: min(100%, 470px);
+}
+
+@media (max-width: 1050px) {
+  .login-page.login-photo {
+    grid-template-columns: minmax(0, 1fr) minmax(345px, 430px);
+    column-gap: 26px;
+    padding-left: 36px;
+    padding-right: 36px;
+  }
+  .login-photo .login-photo-header { left: 36px; }
+  .login-photo .login-photo-card { padding: 32px; }
+  .login-photo .login-photo-copy h1 { font-size: clamp(47px, 5.8vw, 68px); }
+}
+@media (max-width: 760px) {
+  .login-page.login-photo {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 22px;
+    min-height: 100dvh;
+    padding: 100px 18px 30px;
+    background-position: center, 50% 45%;
+  }
+  .login-photo .login-photo-header { left: 22px; top: 22px; }
+  .login-photo .login-photo-brand-mark { width: 39px; height: 39px; }
+  .login-photo .login-photo-brand strong { font-size: 17px; }
+  .login-photo .login-photo-brand small { font-size: 8px; }
+  .login-photo .login-photo-copy {
+    align-self: stretch;
+    max-width: 450px;
+    padding: 0;
+  }
+  .login-photo .login-photo-eyebrow {
+    font-size: 9px;
+    letter-spacing: .12em;
+    margin-bottom: 9px;
+  }
+  .login-photo .login-photo-copy h1 {
+    font-size: clamp(38px, 9.5vw, 55px);
+    line-height: 1.08;
+    margin-bottom: 9px;
+  }
+  .login-photo .login-photo-copy p {
+    max-width: 335px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .login-photo .login-photo-main { justify-content: center; }
+  .login-photo .login-photo-card {
+    max-width: 480px;
+    padding: 25px 23px;
+    border-radius: 19px;
+  }
+  .login-photo .login-photo-card-heading { margin-bottom: 18px; }
+  .login-photo .login-photo-card h2 { font-size: 27px; }
+  .login-photo .login-photo-tabs { margin-bottom: 19px; }
+  .login-photo .login-photo-field { margin-bottom: 14px; }
+  .login-photo .login-photo-field input { min-height: 50px; }
+  .login-photo .login-photo-footer { margin-top: 18px; padding-top: 15px; }
+}
+@media (max-width: 380px) {
+  .login-page.login-photo { padding: 84px 12px 18px; }
+  .login-photo .login-photo-card { padding: 22px 18px; }
+  .login-photo .login-photo-copy h1 { font-size: 38px; }
+  .login-photo .login-photo-tabs button { min-height: 42px; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .login-photo .login-photo-card {
+    background: rgba(245, 249, 253, .97);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .login-photo .login-photo-card { background: rgba(244, 249, 254, .96); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-photo .login-photo-tabs button,
+  .login-photo .login-photo-field input,
+  .login-photo .login-photo-submit { transition: none; }
 }
