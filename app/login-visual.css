@@ -373,7 +373,7 @@
   .login-photo .login-photo-card { padding: 32px; }
   .login-photo .login-photo-copy h1 { font-size: clamp(47px, 5.8vw, 68px); }
 }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .login-page.login-photo {
     display: flex;
     flex-direction: column;
