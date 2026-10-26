@@ -2,7 +2,7 @@
 .vkw-page {
   background: #123d63;
   color: #f0f8ff;
-  font-family: "Roboto Variable", system-ui, sans-serif;
+  font-family: "Inter Variable", system-ui, sans-serif;
   overflow: clip;
 }
 .vkw-page *,
@@ -181,6 +181,7 @@
 .vkw-hero-bottom {
   position: absolute;
   top: 65%;
+  height: 35%;
   width: 100%;
   padding: 0 5%;
   text-align: center;
@@ -190,19 +191,25 @@
   justify-content: space-between;
   width: min(100%, 1040px);
   margin: 0 auto;
+  font-family: "Roboto Variable", system-ui, sans-serif;
   font-size: clamp(30px, 3.5vw, 54px);
-  font-weight: 500;
+  font-weight: 750;
   letter-spacing: 0;
   text-indent: 0;
   line-height: 1.25;
   color: #061421;
 }
 .vkw-hero-bottom > p {
-  font-size: clamp(10px, 1.05vw, 15px);
-  letter-spacing: 0.28em;
+  position: absolute;
+  bottom: clamp(30px, 5svh, 58px);
+  left: 5%;
+  width: 90%;
+  font-size: clamp(11px, 1.05vw, 15px);
+  font-weight: 500;
+  letter-spacing: .14em;
   line-height: 1.8;
-  margin: 34px 0 0;
-  color: #143d64;
+  margin: 0;
+  color: #102f48;
 }
 .vkw-section {
   position: relative;
@@ -669,7 +676,7 @@
   align-items: center;
 }
 .vkw-login-dialog {
-  font-family: "Roboto Variable", system-ui, sans-serif;
+  font-family: "Inter Variable", system-ui, sans-serif;
   position: fixed;
   inset: 0;
   margin: auto;
@@ -914,7 +921,7 @@
   .vkw-hero-bottom > p {
     font-size: 10px;
     letter-spacing: 0.13em;
-    margin-top: 24px;
+    margin-top: 0;
   }
   .vkw-fallback {
     top: 35%;
@@ -1212,3 +1219,71 @@
 .vkw-login-dialog h2 { font-weight: 800; letter-spacing: -.025em; }
 .vkw-login-dialog input:not([type="checkbox"]) { background: #ffffff0f; border-color: #ffffff40; }
 .vkw-footer { background: radial-gradient(ellipse at 15% 0, #91bdac24, transparent 70%), #15333f; }
+
+/* Shared optical treatment: a reflection across the surface, clear edges and depth. */
+.vkw-section h2, .vkw-login-dialog h2 {
+  font-family: "Roboto Variable", system-ui, sans-serif;
+}
+.vkw-nav, .vkw-glass-panel, .vkw-feature-card,
+.vkw-champion, .vkw-ranking-list li, .vkw-login-dialog {
+  --glass-tint: #173f5b24;
+  background:
+    linear-gradient(115deg, #ffffff40 0%, #ffffff0a 27%, #ffffff00 42%, #ffffff24 49%, #ffffff05 58%, #ffffff1a 100%),
+    var(--glass-tint);
+  border: 1px solid #ffffff66;
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: inset 0 1px 0 #ffffffb3, inset 1px 0 0 #ffffff40,
+    inset 0 -1px 0 #0c2c4a26, 0 14px 40px #061c3a26;
+}
+.vkw-nav {
+  --glass-tint: #e0f0ff12;
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at 15% 0%, #ffffff66, transparent 55%),
+    linear-gradient(115deg, #ffffff1f 20%, #ffffff05 40%, #ffffff40 50%, #ffffff08 65%),
+    var(--glass-tint);
+}
+.vkw-nav nav { font-size: 12px; font-weight: 550; letter-spacing: 0; }
+.vkw-brand { font-weight: 750; }
+.vkw-nav nav .vkw-nav-home, .vkw-nav nav a:hover {
+  background: #ffffff57;
+  box-shadow: inset 0 1px #ffffff94, 0 3px 10px #14365412;
+}
+.vkw-glass-panel { --glass-tint: #103e5366; }
+.vkw-feature-card:nth-child(1) { --glass-tint: #286c622e; }
+.vkw-feature-card:nth-child(2) { --glass-tint: #6354822e; }
+.vkw-feature-card:nth-child(3) { --glass-tint: #866b402e; }
+.vkw-feature-card:nth-child(4) { --glass-tint: #346b902e; }
+.vkw-feature-card:nth-child(n), .vkw-champion:nth-child(n) {
+  background: linear-gradient(120deg, #ffffff38, #ffffff05 35%, #ffffff26 51%, #ffffff05 65%), var(--glass-tint);
+}
+.vkw-champion-1 { --glass-tint: #aa884738; }
+.vkw-champion-2 { --glass-tint: #6ba5bf30; }
+.vkw-champion-3 { --glass-tint: #9474b838; }
+.vkw-feature-card p { font-size: 13px; line-height: 1.75; color: #eef6ff; }
+.vkw-steps p { font-size: 13px; line-height: 1.75; }
+.vkw-login-dialog {
+  --glass-tint: #12344e80;
+  -webkit-backdrop-filter: blur(20px) saturate(145%);
+  backdrop-filter: blur(20px) saturate(145%);
+}
+.vkw-login-dialog::backdrop { background: #06152640; backdrop-filter: blur(3px); }
+.vkw-login-dialog input:not([type="checkbox"]) {
+  background: linear-gradient(120deg, #ffffff1f, #ffffff08);
+  border-color: #ffffff59;
+  box-shadow: inset 0 1px 3px #031f3526, 0 1px #ffffff1f;
+}
+.vkw-login-tabs { background: #071d3033; border-color: #ffffff40; }
+.vkw-login-tabs button[aria-pressed="true"] { background: #ffffff26; }
+.vkw-login-dialog form > label { font-size: 13px; font-weight: 550; }
+.vkw-login-brand small { letter-spacing: .06em; }
+@media (max-width: 700px) {
+  .vkw-nav { gap: 0 14px; }
+  .vkw-nav nav { font-size: 10px; gap: 4px; }
+  .vkw-nav nav a { padding: 8px 5px; }
+  .vkw-feature-card p, .vkw-steps p { font-size: 12px; }
+}
+@media (max-width: 359px) {
+  .vkw-nav nav { font-size: 9px; gap: 2px; }
+}
