@@ -73,13 +73,13 @@ export default function Home() {
               <span>VOKASI</span>
             </a>
             <nav aria-label="Navigasi utama">
-              <a href="#beranda">Beranda</a>
+              <a href="#beranda" className="vkw-nav-home">Beranda</a>
               <a href="#tentang">Tentang</a>
               <a href="#leaderboard">Leaderboard</a>
               <a href="#fitur">Fitur Unggulan</a>
             </nav>
             <AccessLink className="vkw-nav-login">
-              Login <ArrowUpRight size={15} />
+              Login
             </AccessLink>
           </header>
           <section
@@ -88,7 +88,11 @@ export default function Home() {
             aria-labelledby="vkw-title"
           >
             <div className="vkw-hero-bottom">
-              <h1 id="vkw-title">VOKASI</h1>
+              <h1 id="vkw-title" aria-label="VOKASI">
+                {"VOKASI".split("").map((letter, index) => (
+                  <span key={index} aria-hidden="true">{letter}</span>
+                ))}
+              </h1>
               <p>Platform Pembelajaran Numerasi</p>
             </div>
           </section>

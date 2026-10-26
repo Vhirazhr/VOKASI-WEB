@@ -6,8 +6,8 @@ Production: `npm run build` then `npm start`.
 Retain existing local Supabase environment for real authentication and ranking. No new environment variables or keys. The additive public leaderboard migration is included and was applied to the connected VOKASI project on 26 October 2026.
 
 ## Current design
-- Compact glass navigation: Beranda, Tentang, Leaderboard, Fitur Unggulan, Login.
-- Hero: supplied official crest, centered VOKASI, Platform Pembelajaran Numerasi. No scroll-down label or animation button beneath navigation.
+- Slim frosted-white navigation follows the supplied RESADEX reference: compact brand, closely spaced menus, white Beranda pill and dark Login button. Desktop width is capped at 960px; mobile retains two rows to keep every link accessible.
+- Hero: supplied official crest, light-weight VOKASI lettering distributed evenly across a bounded wordmark, Platform Pembelajaran Numerasi. Individual decorative letter spans retain a single accessible VOKASI heading label. No scroll-down label or animation button beneath navigation.
 - Self-hosted variable Roboto, fuller headings, translucent navigation/login, and mint/lavender/champagne accents across glass surfaces. The hero crest is slightly larger/lower; the feature crest stays above the water and the final crest anchors to the guide before the footer. Institutional copy follows the requested text.
 - Three.js extrusion follows the actual alpha outline of the supplied PNG. Thickness increases from .12 to .38, with beveled metal edges, physical enamel front/back, neutral specular lights and higher reflection intensity. The original image is not edited.
 - Idle rotation completes approximately one revolution per 25 seconds. Each section transition adds a full turn; the logo fades behind the leaderboard and returns beside features/guide. Actual section offsets drive the sequence.
