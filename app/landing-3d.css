@@ -108,11 +108,16 @@
   align-items: center;
   gap: 24px;
   padding: 8px 14px;
-  border: 1px solid #ffffff66;
-  border-radius: 12px;
-  background: linear-gradient(110deg, #f6faff8c, #edf3f966 60%, #ffffff80);
-  backdrop-filter: blur(22px) saturate(115%);
-  box-shadow: inset 0 1px #ffffff80, 0 8px 24px #162b4114;
+  border: 1px solid #ffffff59;
+  border-radius: 18px;
+  background:
+    linear-gradient(120deg, #ffffff38, #ffffff0a 42%, #d6efff14 74%, #ffffff2b);
+  -webkit-backdrop-filter: blur(14px) saturate(135%);
+  backdrop-filter: blur(14px) saturate(135%);
+  box-shadow:
+    inset 0 1px 0 #ffffff8c,
+    inset 0 -1px 0 #ffffff1f,
+    0 8px 28px #102e4812;
   z-index: 10;
   color: #101d29;
 }
@@ -148,7 +153,7 @@
 .vkw-nav nav a:hover,
 .vkw-nav nav .vkw-nav-home {
   color: #101d29;
-  background: #ffffffeb;
+  background: #ffffff8c;
   box-shadow: 0 2px 9px #18334408;
 }
 .vkw-page .vkw-nav-login {
@@ -186,7 +191,7 @@
   width: min(100%, 1040px);
   margin: 0 auto;
   font-size: clamp(30px, 3.5vw, 54px);
-  font-weight: 350;
+  font-weight: 500;
   letter-spacing: 0;
   text-indent: 0;
   line-height: 1.25;
@@ -196,7 +201,7 @@
   font-size: clamp(10px, 1.05vw, 15px);
   letter-spacing: 0.28em;
   line-height: 1.8;
-  margin: 18px 0 0;
+  margin: 34px 0 0;
   color: #143d64;
 }
 .vkw-section {
@@ -909,7 +914,7 @@
   .vkw-hero-bottom > p {
     font-size: 10px;
     letter-spacing: 0.13em;
-    margin-top: 14px;
+    margin-top: 24px;
   }
   .vkw-fallback {
     top: 35%;
