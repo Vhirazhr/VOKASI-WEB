@@ -32,17 +32,17 @@ export default function LoginPage(){
     </header>
 
     <section className="login-photo-copy" aria-label="Tentang VOKASI">
-      <span className="login-photo-eyebrow"><span className="login-photo-eyebrow-dot" aria-hidden="true"/> PLATFORM PEMBELAJARAN DIGITAL</span>
+      <span className="login-photo-eyebrow">PLATFORM NUMERASI SMKN 1 SINGOSARI</span>
       <h1>Belajar<br/><span>lebih mudah</span></h1>
-      <p>Ruang belajar numerasi untuk siswa SMKN 1 Singosari. Lebih ringkas, lebih nyaman, dan mudah diakses.</p>
+      <p>Ruang belajar dan latihan numerasi untuk siswa SMKN 1 Singosari.</p>
     </section>
 
     <main className="login-photo-main">
       <div className="login-photo-card">
         <div className="login-photo-card-heading">
-          <span className="login-photo-card-eyebrow">AKSES VOKASI</span>
-          <h2>Selamat datang</h2>
-          <p>Masuk dengan akun sekolah untuk melanjutkan.</p>
+          <span className="login-photo-card-eyebrow">SELAMAT DATANG KEMBALI</span>
+          <h2>Masuk ke VOKASI</h2>
+          <p>Gunakan akun sekolah untuk melanjutkan belajar.</p>
         </div>
         <div className="login-photo-tabs" role="group" aria-label="Pilih jenis akun">
           <button type="button" aria-pressed={role==='student'} className={role==='student'?'active':''} onClick={()=>{setRole('student');setError('');}}><UserRound size={23}/> Siswa</button>
@@ -64,7 +64,7 @@ export default function LoginPage(){
           </div>
           {error&&<div className="alert danger" role="alert">{error}</div>}
           <button className="login-photo-submit" type="submit" disabled={pending||!configured()}>
-            {pending?'Memeriksa akun...':'Masuk'} <ArrowRight size={23}/>
+            {pending?'Memeriksa akun...':'Masuk sekarang'} <ArrowRight size={19}/>
           </button>
         </form>
         {embed&&<div className="alert info" role="note"><b>Login di website sekolah bermasalah?</b> Sebagian browser membatasi login melalui iframe. <a href={'/login?role='+role} target="_blank" rel="noopener noreferrer">Buka di tab baru.</a></div>}
