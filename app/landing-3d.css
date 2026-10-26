@@ -2,7 +2,7 @@
 .vkw-page {
   background: #123d63;
   color: #f0f8ff;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Roboto Variable", system-ui, sans-serif;
   overflow: clip;
 }
 .vkw-page *,
@@ -341,7 +341,7 @@
   border-radius: 50%;
   background: linear-gradient(135deg, #effaffb3, #6291b24a);
   border: 1px solid #e0f5ff85;
-  font-family: Georgia, serif;
+  font-family: inherit;
   font-size: 19px;
   letter-spacing: 0;
 }
@@ -652,7 +652,7 @@
   align-items: center;
 }
 .vkw-login-dialog {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Roboto Variable", system-ui, sans-serif;
   position: fixed;
   inset: 0;
   margin: auto;
@@ -1153,3 +1153,52 @@
     transition: none !important;
   }
 }
+
+/* Glass, warmer accents and a fuller typographic rhythm. */
+.vkw-journey {
+  background:
+    radial-gradient(ellipse at 85% 5%, #fff3d484, transparent 15%),
+    radial-gradient(ellipse at 9% 27%, #56d5b878, transparent 19%),
+    radial-gradient(ellipse at 88% 47%, #aa87de6b, transparent 20%),
+    radial-gradient(ellipse at 12% 76%, #edb97847, transparent 20%),
+    radial-gradient(ellipse at 85% 93%, #73dbbf52, transparent 18%),
+    linear-gradient(180deg, #548fc1, #70acd1 16%, #215b70 30%, #263d65 51%, #245970 76%, #234b57);
+}
+.vkw-nav {
+  background: linear-gradient(120deg, #ffffff36, #c8efff12 55%, #ead9ff24);
+  border: 1px solid #ffffff59;
+  backdrop-filter: blur(24px) saturate(150%);
+  box-shadow: inset 0 1px #ffffff66, 0 14px 48px #08253726;
+}
+.vkw-nav nav { font-weight: 550; }
+.vkw-hero h1 { font-weight: 850; letter-spacing: .2em; padding-left: .2em; }
+.vkw-section h2 { font-weight: 800; letter-spacing: -.035em; }
+.vkw-section h2 em { color: #b8f1de; }
+.vkw-feature-card h3, .vkw-steps h3 { font-weight: 750; }
+.vkw-feature-card p, .vkw-steps p { line-height: 1.8; }
+.vkw-glass-panel, .vkw-feature-card, .vkw-champion, .vkw-ranking-list li {
+  backdrop-filter: blur(18px) saturate(135%);
+  border-color: #ffffff38;
+  box-shadow: inset 0 1px #ffffff30, 0 18px 50px #06263620;
+}
+.vkw-feature-card:nth-child(1) { background: linear-gradient(135deg, #9be9cd38, #246b661a); border-radius: 28px 28px 10px 28px; }
+.vkw-feature-card:nth-child(2) { background: linear-gradient(135deg, #c7a5ed38, #59477d1a); border-radius: 28px 10px 28px 28px; }
+.vkw-feature-card:nth-child(3) { background: linear-gradient(135deg, #f0cf9638, #7b63351a); border-radius: 10px 28px 28px 28px; }
+.vkw-feature-card:nth-child(4) { background: linear-gradient(135deg, #99d6f338, #3972941a); border-radius: 28px 28px 28px 10px; }
+.vkw-feature-card:nth-child(1) svg { color: #b8f1de; }
+.vkw-feature-card:nth-child(2) svg { color: #dfc6ff; }
+.vkw-feature-card:nth-child(3) svg { color: #ffe0a9; }
+.vkw-champion-1 { background: linear-gradient(145deg, #eedba66b, #8e724333 65%, #264e6333); }
+.vkw-champion-2 { background: linear-gradient(145deg, #b4d7e361, #40748a33); }
+.vkw-champion-3 { background: linear-gradient(145deg, #c6abe661, #70548433); }
+.vkw-step-number { background: linear-gradient(135deg, #b6eedb45, #8da5dc2b); border: 1px solid #ffffff50; }
+.vkw-login-dialog {
+  background: linear-gradient(135deg, #72adbb70, #214b687d 50%, #77679470);
+  border: 1px solid #ffffff59;
+  backdrop-filter: blur(32px) saturate(145%);
+  box-shadow: inset 0 1px #ffffff70, 0 32px 100px #041b4159;
+}
+.vkw-login-dialog::backdrop { background: #061d3659; backdrop-filter: blur(6px); }
+.vkw-login-dialog h2 { font-weight: 800; letter-spacing: -.025em; }
+.vkw-login-dialog input:not([type="checkbox"]) { background: #ffffff0f; border-color: #ffffff40; }
+.vkw-footer { background: radial-gradient(ellipse at 15% 0, #91bdac24, transparent 70%), #15333f; }

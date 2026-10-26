@@ -1,7 +1,6 @@
 "use client";
-import { Trophy, Medal, LockKeyhole } from "lucide-react";
+import { Trophy, Medal } from "lucide-react";
 import { useLandingRanking } from "./RankingPodium";
-import { AccessLink } from "./LandingAccess";
 const score = (v: number | null | undefined) =>
   typeof v === "number"
     ? v.toLocaleString("id-ID", { maximumFractionDigits: 1 })
@@ -32,7 +31,7 @@ export default function LandingRanking() {
               ? state.rows.length
                 ? "Diurutkan berdasarkan nilai rata-rata latihan wajib terverifikasi tertinggi."
                 : "Belum tersedia hasil latihan terverifikasi."
-              : "Masuk sebagai siswa untuk melihat nama dan nilai pada peringkat sekolah."}
+              : "Memuat peringkat…"}
       </p>
       <ol className="vkw-podium-cards" aria-label="Tiga peringkat terbaik">
         {[1, 2, 3].map((rank) => {
@@ -56,7 +55,7 @@ export default function LandingRanking() {
                 <span>PERINGKAT {rank}</span>
                 <h3>
                   {row?.display_name ||
-                    (ready ? "Belum tersedia" : "Akses siswa")}
+                    (ready ? "Belum tersedia" : "Memuat…")}
                 </h3>
                 <p>{row?.classroom || "SMK Negeri 1 Singosari"}</p>
               </div>
@@ -71,7 +70,7 @@ export default function LandingRanking() {
           aria-label="Peringkat berikutnya"
         >
           {state.rows.slice(3).map((row, i) => (
-            <li key={row.username}>
+            <li key={row.rank}>
               <span className="vkw-list-medal">
                 <Medal size={22} />
                 {i + 4}
@@ -88,18 +87,6 @@ export default function LandingRanking() {
           ))}
         </ol>
       )}
-      {!ready && (
-        <div className="vkw-ranking-access">
-          <LockKeyhole size={15} />
-          <AccessLink intent="leaderboard">
-            Masuk untuk melihat peringkat ↗
-          </AccessLink>
-        </div>
-      )}
-      <p className="vkw-ranking-footnote">
-        Peringkat mengikuti data penilaian pada sistem sekolah. XP tidak
-        digunakan sebagai dasar urutan.
-      </p>
     </section>
   );
 }

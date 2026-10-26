@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import SchoolMark from "./SchoolMark";
 import { schoolIdentity } from "./identity";
-import { scenePose } from "./scene-motion";
+import { scenePose, finalSceneOffset } from "./scene-motion";
 
 /** One renderer for the entire hero-to-ranking scroll sequence. */
 export default function LogoScene() {
@@ -87,6 +87,8 @@ export default function LogoScene() {
     });
     materials.push(waterMaterial);
     const water = new THREE.Mesh(waterGeometry, waterMaterial);
+    waterMaterial.depthWrite = false;
+    water.renderOrder = -1;
     water.rotation.x = -Math.PI / 2;
     water.position.y = -0.85;
     scene.add(water);
@@ -183,6 +185,9 @@ export default function LogoScene() {
       const anchors = sections.map((section) => section.offsetTop);
       const mobile = element.clientWidth < 700;
       const pose = scenePose(scroll, anchors, mobile);
+      const stageTop = element.parentElement?.getBoundingClientRect().top ?? 0;
+      const pinOffset = finalSceneOffset(scroll, anchors[anchors.length - 1], stageTop);
+      element.style.transform = `translateY(${pinOffset}px)`;
       const moving = !motion.matches;
       const viewHeight =
         2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * 10;
@@ -260,7 +265,8 @@ export default function LogoScene() {
         frame = 0;
       }
     });
-    observer.observe(element);
+    // Observe the untransformed stage so scrolling back can always wake the crest.
+    observer.observe(element.parentElement ?? element);
     renderer.domElement.addEventListener("webglcontextlost", contextLost);
     window.addEventListener("scroll", wake, { passive: true });
     function motionSetting(event: Event) {

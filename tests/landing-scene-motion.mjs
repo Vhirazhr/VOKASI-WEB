@@ -49,3 +49,13 @@ assert.equal(scenePose(9999, anchors, false).progress, 1);
 console.log(
   "PASS: complete rotations, leaderboard fade/reappearance, continuous desktop/mobile framing and bounds.",
 );
+const { finalSceneOffset } = exports;
+assert.ok(finalSceneOffset(3800, 3900, 0) === 0);
+assert.equal(finalSceneOffset(4100, 3900, 0), -200);
+assert.equal(finalSceneOffset(4500, 3900, -200), -400);
+// Stage displacement + local offset must match document scroll, even near footer.
+for (const stageTop of [0, -100, -500]) {
+  assert.equal(stageTop + finalSceneOffset(4500, 3900, stageTop), -600);
+}
+assert.ok(scenePose(2900, anchors, false).y < .55, 'Feature crest remains above the water');
+console.log('PASS: final crest anchors to guide through sticky containment and footer boundary.');

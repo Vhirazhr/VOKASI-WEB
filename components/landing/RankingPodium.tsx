@@ -1,57 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { configured, supabase } from "@/lib/supabase";
-import { currentRole } from "@/lib/auth";
-import { getLeaderboard } from "@/lib/school";
-import type { LeaderboardEntry } from "@/lib/types";
+import { configured } from "@/lib/supabase";
+import { getPublicLeaderboard, type PublicLeaderboardEntry } from "@/lib/public-leaderboard";
 
 type RankingState = {
-  status: "locked" | "loading" | "ready" | "error";
-  rows: LeaderboardEntry[];
+  status: "loading" | "ready" | "error";
+  rows: PublicLeaderboardEntry[];
 };
 
 export function useLandingRanking() {
-  const [state, setState] = useState<RankingState>({
-    status: "locked",
-    rows: [],
-  });
+  const [state, setState] = useState<RankingState>({ status: "loading", rows: [] });
   useEffect(() => {
-    if (!configured()) return;
-    let active = true,
-      generation = 0;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const load = async (request: number) => {
-      const valid = () => active && generation === request;
+    let active = true;
+    let pending = false;
+    const controller = new AbortController();
+    const load = async () => {
+      if (pending || document.visibilityState === "hidden") return;
+      pending = true;
       try {
-        const account = await currentRole();
-        if (!valid()) return;
-        if (!account) {
-          setState({ status: "locked", rows: [] });
-          return;
-        }
-        setState({ status: "loading", rows: [] });
-        const rows = await getLeaderboard();
-        if (valid()) setState({ status: "ready", rows: rows.slice(0, 10) });
+        if (!configured()) throw new Error("Leaderboard unavailable");
+        const rows = await getPublicLeaderboard(controller.signal);
+        if (active) setState({ status: "ready", rows });
       } catch {
-        if (valid()) setState({ status: "error", rows: [] });
+        if (active) setState({ status: "error", rows: [] });
+      } finally {
+        pending = false;
       }
     };
-    // Never await Supabase calls inside its auth callback (auth lock).
-    const {
-      data: { subscription },
-    } = supabase().auth.onAuthStateChange((event, session) => {
-      const request = ++generation;
-      clearTimeout(timer);
-      setState({ status: session ? "loading" : "locked", rows: [] });
-      if (session && event !== "SIGNED_OUT")
-        timer = setTimeout(() => void load(request), 0);
-    });
+    void load();
+    // Match dashboard refresh cadence, without exposing table subscriptions.
+    const timer = window.setInterval(() => void load(), 20_000);
+    const refresh = () => void load();
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
     return () => {
       active = false;
-      generation++;
-      clearTimeout(timer);
-      subscription.unsubscribe();
+      controller.abort();
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, []);
   return state;
