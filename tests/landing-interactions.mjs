@@ -1,0 +1,84 @@
+// Run against npm run start: PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs node tests/landing-interactions.mjs
+import assert from 'node:assert/strict';
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_EXECUTABLE, args: ['--no-sandbox', '--disable-webgl'] });
+const baseURL = process.env.LANDING_BASE_URL || 'http://localhost:3100';
+try {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(baseURL);
+  const stage = page.locator('.vkl3-stage');
+  await stage.waitFor();
+  const angle = name => stage.evaluate((el, key) => parseFloat(el.style.getPropertyValue(key)) || 0, name);
+  await page.mouse.move(50, 450);
+  await page.waitForTimeout(600);
+  const left = await angle('--ry');
+  await page.mouse.move(1390, 450);
+  await page.waitForTimeout(600);
+  assert.ok(await angle('--ry') > left + 5, 'Mouse tracking follows horizontal direction');
+  await page.mouse.move(700, 60);
+  await page.waitForTimeout(500);
+  const up = await angle('--rx');
+  await page.mouse.move(700, 850);
+  await page.waitForTimeout(500);
+  assert.ok(await angle('--rx') < up - 4, 'Mouse tracking follows vertical direction');
+  const box = await stage.boundingBox();
+  const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx + 140, cy - 90, { steps: 10 });
+  await page.waitForTimeout(500);
+  assert.equal(await stage.getAttribute('data-dragging'), 'true');
+  assert.ok(await angle('--ry') > 10, 'Drag rotates object');
+  assert.ok(Math.abs(await angle('--ry')) < 29, 'Drag bounded');
+  await page.mouse.up();
+  await page.waitForTimeout(1900);
+  assert.ok(Math.abs(await angle('--ry')) < 3, 'Release returns to neutral');
+  await stage.focus();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForTimeout(500);
+  assert.ok(await angle('--ry') > 2, 'Keyboard rotation');
+  await page.getByRole('button', { name: 'Jeda gerakan' }).click();
+  const transform = await page.locator('.vkl3-object').evaluate(el => getComputedStyle(el).transform);
+  await page.mouse.move(50, 50);
+  await page.waitForTimeout(400);
+  assert.equal(await page.locator('.vkl3-object').evaluate(el => getComputedStyle(el).transform), transform, 'Pause stops motion');
+  await page.getByRole('button', { name: 'Aktifkan gerakan' }).click();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForTimeout(100);
+  assert.equal(await page.locator('.vkl3-object').evaluate(el => getComputedStyle(el).transform), 'none');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  for (const size of [{width:1440,height:900},{width:390,height:844},{width:360,height:640},{width:320,height:568},{width:844,height:390}]) {
+    await page.setViewportSize(size);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `No horizontal overflow ${size.width}`);
+    await page.getByRole('link', {name:'Mulai Belajar'}).scrollIntoViewIfNeeded();
+    assert.ok(await page.getByRole('link', {name:'Mulai Belajar'}).isVisible());
+    if (size.height === 844) assert.ok(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight), 'Standard phone fits viewport');
+  }
+  for (const [label,role] of [['Mulai Belajar','student'],['Masuk sebagai Admin','admin']]) {
+    await page.goto(baseURL);
+    await page.getByRole('link',{name:label}).click();
+    await page.waitForURL(`**/login?role=${role}`);
+    assert.ok(await page.locator('input').count() >= 2, 'Login form remains functional');
+  }
+  const touch = await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
+  const mobile = await touch.newPage();
+  await mobile.goto(baseURL);
+  await mobile.locator('.vkl3-stage').waitFor();
+  const mobileBox = await mobile.locator('.vkl3-stage').boundingBox();
+  const client = await touch.newCDPSession(mobile);
+  const point = {x:mobileBox.x+mobileBox.width/2,y:mobileBox.y+mobileBox.height/2};
+  await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});
+  await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:point.x+80,y:point.y}]});
+  await mobile.waitForTimeout(500);
+  assert.ok(await mobile.locator('.vkl3-stage').evaluate(el=>parseFloat(el.style.getPropertyValue('--ry')))>5,'Real touch horizontal drag');
+  await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  await touch.close();
+  const noJS = await browser.newPage({javaScriptEnabled:false});
+  await noJS.goto(baseURL);
+  assert.ok(await noJS.getByRole('link',{name:'Mulai Belajar'}).isVisible(),'No-JS navigation');
+  assert.ok(await noJS.getByRole('heading',{name:'Selamat Datang di VOKASI'}).isVisible());
+  assert.deepEqual(errors,[],'No browser runtime errors');
+  console.log('PASS: pointer, drag/release, keyboard, pause, reduced motion, responsive, student/admin routes, touch, no-JS; WebGL disabled.');
+} finally { await browser.close(); }
