@@ -1,0 +1,207 @@
+/* Kelas & Jurusan: reuse the approved Data Siswa hero, same palette and proportions.
+   Only this page's class form, directory and class cards are customized. */
+.admin-classes-page .admin-students-hero {margin-bottom:18px;}
+.admin-classes-page .admin-data-card {
+  border-radius:19px;
+  margin:0 0 17px;
+  padding:24px clamp(19px,2vw,27px);
+  border:1px solid #e0e9f6;
+  box-shadow:0 12px 35px rgba(27,70,132,.055);
+}
+.admin-classes-page .admin-classes-create .admin-data-title {margin-bottom:16px;}
+.admin-classes-page .admin-data-title h2,
+.admin-classes-page .admin-classes-list-heading h2 {
+  font-size:18px;
+  line-height:1.4;
+  letter-spacing:-.025em;
+  font-weight:800;
+  color:#23466f;
+  margin:0;
+}
+.admin-classes-page .admin-safe-class-form {
+  display:grid;
+  grid-template-columns:minmax(155px,1.1fr) minmax(180px,1.2fr) minmax(96px,.65fr) minmax(140px,.95fr) auto;
+  gap:11px;
+  align-items:end;
+  margin:0;
+}
+.admin-classes-page .admin-safe-class-form label {
+  display:grid;
+  gap:8px;
+  min-width:0;
+  font-size:11px;
+  color:#4d7099;
+  font-weight:800;
+}
+.admin-classes-page .admin-safe-class-form :is(input,select) {
+  display:block;
+  width:100%;
+  min-width:0;
+  height:45px;
+  border:1px solid #d6e4f5;
+  border-radius:10px;
+  padding:0 12px;
+  color:#294f7f;
+  background:#fafcff;
+  font-size:12px;
+}
+.admin-classes-page .admin-safe-class-form button[type="submit"] {
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  min-height:45px;
+  padding:0 18px;
+  border-radius:10px;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:800;
+}
+.admin-classes-page .admin-classes-create p[role="status"] {
+  margin:14px 0 0;
+  font-size:11px;
+  font-weight:700;
+  line-height:1.6;
+  color:#356ebd;
+}
+.admin-classes-page .admin-classes-list-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:20px;
+}
+.admin-classes-page .admin-classes-list-heading>span {
+  display:inline-flex;
+  align-items:center;
+  padding:8px 12px;
+  border:1px solid #dce7f7;
+  border-radius:99px;
+  background:#f1f6ff;
+  color:#3d6caa;
+  font-size:10px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.admin-classes-page .admin-directory-controls {
+  display:grid;
+  grid-template-columns:minmax(180px,2fr) minmax(155px,1fr) auto;
+  gap:12px;
+  align-items:end;
+  margin:0 0 21px;
+}
+.admin-classes-page .admin-directory-controls .admin-directory-search {
+  grid-column:auto;
+  min-width:0;
+  background:#fafcff;
+  border-color:#d6e4f5;
+}
+.admin-classes-page .admin-directory-controls select {
+  background:#fafcff;
+  border-color:#d6e4f5;
+}
+.admin-classes-page .admin-students-refresh {
+  min-height:45px;
+  align-self:end;
+  justify-self:end;
+  grid-column:auto;
+  grid-row:auto;
+}
+.admin-classes-page .admin-class-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:13px;
+}
+.admin-classes-page .admin-class-card {
+  min-width:0;
+  min-height:162px;
+  border:1px solid #e1eaf7;
+  border-radius:14px;
+  padding:20px;
+  gap:7px;
+  background:linear-gradient(155deg,#fff,#fbfdff);
+  box-shadow:0 6px 18px rgba(36,76,129,.035);
+  transition:border-color .15s,box-shadow .15s,transform .15s;
+}
+.admin-classes-page .admin-class-card:hover,
+.admin-classes-page .admin-class-card.selected {
+  border-color:#98b9ec;
+  background:#f6faff;
+  box-shadow:0 10px 23px rgba(32,84,160,.075);
+  transform:translateY(-1px);
+}
+.admin-classes-page .admin-class-card:focus-visible {
+  outline:2px solid #437de1;
+  outline-offset:3px;
+}
+.admin-classes-page .admin-class-icon {
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  margin-bottom:4px;
+}
+.admin-classes-page .admin-class-icon svg{width:20px;height:20px;}
+.admin-classes-page .admin-class-name{font-size:15px;line-height:1.3;}
+.admin-classes-page .admin-class-major{
+  min-height:29px;
+  font-size:10px;
+  line-height:1.5;
+}
+.admin-classes-page .admin-class-meta {
+  margin-top:6px;
+  gap:6px;
+  font-size:10px;
+}
+.admin-classes-page .admin-class-meta svg:last-child{margin-left:auto;}
+.admin-classes-page .admin-class-members {
+  margin-top:2px;
+}
+.admin-classes-page .admin-class-members .admin-data-title {
+  align-items:center;
+  margin-bottom:14px;
+}
+.admin-classes-page .admin-class-members .admin-data-title h2{margin:7px 0;}
+.admin-classes-page .admin-workspace-footer {margin-top:18px;}
+@media(max-width:1160px) {
+  .admin-classes-page .admin-safe-class-form {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+  .admin-classes-page .admin-safe-class-form button[type="submit"] {
+    grid-column:4;
+    justify-self:stretch;
+  }
+}
+@media(max-width:900px) {
+  .admin-classes-page .admin-class-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .admin-classes-page .admin-safe-class-form {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .admin-classes-page .admin-safe-class-form button[type="submit"] {
+    grid-column:2;
+  }
+}
+@media(max-width:640px) {
+  .admin-classes-page .admin-data-card {padding:17px;}
+  .admin-classes-page .admin-directory-controls {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  .admin-classes-page .admin-directory-controls .admin-directory-search {
+    grid-column:1/-1;
+  }
+  .admin-classes-page .admin-students-refresh {
+    grid-column:2;
+    justify-self:stretch;
+  }
+  .admin-classes-page .admin-class-grid {grid-template-columns:1fr;}
+  .admin-classes-page .admin-class-card {min-height:143px;}
+}
+@media(max-width:400px) {
+  .admin-classes-page .admin-safe-class-form {grid-template-columns:1fr;}
+  .admin-classes-page .admin-safe-class-form button[type="submit"]{grid-column:1;}
+  .admin-classes-page .admin-directory-controls{grid-template-columns:1fr;}
+  .admin-classes-page .admin-directory-controls .admin-directory-search,
+  .admin-classes-page .admin-students-refresh{grid-column:1;width:100%;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .admin-classes-page .admin-class-card {transition:none;transform:none!important;}
+}
