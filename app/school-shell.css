@@ -117,3 +117,96 @@
   .embed-shortcuts a{font-size:10px;padding:9px 10px}
 }
 @media(prefers-reduced-motion:reduce){.embed-shortcuts,.admin-bottom-nav *{scroll-behavior:auto;transition:none}}
+
+
+/* Admin: signed-in identity beside the notification bell.
+   Logout is intentionally absent from the admin shell and lives in Pengaturan. */
+.school-shell .topbar{position:relative;z-index:50;}
+.school-shell .admin-header-actions {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.school-shell .admin-notice-area {position:relative;flex:none;}
+.school-shell .admin-header-bell {
+  display:grid;place-items:center;
+  width:39px;height:39px;
+  border-radius:12px;
+  background:#f5f9ff;
+  border:1px solid #dbe7f6;
+  color:#4475b9;
+}
+.school-shell .admin-header-bell:hover,
+.school-shell .admin-header-bell[aria-expanded="true"] {
+  background:#eaf2ff;
+  border-color:#abc8f0;
+}
+.school-shell .admin-header-bell:focus-visible {
+  outline:2px solid #3a7ae2;outline-offset:3px;
+}
+.school-shell .admin-notice-popover {
+  position:absolute;
+  z-index:80;
+  top:calc(100% + 12px);
+  right:0;
+  width:min(270px,85vw);
+  padding:18px;
+  border-radius:14px;
+  border:1px solid #dce8f7;
+  background:#fff;
+  box-shadow:0 16px 45px rgba(28,60,110,.16);
+  color:#284e78;
+}
+.school-shell .admin-notice-popover b{font-size:12px;}
+.school-shell .admin-notice-popover p {
+  font-size:11px;
+  line-height:1.7;
+  color:#7890ad;
+  margin:7px 0 0;
+}
+.school-shell .admin-header-account {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  max-width:330px;
+}
+.school-shell .admin-header-avatar {
+  display:grid;place-items:center;
+  width:39px;height:39px;
+  flex:none;
+  border-radius:13px;
+  background:linear-gradient(145deg,#347be7,#2459b7);
+  color:#fff;
+}
+.school-shell .admin-header-identity{min-width:0;}
+.school-shell .admin-header-identity strong {
+  display:block;
+  max-width:265px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#1e4574;
+  font-size:11px;
+  font-weight:800;
+}
+.school-shell .admin-header-identity small {
+  display:block;
+  margin-top:5px;
+  font-size:10px;
+  color:#7189a9;
+  white-space:nowrap;
+}
+@media(max-width:720px){
+  .school-shell .admin-header-actions {gap:8px;}
+  .school-shell .admin-header-bell,
+  .school-shell .admin-header-avatar {width:35px;height:35px;border-radius:11px;}
+  .school-shell .admin-header-account {max-width:170px;gap:7px;}
+  .school-shell .admin-header-identity strong {max-width:123px;font-size:10px;}
+  .school-shell .admin-header-identity small {font-size:9px;margin-top:2px;}
+}
+@media(max-width:380px){
+  .school-shell .admin-header-account{max-width:125px;}
+  .school-shell .admin-header-identity strong{max-width:84px;}
+}

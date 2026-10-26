@@ -1,0 +1,49 @@
+/* Admin-only account settings and sign-out; no dashboard or Supabase mutations. */
+.admin-settings{width:min(100%,980px);margin:0 auto;}
+.admin-settings-header{margin-bottom:25px;}
+.admin-settings-header .section-kicker{display:inline-flex;align-items:center;gap:8px;color:#4175c6;}
+.admin-settings-header h1{margin:9px 0 8px;font-size:30px;color:#193a68;}
+.admin-settings-header p{font-size:12px;color:#8297af;line-height:1.7;}
+.admin-settings-panel{
+  padding:29px;
+  border:1px solid #dce7f4;
+  border-radius:20px;
+  background:rgba(255,255,255,.95);
+  box-shadow:0 15px 38px rgba(29,71,132,.06);
+}
+.admin-settings-section-heading{display:flex;align-items:center;gap:12px;color:#3269bf;}
+.admin-settings-section-heading h2{margin:0 0 5px;color:#1d4776;font-size:19px;}
+.admin-settings-section-heading p{margin:0;color:#8296b0;font-size:11px;}
+.admin-settings-account{
+  display:flex;align-items:center;gap:14px;
+  min-width:0;
+  padding:22px 0;
+  margin:23px 0 0;
+  border-top:1px solid #e6edf7;
+  border-bottom:1px solid #e6edf7;
+}
+.admin-settings-usericon{
+  flex:none;width:51px;height:51px;border-radius:15px;
+  display:grid;place-items:center;background:#edf4ff;color:#346bc8;
+}
+.admin-settings-account>div:last-child{min-width:0;}
+.admin-settings-account strong{display:block;overflow-wrap:anywhere;font-size:14px;color:#203f68;}
+.admin-settings-account span{display:block;margin-top:6px;color:#708cad;font-size:11px;}
+.admin-settings-signout{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-top:25px;}
+.admin-settings-signout h3{font-size:14px;color:#234469;margin:0 0 8px;}
+.admin-settings-signout p{margin:0;max-width:440px;font-size:11px;line-height:1.7;color:#7f94ac;}
+.admin-settings-signout-button{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:43px;padding:10px 17px;
+  border:1px solid #e7c9ce;border-radius:11px;
+  background:#fff2f3;color:#a33e51;font-size:12px;font-weight:800;
+  white-space:nowrap;
+}
+.admin-settings-signout-button:not(:disabled):hover{background:#ffe8eb;}
+.admin-settings-signout-button:focus-visible{outline:2px solid #db6879;outline-offset:3px;}
+@media(max-width:620px){
+  .admin-settings-header h1{font-size:25px;}
+  .admin-settings-panel{padding:19px;}
+  .admin-settings-signout{flex-direction:column;align-items:stretch;}
+  .admin-settings-signout-button{width:100%;}
+}

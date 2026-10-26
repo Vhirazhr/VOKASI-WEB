@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { BookOpen, BarChart3, ChartColumnIncreasing, GraduationCap, History, LayoutDashboard, LogOut, ShieldCheck, Trophy, UserRound, Users, School2 } from 'lucide-react';
+import { Bell, BookOpen, BarChart3, ChartColumnIncreasing, GraduationCap, History, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2 } from 'lucide-react';
+import {supabase} from '@/lib/supabase';
 import type { ReactNode } from 'react';
 import '@/app/school-shell.css';
 
@@ -21,7 +22,17 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
   const isAdmin=role==='admin';
   const pathname=usePathname();
   const [urlEmbed,setUrlEmbed]=useState(false);
+  const [adminEmail,setAdminEmail]=useState('');
+  const [notificationsOpen,setNotificationsOpen]=useState(false);
   useEffect(()=>{queueMicrotask(()=>setUrlEmbed(new URLSearchParams(window.location.search).get('embed')==='1'));},[pathname]);
+  useEffect(()=>{
+    if(!isAdmin)return;
+    let active=true;
+    void supabase().auth.getUser().then(({data,error})=>{
+      if(active&&!error)setAdminEmail(data.user?.email||'');
+    }).catch(()=>{});
+    return()=>{active=false;};
+  },[isAdmin]);
   const embedMode=embed||urlEmbed;
   const suffix=embedMode?'?embed=1':'';
   const studentLinks=[
@@ -36,7 +47,8 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
     {href:'/admin/kelas',label:'Kelas & jurusan',icon:School2},
     {href:'/admin/bank-soal',label:'Bank soal',icon:BookOpen},
     {href:'/admin/analitik',label:'Analitik',icon:BarChart3},
-    {href:'/admin#hasil',label:'Nilai & laporan',icon:ChartColumnIncreasing}
+    {href:'/admin#hasil',label:'Nilai & laporan',icon:ChartColumnIncreasing},
+    {href:'/admin/pengaturan',label:'Pengaturan',icon:Settings}
   ];
   const items=isAdmin?adminLinks:studentLinks;
   function askBeforeLeave(e:React.MouseEvent<HTMLAnchorElement>) {
@@ -53,18 +65,29 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
           <Icon size={19}/><span>{label}</span>
         </Link>)}
       </nav>
-      <div className="side-bottom">
-        <div className="side-user"><span className="user-badge">{displayName.slice(0,1).toUpperCase()||'V'}</span><span><b>{displayName}</b><small>{isAdmin?'Administrator':'Siswa VOKASI'}</small></span></div>
+      {!isAdmin&&<div className="side-bottom">
+        <div className="side-user"><span className="user-badge">{displayName.slice(0,1).toUpperCase()||'V'}</span><span><b>{displayName}</b><small>Siswa VOKASI</small></span></div>
         <button type="button" onClick={onLogout} className="side-link signout"><LogOut size={18}/><span>Keluar akun</span></button>
-      </div>
+      </div>}
     </aside>
     <div className="shell-main">
       {embedMode&&!navigationBlocked&&<nav className="embed-shortcuts" aria-label="Menu VOKASI dalam website sekolah">{items.map(({href,label})=><Link key={href} href={linkTo(href)} className={active(href)?'active':''}>{label}</Link>)}</nav>}
       <header className="topbar">
-        <div><span className="topbar-title">{isAdmin?'Dashboard Admin':pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
+        <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
         <div className="top-actions">
-          <button type="button" className="top-logout" title="Keluar akun" onClick={onLogout}><LogOut size={16}/> Keluar</button>
-          <span className="topbar-tag">{isAdmin?<ShieldCheck size={15}/>:<GraduationCap size={15}/>} {isAdmin?'Admin':'Siswa'}</span>
+          {isAdmin?<div className="admin-header-actions">
+            <div className="admin-notice-area">
+              <button type="button" className="admin-header-bell" aria-label="Notifikasi admin" aria-expanded={notificationsOpen} aria-controls="admin-notice-panel" title="Notifikasi" onClick={()=>setNotificationsOpen(v=>!v)}><Bell size={19}/></button>
+              {notificationsOpen&&<div className="admin-notice-popover" id="admin-notice-panel" role="status"><b>Notifikasi</b><p>Fitur notifikasi belum terhubung. Periksa dashboard untuk informasi terbaru.</p></div>}
+            </div>
+            <div className="admin-header-account" aria-label="Akun admin yang sedang masuk">
+              <span className="admin-header-avatar"><ShieldCheck size={19}/></span>
+              <span className="admin-header-identity"><strong>{adminEmail||displayName}</strong><small>Administrator · Aktif</small></span>
+            </div>
+          </div>:<>
+            <button type="button" className="top-logout" title="Keluar akun" onClick={onLogout}><LogOut size={16}/> Keluar</button>
+            <span className="topbar-tag"><GraduationCap size={15}/> Siswa</span>
+          </>}
         </div>
       </header>
       <div className="shell-body">{children}</div>
@@ -75,7 +98,7 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
       </Link>)}
     </nav>}
     {isAdmin&&!embedMode&&!navigationBlocked&&<nav className="admin-bottom-nav" aria-label="Menu admin seluler">
-      {adminLinks.filter(item=>!item.href.includes('#')).map(({href,label,icon:Icon})=><Link key={href} href={linkTo(href)} className={pathname===href?'active':''} aria-current={pathname===href?'page':undefined}>
+      {adminLinks.filter(item=>['/admin','/admin/siswa','/admin/kelas','/admin/analitik','/admin/pengaturan'].includes(item.href)).map(({href,label,icon:Icon})=><Link key={href} href={linkTo(href)} className={pathname===href?'active':''} aria-current={pathname===href?'page':undefined}>
         <Icon size={20}/><span>{label}</span>
       </Link>)}
     </nav>}

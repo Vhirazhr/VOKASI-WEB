@@ -1,0 +1,216 @@
+/* School student directory — blue VOKASI hero and compact live roster.
+   Scoped strictly to /admin/siswa. */
+.admin-students-page {width:100%;max-width:1370px;}
+.admin-students-page .admin-students-hero {
+  display:grid;
+  grid-template-columns:minmax(190px,.78fr) minmax(0,1.9fr);
+  align-items:center;
+  gap:clamp(16px,2.4vw,36px);
+  margin-bottom:18px;
+  min-height:190px;
+  padding:30px clamp(22px,2.7vw,36px);
+  border-radius:21px;
+  border:1px solid rgba(194,221,254,.38);
+  background:
+    linear-gradient(105deg,rgba(13,50,100,.94) 0%,rgba(23,78,145,.88) 56%,rgba(34,99,178,.77) 100%),
+    url('/assets/foto-bersama-depan-stema-scaled.jpeg') center 45%/cover no-repeat;
+  box-shadow:0 16px 40px rgba(27,77,147,.12);
+}
+.admin-students-page .admin-workspace-header {
+  display:block;
+  min-width:0;
+  margin:0;
+}
+.admin-students-page .admin-workspace-header .section-kicker {
+  display:block;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.16em;
+  color:#c3ddff;
+}
+.admin-students-page .admin-workspace-header h1 {
+  margin:13px 0 8px;
+  font-size:clamp(29px,2.8vw,39px);
+  line-height:1.1;
+  letter-spacing:-.055em;
+  color:white;
+}
+.admin-students-page .admin-workspace-header p {
+  margin:0;
+  color:#deebff;
+  font-size:11px;
+  line-height:1.7;
+}
+.admin-students-page .admin-mini-stats {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:0;
+}
+.admin-students-page .admin-mini-stats > div {
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr);
+  grid-template-rows:auto auto;
+  column-gap:9px;
+  align-content:center;
+  align-items:center;
+  min-width:0;
+  min-height:93px;
+  padding:13px clamp(10px,1.25vw,17px);
+  border:1px solid rgba(229,242,255,.40);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(224,238,255,.12));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 23px rgba(6,30,73,.08);
+  -webkit-backdrop-filter:blur(9px) saturate(130%);
+  backdrop-filter:blur(9px) saturate(130%);
+}
+.admin-students-page .admin-mini-stats svg {
+  grid-row:1/span 2;
+  width:33px;height:33px;padding:7px;
+  border-radius:10px;
+  color:white;
+  background:rgba(132,190,255,.24);
+}
+.admin-students-page .admin-mini-stats span {
+  min-width:0;
+  color:#dcecff;
+  font-size:10px;
+  font-weight:700;
+  line-height:1.35;
+}
+.admin-students-page .admin-mini-stats strong {
+  min-width:0;
+  margin-top:5px;
+  color:white;
+  font-size:clamp(21px,2.05vw,29px);
+  line-height:1.1;
+  font-weight:800;
+  letter-spacing:-.045em;
+  font-variant-numeric:tabular-nums;
+}
+.admin-students-page .admin-data-card {
+  min-width:0;
+  margin:0 0 20px;
+  padding:25px;
+  border:1px solid #dbe7f6;
+  border-radius:19px;
+  background:rgba(255,255,255,.97);
+  box-shadow:0 12px 35px rgba(30,76,136,.055);
+}
+.admin-students-page .admin-directory-controls {
+  display:grid;
+  grid-template-columns:minmax(190px,1.75fr) repeat(3,minmax(115px,1fr)) auto;
+  align-items:end;
+  gap:11px;
+  margin:0 0 23px;
+}
+.admin-students-page .admin-directory-controls .admin-directory-search {
+  height:45px;
+  align-self:end;
+  grid-column:auto;
+  border-color:#d4e3f7;
+  background:#fafcff;
+}
+.admin-students-page .admin-directory-controls select {
+  background:#fafcff;
+  border-color:#d4e3f7;
+}
+.admin-students-page .admin-students-refresh {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:45px;
+  padding:0 14px;
+  border:1px solid #d4e3f7;
+  border-radius:11px;
+  background:#edf4ff;
+  color:#235ebd;
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+  transition:background .15s,color .15s;
+}
+.admin-students-page .admin-students-refresh:not(:disabled):hover {
+  background:#dae9ff;
+  color:#194d9e;
+}
+.admin-students-page .admin-students-refresh:focus-visible {
+  outline:2px solid #3a75db;outline-offset:3px;
+}
+.admin-students-page .admin-workspace-table-wrap th{background:#f2f6fc;}
+.admin-students-page .admin-workspace-footer {margin-top:17px;}
+@media(max-width:1270px) {
+  .admin-students-page .admin-students-hero {
+    grid-template-columns:1fr;
+    gap:22px;
+  }
+  .admin-students-page .admin-directory-controls {
+    grid-template-columns:minmax(0,1.55fr) repeat(3,minmax(0,1fr));
+  }
+  .admin-students-page .admin-students-refresh {
+    grid-column:4;
+    grid-row:2;
+    justify-self:end;
+  }
+}
+@media(max-width:850px) {
+  .admin-students-page .admin-students-hero {
+    padding:24px;
+  }
+  .admin-students-page .admin-directory-controls {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .admin-students-page .admin-directory-controls .admin-directory-search {
+    grid-column:1/-1;
+  }
+  .admin-students-page .admin-students-refresh {
+    grid-column:2;grid-row:auto;
+  }
+}
+@media(max-width:600px) {
+  .admin-students-page .admin-students-hero {
+    padding:21px 17px;
+    border-radius:17px;
+  }
+  .admin-students-page .admin-mini-stats {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:6px;
+  }
+  .admin-students-page .admin-mini-stats>div {
+    grid-template-columns:1fr;
+    justify-items:start;
+    padding:12px 9px;
+    gap:6px;
+  }
+  .admin-students-page .admin-mini-stats svg {
+    grid-row:auto;
+    width:29px;height:29px;
+  }
+  .admin-students-page .admin-mini-stats span {
+    font-size:9px;
+  }
+  .admin-students-page .admin-mini-stats strong {
+    font-size:21px;margin:0;
+  }
+  .admin-students-page .admin-data-card {padding:17px;border-radius:16px;}
+  .admin-students-page .admin-directory-controls {gap:10px;}
+}
+@media(max-width:380px) {
+  .admin-students-page .admin-mini-stats {grid-template-columns:1fr;}
+  .admin-students-page .admin-mini-stats>div {
+    grid-template-columns:33px 1fr;
+    grid-template-rows:auto auto;
+    min-height:0;
+  }
+  .admin-students-page .admin-mini-stats svg {grid-row:span 2;}
+  .admin-students-page .admin-directory-controls {grid-template-columns:1fr;}
+  .admin-students-page .admin-directory-controls .admin-directory-search,
+  .admin-students-page .admin-students-refresh {grid-column:auto;grid-row:auto;width:100%;}
+}
+@media(prefers-reduced-transparency:reduce) {
+  .admin-students-page .admin-mini-stats>div {background:#245a9d;-webkit-backdrop-filter:none;backdrop-filter:none;}
+}
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))) {
+  .admin-students-page .admin-mini-stats>div {background:#245a9d;}
+}

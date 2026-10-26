@@ -1,14 +1,16 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {CheckCircle2,GraduationCap,Search,ShieldCheck,Users,UserRound,RefreshCw} from 'lucide-react';
+import {CheckCircle2,GraduationCap,Search,Users,UserRound,RefreshCw} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {supabase} from '@/lib/supabase';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {getSchoolStudents} from '@/lib/school';
 import type {SchoolStudent} from '@/lib/types';
 import '@/app/admin-workspace.css';
+import '@/app/admin-students-ui.css';
 
+const ROWS_PER_PAGE=10;
 export default function AdminStudentsPage(){
  const {loading,error,logout}=useSchoolAuth('admin');
  const [students,setStudents]=useState<SchoolStudent[]>([]);
@@ -44,26 +46,36 @@ export default function AdminStudentsPage(){
    (status==='all'||(status==='registered'?s.registered:!s.registered))&&
    (!search||[s.fullName,s.username,s.className,s.majorName].some(k=>k.toLowerCase().includes(search.trim().toLowerCase())))
   ).sort((a,b)=>a.fullName.localeCompare(b.fullName,'id')),[students,major,klass,search,status]);
- const pages=Math.max(1,Math.ceil(filtered.length/30));
+ const pages=Math.max(1,Math.ceil(filtered.length/ROWS_PER_PAGE));
  const activePage=Math.min(page,pages-1);
  if(loading)return <main className="page-loader">Memverifikasi hak akses admin...</main>;
  if(error)return <main className="page-loader">{error}</main>;
  return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()}>
-   <div className="admin-workspace">
-    <header className="admin-workspace-header"><div><span className="section-kicker">MANAJEMEN SEKOLAH</span><h1>Data Siswa</h1><p>Daftar siswa dari Supabase sekolah, bukan data simulasi.</p></div><button type="button" onClick={()=>{setBusy(true);setRefreshKey(i=>i+1);}} className="btn secondary small" disabled={busy}><RefreshCw size={16}/> Segarkan data</button></header>
-    <div className="admin-mini-stats"><div><Users size={20}/><span>Total siswa</span><strong>{busy?'—':students.length}</strong></div><div><CheckCircle2 size={20}/><span>Akun terdaftar</span><strong>{busy?'—':students.filter(s=>s.registered).length}</strong></div><div><GraduationCap size={20}/><span>Belum terdaftar</span><strong>{busy?'—':students.filter(s=>!s.registered).length}</strong></div></div>
-    <section className="admin-data-card">
-      <div className="admin-data-title"><div><h2>Direktori siswa</h2><p>Gunakan filter untuk menemukan siswa berdasarkan jurusan, kelas, dan status akun.</p></div><span className="admin-workspace-pill"><ShieldCheck size={15}/> Akses admin</span></div>
+   <div className="admin-workspace admin-students-page">
+    <section className="admin-students-hero" aria-label="Ringkasan data siswa">
+      <header className="admin-workspace-header">
+        <span className="section-kicker">MANAJEMEN SEKOLAH</span>
+        <h1>Data Siswa</h1>
+        <p>Ringkasan data siswa SMKN 1 Singosari.</p>
+      </header>
+      <div className="admin-mini-stats">
+        <div><Users size={20}/><span>Total siswa</span><strong>{busy?'—':students.length.toLocaleString('id-ID')}</strong></div>
+        <div><CheckCircle2 size={20}/><span>Akun terdaftar</span><strong>{busy?'—':students.filter(s=>s.registered).length.toLocaleString('id-ID')}</strong></div>
+        <div><GraduationCap size={20}/><span>Belum terdaftar</span><strong>{busy?'—':students.filter(s=>!s.registered).length.toLocaleString('id-ID')}</strong></div>
+      </div>
+    </section>
+    <section className="admin-data-card" aria-label="Daftar siswa">
       {issue&&<div className="alert danger" role="alert">{issue}</div>}
       <div className="admin-directory-controls">
        <label className="admin-directory-search"><Search size={17}/><input aria-label="Cari siswa" value={search} placeholder="Cari nama, username, kelas..." onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label>
        <label>Jurusan<select value={major} onChange={e=>{setMajor(e.target.value);setKlass('');setPage(0);}}><option value="">Semua jurusan</option>{majors.map(m=><option key={m} value={m}>{m}</option>)}</select></label>
        <label>Kelas<select value={klass} onChange={e=>{setKlass(e.target.value);setPage(0);}}><option value="">Semua kelas</option>{classes.map(k=><option key={k} value={k}>{k}</option>)}</select></label>
        <label>Status<select value={status} onChange={e=>{setStatus(e.target.value);setPage(0);}}><option value="all">Semua status</option><option value="registered">Terdaftar</option><option value="unregistered">Belum terdaftar</option></select></label>
+       <button type="button" className="admin-students-refresh" disabled={busy} onClick={()=>{setBusy(true);setRefreshKey(i=>i+1);}}><RefreshCw size={16}/>{busy?'Memuat...':'Segarkan data'}</button>
       </div>
       {busy?<div className="admin-workspace-empty">Mengambil data siswa dari Supabase...</div>:
        !issue&&filtered.length===0?<div className="admin-workspace-empty">Tidak ada siswa yang cocok dengan filter.</div>:
-       <div className="admin-workspace-table-wrap"><table><thead><tr><th>Nama siswa</th><th>Jurusan</th><th>Kelas</th><th>Akun</th><th>Detail</th></tr></thead><tbody>{filtered.slice(activePage*30,(activePage+1)*30).map(s=><tr key={s.id}>
+       <div className="admin-workspace-table-wrap"><table><thead><tr><th>Nama siswa</th><th>Jurusan</th><th>Kelas</th><th>Akun</th><th>Detail</th></tr></thead><tbody>{filtered.slice(activePage*ROWS_PER_PAGE,(activePage+1)*ROWS_PER_PAGE).map(s=><tr key={s.id}>
        <td><b>{s.fullName}</b><small>@{s.username||'belum ada username'}</small></td><td>{s.majorName}</td><td>{s.className}</td><td><span className={s.registered?'admin-workspace-status ok':'admin-workspace-status wait'}>{s.registered?'Terdaftar':'Belum terdaftar'}</span></td>
        <td><button type="button" className="admin-workspace-detail" onClick={()=>{setSelected(s);setTargetClass(s.classId);setEditInfo('');}}>Lihat</button></td></tr>)}</tbody></table></div>}
       <div className="admin-workspace-footer"><span>{busy||issue?'—':filtered.length} siswa ditampilkan dalam filter</span><div><button type="button" disabled={activePage===0} onClick={()=>setPage(v=>Math.max(0,v-1))}>Sebelumnya</button><span>{activePage+1} / {pages}</span><button type="button" disabled={activePage>=pages-1} onClick={()=>setPage(v=>v+1)}>Berikutnya</button></div></div>
