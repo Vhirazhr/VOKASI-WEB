@@ -1,6 +1,6 @@
 'use client';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
-import {ArrowDownToLine,BookOpen,CalendarDays,CheckCircle2,Clock3,RefreshCw,School,Search,ShieldCheck,TrendingUp,Users,XCircle} from 'lucide-react';
+import {ArrowDownToLine,BookOpen,CalendarDays,CheckCircle2,Clock3,RefreshCw,Search,TrendingUp,Users,XCircle} from 'lucide-react';
 import '@/app/admin-dashboard.css';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
@@ -54,15 +54,6 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
  if(error)return <main className="page-loader">{error}</main>;
  return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()} embed={embed} dashboardStyle>
   <div className="admin-overview">
-    <header className="admin-overview-intro">
-      <div>
-        <span className="section-kicker">PANEL ADMINISTRASI</span>
-        <h1>Ringkasan sekolah</h1>
-        <p>Pantau nilai dan aktivitas pembelajaran dalam satu tampilan.</p>
-      </div>
-      <span className="admin-overview-year"><School size={16}/> Tahun ajaran 2026/2027</span>
-    </header>
-
     <section className="admin-overview-hero" aria-label="Ringkasan akademik">
       <div className="admin-overview-hero-copy">
         <span className="admin-overview-eyebrow">VOKASI · PEMANTAUAN AKADEMIK</span>
@@ -79,7 +70,8 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
 
     {notice&&<div className="alert danger admin-overview-alert" role="alert">{notice} <button type="button" className="link-action" onClick={()=>setRefreshKey(v=>v+1)}>Ulangi</button></div>}
     <div className="admin-overview-grid">
-      <section className="white-panel admin-overview-report" id="hasil" aria-labelledby="admin-overview-title">
+      <div className="admin-overview-primary">
+      <section className="white-panel admin-overview-filters-panel" id="hasil" aria-labelledby="admin-overview-title">
         <div className="admin-overview-panel-heading">
           <div>
             <span className="section-kicker">NILAI & LAPORAN</span>
@@ -102,12 +94,13 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
             <select value={status} onChange={e=>{setStatus(e.target.value);setPage(0);}}><option value="all">Semua siswa</option><option value="complete">Sudah mengerjakan</option><option value="missing">Belum mengerjakan</option></select>
           </label>
         </div>
-
+      </section>
+      <section className="white-panel admin-overview-report" aria-labelledby="admin-overview-table-title">
         <div className="admin-overview-table-area" id="siswa">
           <div className="admin-overview-table-top">
             <div>
               <span className="section-kicker">AKTIVITAS SISWA</span>
-              <h2>Nilai siswa</h2>
+              <h2 id="admin-overview-table-title">Nilai siswa</h2>
               <p>{valuesAvailable?`${attempts.length} sesi wajib • ${new Set(attempts.map(a=>a.auth_user_id)).size} akun mengirim`:'Menunggu hasil terverifikasi dari server'}</p>
             </div>
             <div className="admin-overview-actions">
@@ -135,7 +128,8 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
           </div>
         </div>
       </section>
-
+      </div>
+      <div className="admin-overview-secondary">
       <aside className="white-panel admin-overview-summary" aria-label="Status pembelajaran">
         <div className="admin-overview-panel-heading">
           <div><span className="section-kicker">RINGKASAN</span><h2>Status pada {date}</h2></div>
@@ -145,16 +139,19 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
           <div className="admin-overview-stat"><span className="admin-overview-stat-icon blue"><Users size={18}/></span><div><small>Jumlah siswa</small><strong>{scope.length.toLocaleString('id-ID')}</strong></div></div>
           <div className="admin-overview-stat"><span className="admin-overview-stat-icon green"><CheckCircle2 size={18}/></span><div><small>Sudah latihan</small><strong>{valuesAvailable?complete.toLocaleString('id-ID'):'—'}</strong></div></div>
           <div className="admin-overview-stat"><span className="admin-overview-stat-icon orange"><Clock3 size={18}/></span><div><small>Belum tercatat</small><strong>{valuesAvailable?(scope.length-complete).toLocaleString('id-ID'):'—'}</strong></div></div>
-          <div className="admin-overview-stat"><span className="admin-overview-stat-icon purple"><TrendingUp size={18}/></span><div><small>Rata-rata nilai</small><strong>{valuesAvailable&&avgScores.length?avg:'—'}</strong></div></div>
         </div>
+      </aside>
+      <section className="admin-overview-performance-card" aria-label="Performa akademik">
+        <span className="admin-overview-performance-eyebrow">PERFORMA</span>
+        <h2>Rata-rata nilai</h2>
+        <strong className="admin-overview-average">{valuesAvailable&&avgScores.length?avg:'—'}</strong>
+        <p>{valuesAvailable&&avgScores.length?'Berdasarkan nilai wajib terverifikasi':'Belum ada nilai terverifikasi'}</p>
         <div className="admin-overview-performance">
-          <span className="section-kicker">CAPAIAN HARIAN</span>
           <div className="admin-overview-performance-heading"><span>Siswa sudah latihan</span><strong>{valuesAvailable?completionRate+'%':'—'}</strong></div>
           <div className="admin-overview-performance-track"><span style={{width:(valuesAvailable?completionRate:0)+'%'}}/></div>
-          <p>{!valuesAvailable?'Menunggu laporan server.':scope.length?`${complete} dari ${scope.length} siswa memiliki nilai wajib yang tercatat.`:'Belum ada siswa pada filter ini.'}</p>
         </div>
-        <div className="admin-overview-trust"><ShieldCheck size={17}/><p>Hanya nilai yang telah diverifikasi oleh server masuk rekap dan ekspor Excel. Riwayat lama tidak memengaruhi laporan resmi.</p></div>
-      </aside>
+      </section>
+      </div>
     </div>
     <footer className="admin-overview-footnote"><BookOpen size={16}/><p>Nilai otomatis diperbarui dari Supabase setiap 20 detik. Identitas siswa ditautkan menggunakan ID Auth, bukan username.</p></footer>
   </div>
