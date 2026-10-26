@@ -1,5 +1,5 @@
-/* VOKASI login — restored original light-glass UI and font/input sizing.
-   Only background, centering and page-height behavior are adjusted. */
+/* VOKASI login — centered, lightly widened frosted-glass card.
+   Hero, page height, auth, and responsive sizing remain unchanged. */
 
 .login-page.login-photo {
   --login-ink: #132940;
@@ -8,7 +8,7 @@
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(0, 500px) minmax(375px, 470px);
+  grid-template-columns: minmax(0, 500px) minmax(375px, 510px);
   align-items: center;
   justify-content: center;
   column-gap: clamp(30px, 4.5vw, 72px);
@@ -143,7 +143,7 @@
 }
 .login-photo .login-photo-card {
   width: 100%;
-  max-width: 470px;
+  max-width: 510px;
   max-height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -151,15 +151,15 @@
   scrollbar-color: rgba(82, 117, 154, .24) transparent;
   padding: clamp(29px, 3.15vw, 46px);
   border-radius: 23px;
-  border: 1px solid rgba(255, 255, 255, .73);
-  background: linear-gradient(150deg,
-    rgba(255, 255, 255, .87),
-    rgba(245, 250, 255, .78));
+  border: 1px solid rgba(255, 255, 255, .62);
+  background: linear-gradient(145deg,
+    rgba(255, 255, 255, .72),
+    rgba(234, 245, 255, .57));
   box-shadow:
-    0 24px 70px rgba(4, 20, 38, .24),
-    0 1px 0 rgba(255, 255, 255, .55) inset;
-  -webkit-backdrop-filter: blur(18px) saturate(115%);
-  backdrop-filter: blur(18px) saturate(115%);
+    0 24px 64px rgba(4, 20, 38, .25),
+    0 1px 0 rgba(255, 255, 255, .65) inset;
+  -webkit-backdrop-filter: blur(24px) saturate(135%);
+  backdrop-filter: blur(24px) saturate(135%);
   color: var(--login-ink);
 }
 .login-photo .login-photo-card-heading {
@@ -368,12 +368,12 @@
 }
 .login-photo.login-embedded .login-photo-main {
   justify-content: center;
-  width: min(100%, 470px);
+  width: min(100%, 510px);
 }
 
 @media (max-width: 1050px) {
   .login-page.login-photo {
-    grid-template-columns: minmax(0, 1fr) minmax(345px, 430px);
+    grid-template-columns: minmax(0, 1fr) minmax(345px, 460px);
     column-gap: 26px;
     padding-left: 36px;
     padding-right: 36px;
@@ -431,7 +431,7 @@
     min-height: 0;
   }
   .login-photo .login-photo-card {
-    max-width: 480px;
+    max-width: 510px;
     padding: 25px 23px;
     border-radius: 19px;
   }
