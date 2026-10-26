@@ -1,14 +1,16 @@
 'use client';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
-import {ArrowDownToLine,BookOpen,CalendarDays,CheckCircle2,Clock3,RefreshCw,Search,TrendingUp,Users,XCircle} from 'lucide-react';
+import Link from 'next/link';
+import {ArrowDownToLine,ArrowRight,BookOpen,CalendarDays,CheckCircle2,Clock3,RefreshCw,Search,TrendingUp,Users,XCircle} from 'lucide-react';
 import '@/app/admin-dashboard.css';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
-import {getAdminAttempts,getSchoolStudents,latestGrades,wibDate} from '@/lib/school';
-import type {Attempt,SchoolStudent} from '@/lib/types';
-const PAGE=50;
+import {getAdminAnalyticsAttempts,getAdminAttempts,getSchoolStudents,latestGrades,wibDate} from '@/lib/school';
+import type {Attempt,AttemptSummary,SchoolStudent} from '@/lib/types';
+const PAGE=10;
 export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('admin');
  const [students,setStudents]=useState<SchoolStudent[]>([]);const [attempts,setAttempts]=useState<Attempt[]>([]);
+ const [trendAttempts,setTrendAttempts]=useState<AttemptSummary[]>([]);const [trendError,setTrendError]=useState('');
  const [date,setDate]=useState(()=>wibDate());const [major,setMajor]=useState('');const [klass,setKlass]=useState('');const [search,setSearch]=useState('');const [status,setStatus]=useState('all');const [page,setPage]=useState(0);
  const requestId=useRef(0);
  const [busy,setBusy]=useState(true);const [notice,setNotice]=useState('');const [refreshKey,setRefreshKey]=useState(0);const [exporting,setExporting]=useState(false);const [embed,setEmbed]=useState(false);
@@ -17,8 +19,16 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
   async function loadRoster(){try{const result=await getSchoolStudents();if(active)setStudents(result);}catch(e){if(active)setNotice('Gagal mengambil roster sekolah: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}}
   void loadRoster();return()=>{active=false;};
  },[loading,error]);
- const refresh=useCallback(async()=>{if(loading||error)return;const request=++requestId.current;setBusy(true);setNotice('');
-  try{const result=await getAdminAttempts(date);if(request===requestId.current)setAttempts(result);}catch(e){if(request===requestId.current){setAttempts([]);setNotice('Gagal mengambil nilai terverifikasi: '+(e instanceof Error?e.message:'Tidak dapat mengambil nilai Supabase.'));}}finally{if(request===requestId.current)setBusy(false);}
+ const refresh=useCallback(async()=>{if(loading||error)return;const request=++requestId.current;setBusy(true);setNotice('');setTrendError('');
+  // The seven-day trend uses the same verified-only Supabase view as the full analytics page.
+  // Keep errors independent: a trend failure must not remove the official daily report.
+  const [dailyResult,trendResult]=await Promise.allSettled([getAdminAttempts(date),getAdminAnalyticsAttempts(date,7)]);
+  if(request!==requestId.current)return;
+  if(dailyResult.status==='fulfilled')setAttempts(dailyResult.value);
+  else{setAttempts([]);setNotice('Gagal mengambil nilai terverifikasi: '+(dailyResult.reason instanceof Error?dailyResult.reason.message:'Tidak dapat mengambil nilai Supabase.'));}
+  if(trendResult.status==='fulfilled')setTrendAttempts(trendResult.value);
+  else{setTrendAttempts([]);setTrendError('Grafik belum bisa dimuat dari Supabase.');}
+  setBusy(false);
  },[date,loading,error]);
  useEffect(()=>{queueMicrotask(()=>void refresh());const id=setInterval(()=>void refresh(),20000);return()=>clearInterval(id);},[refresh,refreshKey]);
  const allGrades=useMemo(()=>latestGrades(attempts,students),[attempts,students]);
@@ -28,6 +38,32 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
  const complete=scope.filter(s=>allGrades.has(s.authId)).length;
  const avgScores=scope.map(s=>allGrades.get(s.authId)?.score).filter((x):x is number=>x!==undefined);
  const avg=avgScores.length?Math.round(avgScores.reduce((a,b)=>a+b,0)/avgScores.length):0;
+
+ const trendDays=useMemo(()=>{
+  const start=Date.parse(date+'T00:00:00+07:00');
+  if(!Number.isFinite(start))return [];
+  const scopeIds=new Set(scope.map(s=>s.authId).filter(Boolean));
+  const byDay=new Map<string,Map<string,number>>();
+  // Sorted newest-first by getAdminAnalyticsAttempts: take the most recent verified
+  // compulsory grade of each student in each WIB day, as in /admin/analitik.
+  for(const attempt of trendAttempts){
+    const id=attempt.auth_user_id;
+    if(!id||!scopeIds.has(id)||!Number.isFinite(attempt.score)||attempt.score<0||attempt.score>100)continue;
+    const day=wibDate(attempt.completed_at_ms);
+    const scores=byDay.get(day)||new Map<string,number>();
+    if(!scores.has(id))scores.set(id,attempt.score);
+    byDay.set(day,scores);
+  }
+  const labelFormat=new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'short',timeZone:'Asia/Jakarta'});
+  return Array.from({length:7},(_,i)=>{
+    const timestamp=start-(6-i)*86400000;
+    const day=wibDate(timestamp);
+    const scores=[...(byDay.get(day)?.values()||[])];
+    const average=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):null;
+    return {date:day,label:labelFormat.format(new Date(timestamp)),average,completed:scores.length};
+  });
+ },[date,scope,trendAttempts]);
+ const trendHasData=trendDays.some(d=>d.completed>0);
  const filtered=useMemo(()=>scope.filter(s=>(!search||s.fullName.toLowerCase().includes(search.toLowerCase())||s.username.toLowerCase().includes(search.toLowerCase()))&&
    (status==='all'||(status==='complete'?allGrades.has(s.authId):!allGrades.has(s.authId)))).sort((a,b)=>a.fullName.localeCompare(b.fullName,'id')),[scope,search,status,allGrades]);
  const pages=Math.max(1,Math.ceil(filtered.length/PAGE));const rows=filtered.slice(Math.min(page,pages-1)*PAGE,(Math.min(page,pages-1)+1)*PAGE);
@@ -103,12 +139,14 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
               <h2 id="admin-overview-table-title">Nilai siswa</h2>
               <p>{valuesAvailable?`${attempts.length} sesi wajib • ${new Set(attempts.map(a=>a.auth_user_id)).size} akun mengirim`:'Menunggu hasil terverifikasi dari server'}</p>
             </div>
+          </div>
+          <div className="admin-overview-toolbar">
+            <label className="admin-overview-search"><Search size={17}/><input aria-label="Cari siswa pada laporan" placeholder="Cari nama atau username siswa..." value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label>
             <div className="admin-overview-actions">
               <button type="button" className="btn secondary small" onClick={()=>setRefreshKey(v=>v+1)} disabled={busy}><RefreshCw size={15}/> Segarkan</button>
               <button type="button" title={!klass?'Pilih satu kelas sebelum mengunduh laporan':undefined} className="btn primary small" onClick={()=>void exportExcel()} disabled={busy||!!notice||exporting||!students.length||!klass}><ArrowDownToLine size={15}/> {exporting?'Mengekspor...':'Unduh Excel'}</button>
             </div>
           </div>
-          <label className="admin-overview-search"><Search size={17}/><input aria-label="Cari siswa pada laporan" placeholder="Cari nama atau username siswa..." value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label>
           {busy?<div className="empty-state">Mengambil nilai resmi dari Supabase...</div>:
             <div className="table-wrap admin-overview-table-wrap">
               <table className="grade-table"><thead><tr><th>No.</th><th>Nama siswa</th><th>Jurusan</th><th>Kelas</th><th>Nilai</th><th>Status</th></tr></thead><tbody>
@@ -123,7 +161,7 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
               </tbody></table>
             </div>}
           <div className="table-footer admin-overview-pagination">
-            <span>Menampilkan {rows.length} dari {filtered.length} siswa</span>
+            <span>Menampilkan {rows.length} dari {filtered.length} siswa · maksimal 10 per halaman</span>
             <div><button type="button" className="btn secondary small" disabled={page<=0} onClick={()=>setPage(v=>Math.max(0,v-1))}>Sebelumnya</button><span>{Math.min(page,pages-1)+1} / {pages}</span><button type="button" className="btn secondary small" disabled={page>=pages-1} onClick={()=>setPage(v=>v+1)}>Berikutnya</button></div>
           </div>
         </div>
@@ -149,6 +187,23 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
         <div className="admin-overview-performance">
           <div className="admin-overview-performance-heading"><span>Siswa sudah latihan</span><strong>{valuesAvailable?completionRate+'%':'—'}</strong></div>
           <div className="admin-overview-performance-track"><span style={{width:(valuesAvailable?completionRate:0)+'%'}}/></div>
+        </div>
+        <div className="admin-overview-trend">
+          <div className="admin-overview-trend-heading">
+            <div><span>STATISTIK PERKEMBANGAN</span><h3>Tren nilai 7 hari</h3></div>
+            <Link href={embed?'/admin/analitik?embed=1':'/admin/analitik'} aria-label="Lihat statistik analitik selengkapnya">Detail <ArrowRight size={14}/></Link>
+          </div>
+          {busy?<p className="admin-overview-trend-state">Memuat statistik terverifikasi...</p>:
+           trendError?<p className="admin-overview-trend-state" role="status">{trendError}</p>:
+           !trendHasData?<p className="admin-overview-trend-state">Belum ada nilai latihan wajib terverifikasi selama 7 hari terakhir pada filter ini.</p>:
+           <div className="admin-overview-trend-bars" role="img" aria-label="Rata-rata nilai latihan wajib tiap hari selama tujuh hari hingga tanggal yang dipilih. Skala nol sampai seratus.">
+             {trendDays.map(d=><div className="admin-overview-trend-day" key={d.date} title={d.label+': '+d.completed+' siswa, rata-rata nilai '+(d.average??'belum ada')}>
+               <span className="admin-overview-trend-value">{d.average??'—'}</span>
+               <div className="admin-overview-trend-track"><div style={{height:(d.average??0)+'%'}}/></div>
+               <small>{d.label}</small>
+             </div>)}
+           </div>}
+          <p className="admin-overview-trend-note">Rata-rata nilai terakhir per siswa per hari (WIB), dari hasil terverifikasi.</p>
         </div>
       </section>
       </div>
