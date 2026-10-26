@@ -14,9 +14,10 @@ type ShellProps = {
   displayName: string;
   embed?: boolean;
   navigationBlocked?: boolean;
+  dashboardStyle?: boolean;
 };
 
-export default function AppShell({children,role,onLogout,displayName,embed=false,navigationBlocked=false}:ShellProps) {
+export default function AppShell({children,role,onLogout,displayName,embed=false,navigationBlocked=false,dashboardStyle=false}:ShellProps) {
   const isAdmin=role==='admin';
   const pathname=usePathname();
   const [urlEmbed,setUrlEmbed]=useState(false);
@@ -43,7 +44,7 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
   }
   const active=(href:string)=>href.includes('#')?false:pathname===href;
   const linkTo=(href:string)=>href.includes('#')?(embedMode?href.replace('#','?embed=1#'):href):href+suffix;
-  return <div className={'shell school-shell '+(embedMode?'shell-embed':'')}>
+  return <div className={'shell school-shell '+(embedMode?'shell-embed ':'')+(dashboardStyle?'admin-overview-shell':'')}>
     <aside className="sidebar" aria-label={isAdmin?'Menu admin':'Menu siswa'}>
       <Link onClick={askBeforeLeave} href="/" className="brand"><span className="brand-mark">V</span><span>VOKASI<span className="brand-dot">.</span></span></Link>
       <div className="side-label">{isAdmin?'PANEL SEKOLAH':'AREA BELAJAR'}</div>

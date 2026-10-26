@@ -1,36 +1,41 @@
-# VOKASI water / crest landing
+# Institutional VOKASI landing
 
 ## Run
-
-Node >=20.9: `npm ci`, then `npm run dev`. Open http://localhost:3000.
+Node >=20.9: `npm ci`, `npm run dev`, then http://localhost:3000.
 Production: `npm run build` then `npm start`.
-Keep the existing local Supabase environment for authenticated features. No new credentials or configuration are required by the scene.
+Retain existing local Supabase environment for real authentication and ranking. No new environment variables, keys or database changes.
 
-## Implementation
+## Current design
+- Compact glass navigation: Beranda, Tentang, Leaderboard, Fitur Unggulan, Login.
+- Hero: supplied official crest, centered VOKASI, Platform Pembelajaran Numerasi. No scroll-down label or animation button beneath navigation.
+- Saturated blue water and matching glass surfaces throughout About, leaderboard, features, four-step guide and footer. Institutional copy follows the requested text.
+- Three.js extrusion follows the actual alpha outline of the supplied PNG. Thickness increases from .12 to .38, with beveled metal edges, physical enamel front/back, neutral specular lights and higher reflection intensity. The original image is not edited.
+- Idle rotation completes approximately one revolution per 25 seconds. Each section transition adds a full turn; the logo fades behind the leaderboard and returns beside features/guide. Actual section offsets drive the sequence.
+- The dynamic WebGL renderer caps DPR, stops offscreen/in hidden tabs, respects reduced motion, and disposes resources. An optional animation setting is inside the footer; WebGL failure leaves the image fallback and HTML controls.
 
-- `app/page.tsx` and `app/landing-3d.css`: full-viewport hero, alternating full-viewport introduction and score ranking, centered closing CTA, FAQ and footer. All styles are scoped.
-- `components/landing/LogoScene.tsx`: lazily loaded Three.js WebGL renderer; actual extruded geometry traced from the supplied logo alpha boundary, original-color textured front/back, metallic sidewalls and clearcoat lighting. A displaced water mesh with normal-based reflection shading gives soft blue ripples; renderer tone mapping and color-space conversion are applied consistently. No external model/HDR downloads or React Three Fiber/Drei dependencies.
-- Scroll advances the logo from hero center to the left of the introduction, right of ranking, then center of the closing CTA, with gentle alternating turns; idle motion gently bounces and rocks. No cursor tracking is required in this revision. The crest is not recolored or replaced by a sphere.
-- `public/assets/vokasi-school-logo-hd.png`: exact attached PNG, unedited. The original `/assets/smkn1sgs-166x166-1.png` remains untouched for existing login usage. Change `components/landing/identity.ts` to use another official asset.
-- DPR capped at 1.25 on phones / 1.75 elsewhere. Rendering stops outside the viewport, when the tab is hidden, when paused, and after a reduced-motion frame. Resize/scroll events render on demand. Resources, event listeners and observers are disposed on unmount.
-- WebGL failure or context loss falls back to the school image. Navigation, content and FAQ are HTML. Reduced motion disables idle animation and scroll rotation (position still follows scroll). Pause stops time-based animation; scroll remains usable.
+## Login and ranking
+`LandingAccess.tsx` uses a native dialog for modal focus containment/Escape support and the unchanged `currentRole` / `signIn` helpers from `lib/auth.ts`. Existing username/class disambiguation and admin authorization remain in that helper. No alternate auth endpoint, embedded iframe, credential storage or authorization bypass is introduced.
 
-## Ranking and factual content
+Login and Latihan redirect authenticated students/admins to their existing dashboard. A signed-out user gets the themed popup. Login initiated from the leaderboard stays on the landing after a successful student login so ranking can load there. Standard `/login?role=...` hrefs remain usable without JavaScript or in a new tab. Closing clears entered fields and invalidates stale UI responses; the auth helper itself is unchanged.
 
-The existing `getLeaderboard()` adapter is reused without modifying RPC, RLS, grading, timer, XP or database configuration. Ranking is descending **verified mandatory average**, not XP and not best individual attempt. Signed-out visitors see a sign-in prompt and no student names/scores. No fake leader data, contact details or testimonials are included. FAQ describes existing app capabilities only.
+The existing `getLeaderboard()` supplies up to 10 entries: three featured cards in visual order 2–1–3, followed by positions 4–10 when available. The metric remains **highest verified mandatory average**, not XP and not maximum individual attempt. Backend authorization currently requires a registered student; signed-out visitors see an explicit login prompt, no fabricated names/scores. Public student data access is NOT enabled. School data, RPC, RLS, scores, timer, quizzes and standalone login are unchanged.
 
-## Verification for this revision
+## Footer contact source
+Verified 26 October 2026 from Kemendikdasmen's school directory:
+https://referensi.data.kemendikdasmen.go.id/pendidikan/npsn/20517766
+- Jl. Raya Mondoroko No. 3, Banjararum, Singosari, Kabupaten Malang, Jawa Timur.
+- smkn1sgsmalang@gmail.com
+- (0341) 458138
+- Official school website: https://smkn1singosari.sch.id/
 
+## Verification
 - `npm run typecheck`: passed.
-- `npm run lint`: passed, 10 pre-existing warnings outside landing code.
-- `npm run check:security`: passed static contract checks; not a live database audit.
-- `node tests/landing-ranking.mjs`: passed mocked ranking adapter checks (high average outranks high XP; missing/unverified excluded).
-- `npm run build`: passed, all 17 routes.
-- `node tests/landing-scene-motion.mjs`: passed bounds, continuous transitions and center-left-right-center endpoints on desktop/mobile.
-- Browser/visual QA: NOT verified in this environment. Managed preview appends Vite flags (`--host`, `--strictPort`) to Next dev, which rejects `--host`. No visual/performance claim is made from build results.
-- `tests/landing-interactions.mjs` is updated for this design but NOT run here. With Playwright installed separately and a local server running, use `LANDING_BASE_URL=http://localhost:3000 node tests/landing-interactions.mjs`; repeat with `DISABLE_WEBGL=1` for fallback. Manually inspect desktop/mobile, scroll transition, texture fidelity, contrast, pause, reduced motion and FAQ before merging.
+- `npm run lint`: no errors; 10 existing warnings outside landing.
+- `npm run build`: passed, 17 routes.
+- `npm run check:security`: passed static code/migration contract; not a live database audit.
+- `node tests/landing-ranking.mjs`: mocked adapter confirms score order, XP ignored, missing/unverified excluded and errors handled.
+- `node tests/landing-scene-motion.mjs`: complete rotations, fade/reappearance, continuous bounded framing for desktop/mobile.
+- `tests/landing-access.mjs`: component tests with mocked auth pass student/admin routing, existing sessions, inline leaderboard login, errors, field clearing, body scroll restoration and close-during-submit. Run with a separate React test runtime matching the app: `npm install --prefix /tmp/landing-tests react@19.3.1 react-test-renderer@19.3.1`, then `LANDING_TEST_RUNTIME=/tmp/landing-tests node tests/landing-access.mjs`. These dependencies are not added to production; react-test-renderer is deprecated and this test does not replace browser QA.
+- Browser/visual QA remains unverified: `sites-preview start` appends unsupported Vite `--host` flags to Next dev. No claim of pixel-matching, WebGL performance or real-account login testing is made. The updated optional Playwright suite (`tests/landing-interactions.mjs`) is NOT executed here. Run against a local server with `LANDING_BASE_URL=http://localhost:3000`; repeat with `DISABLE_WEBGL=1`. Inspect focus trapping, mobile layouts, real WebGL shading and authorized login with school test accounts before merging.
 
-Existing main updates (including login glass styling) are retained. No academic/auth implementation is edited by this landing change.
-
-## Composition revision
-Lower camera angle (1.9 / 10), smaller crest, centered VOKASI heading with balanced tracking, muted lighting and a shared blue palette follow the supplied visual reference. Scroll keyframes use actual section offsets instead of a two-section hardcoded timeline; horizontal placement scales with the camera aspect ratio. On phones the crest occupies a reserved upper area while the content stays below. Live browser comparison to the reference remains unverified due to the preview limitation above.
+Changes from current main, including the updated admin dashboard, are preserved.

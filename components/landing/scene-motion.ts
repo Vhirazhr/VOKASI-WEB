@@ -1,13 +1,46 @@
-/** Normalized layout coordinates keep the crest within the viewport at every aspect ratio. */
-export function scenePose(scroll: number, anchors: readonly number[], mobile: boolean) {
+/** Normalized coordinates: hero, about, leaderboard, features, guide. */
+export function scenePose(
+  scroll: number,
+  anchors: readonly number[],
+  mobile: boolean,
+) {
+  const tau = Math.PI * 2;
   const stops = mobile
-    ? [{x:0,y:.34,scale:.57,turn:-.16},{x:-.15,y:.20,scale:.43,turn:.20},{x:.15,y:.19,scale:.40,turn:-.24},{x:0,y:.29,scale:.48,turn:0}]
-    : [{x:0,y:.36,scale:.78,turn:-.16},{x:-.245,y:.49,scale:.76,turn:.24},{x:.255,y:.46,scale:.73,turn:-.28},{x:0,y:.32,scale:.64,turn:0}];
+    ? [
+        { x: 0, y: 0.35, scale: 0.48, turn: -0.2, opacity: 1 },
+        { x: -0.12, y: 0.19, scale: 0.39, turn: tau - 0.2, opacity: 1 },
+        { x: 0, y: 0.35, scale: 0.28, turn: tau * 2, opacity: 0.07 },
+        { x: 0.23, y: 0.32, scale: 0.36, turn: tau * 3 + 0.2, opacity: 1 },
+        { x: 0.14, y: 0.19, scale: 0.38, turn: tau * 4, opacity: 1 },
+      ]
+    : [
+        { x: 0, y: 0.35, scale: 0.64, turn: -0.2, opacity: 1 },
+        { x: -0.255, y: 0.48, scale: 0.72, turn: tau - 0.2, opacity: 1 },
+        { x: 0, y: 0.4, scale: 0.44, turn: tau * 2, opacity: 0.07 },
+        { x: -0.28, y: 0.66, scale: 0.64, turn: tau * 3 + 0.2, opacity: 1 },
+        { x: 0.29, y: 0.3, scale: 0.47, turn: tau * 4, opacity: 1 },
+      ];
   let index = 0;
   while (index < stops.length - 2 && scroll >= anchors[index + 1]) index++;
-  const t = Math.max(0, Math.min(1, (scroll - anchors[index]) / Math.max(1, anchors[index + 1] - anchors[index])));
-  const ease = t * t * (3 - 2 * t);
-  const from = stops[index], to = stops[index + 1];
-  const mix = (a: number,b: number) => a + (b - a) * ease;
-  return {x:mix(from.x,to.x),y:mix(from.y,to.y),scale:mix(from.scale,to.scale),turn:mix(from.turn,to.turn),water:1-Math.min(1,index+ease),progress:(index+t)/3};
+  const t = Math.max(
+    0,
+    Math.min(
+      1,
+      (scroll - anchors[index]) /
+        Math.max(1, anchors[index + 1] - anchors[index]),
+    ),
+  );
+  const ease = t * t * (3 - 2 * t),
+    from = stops[index],
+    to = stops[index + 1];
+  const mix = (a: number, b: number) => a + (b - a) * ease;
+  return {
+    x: mix(from.x, to.x),
+    y: mix(from.y, to.y),
+    scale: mix(from.scale, to.scale),
+    turn: mix(from.turn, to.turn),
+    opacity: mix(from.opacity, to.opacity),
+    water: 1 - Math.min(1, index + ease) * 0.85,
+    progress: (index + t) / 4,
+  };
 }

@@ -1,50 +1,104 @@
-// Optional browser suite: run against a separately started Next server.
-// LANDING_BASE_URL=http://localhost:3000 node tests/landing-interactions.mjs
-import assert from 'node:assert/strict';
-const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_EXECUTABLE,
-  args: ['--no-sandbox', ...(process.env.DISABLE_WEBGL ? ['--disable-webgl'] : [])] });
-const baseURL = process.env.LANDING_BASE_URL || 'http://localhost:3000';
+// Optional browser suite; run against a local Next server. This suite is not run by the managed preview.
+import assert from "node:assert/strict";
+const { chromium } = await import(
+  process.env.PLAYWRIGHT_MODULE || "playwright"
+);
+const browser = await chromium.launch({
+  headless: true,
+  executablePath: process.env.CHROMIUM_EXECUTABLE,
+  args: process.env.DISABLE_WEBGL ? ["--disable-webgl"] : [],
+});
+const url = process.env.LANDING_BASE_URL || "http://localhost:3000";
 try {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  const errors = []; page.on('pageerror', error => errors.push(error.message));
-  await page.goto(baseURL);
-  await page.getByRole('heading', { name: 'VOKASI', exact: true }).waitFor();
-  const canvas = page.locator('.vkw-canvas');
-  await page.waitForFunction(() => document.querySelector('.vkw-canvas')?.hasAttribute('data-ready') || document.querySelector('.vkw-canvas')?.hasAttribute('data-fallback'));
-  if (process.env.DISABLE_WEBGL) assert.equal(await canvas.getAttribute('data-fallback'), 'true');
-  else {
-    assert.equal(await canvas.getAttribute('data-ready'), 'true', 'Actual WebGL and logo texture loaded');
-    await page.getByRole('button', { name: 'Jeda animasi' }).click();
-    assert.equal(await page.getByRole('button', { name: 'Putar animasi' }).getAttribute('aria-pressed'), 'true');
-    const before = await canvas.screenshot(); await page.waitForTimeout(200);
-    assert.deepEqual(await canvas.screenshot(), before, 'Paused image is stable');
-    await page.locator('#tentang').scrollIntoViewIfNeeded();
+  const page = await browser.newPage({
+      viewport: { width: 1440, height: 900 },
+    }),
+    errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto(url);
+  await page.waitForFunction(() => {
+    const el = document.querySelector(".vkw-canvas");
+    return el?.hasAttribute("data-ready") || el?.hasAttribute("data-fallback");
+  });
+  const canvas = page.locator(".vkw-canvas");
+  if (!process.env.DISABLE_WEBGL) {
+    assert.equal(await canvas.getAttribute("data-ready"), "true");
+    const initial = Number(await canvas.getAttribute("data-rotation"));
+    await page.waitForTimeout(500);
+    assert.ok(
+      Number(await canvas.getAttribute("data-rotation")) > initial,
+      "Idle rotation",
+    );
+    for (const id of ["tentang", "leaderboard", "fitur", "panduan"]) {
+      await page.evaluate((id) => {
+        const el = document.getElementById(id);
+        window.scrollTo(0, el.getBoundingClientRect().top + scrollY);
+      }, id);
+      await page.waitForTimeout(100);
+      if (id === "leaderboard")
+        assert.ok(Number(await canvas.getAttribute("data-opacity")) < 0.1);
+      if (id === "fitur")
+        assert.ok(Number(await canvas.getAttribute("data-opacity")) > 0.95);
+    }
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.waitForTimeout(100);
-    assert.ok(Number(await canvas.getAttribute('data-progress')) > .25, 'Scroll advances scene even while paused');
-    assert.ok(Number(await canvas.getAttribute('data-logo-x')) < 0, 'Crest accompanies About on left');
-    await page.locator('#peringkat').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(100);
-    assert.ok(Number(await canvas.getAttribute('data-logo-x')) > 0, 'Crest accompanies ranking on right');
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.waitForTimeout(100);
-    const reduced = await canvas.screenshot(); await page.waitForTimeout(200);
-    assert.deepEqual(await canvas.screenshot(), reduced, 'Reduced motion is static');
-  }
-  for (const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:568},{width:844,height:390}]) {
+    const rotation = await canvas.getAttribute("data-rotation");
+    await page.waitForTimeout(200);
+    assert.equal(await canvas.getAttribute("data-rotation"), rotation);
+  } else assert.equal(await canvas.getAttribute("data-fallback"), "true");
+  await page.goto(url);
+  const login = page.getByRole("link", { name: "Login", exact: true });
+  await login.click();
+  const dialog = page.getByRole("dialog");
+  await dialog.waitFor();
+  assert.equal(
+    await page.evaluate(() => document.activeElement.id),
+    "vkw-identity",
+  );
+  await page.getByLabel("Password", { exact: true }).fill("test-only");
+  await page.getByRole("button", { name: "Lihat password" }).click();
+  assert.equal(
+    await page.locator("#vkw-password").getAttribute("type"),
+    "text",
+  );
+  await page.keyboard.press("Escape");
+  assert.ok(!(await dialog.isVisible()));
+  assert.ok(await login.evaluate((el) => document.activeElement === el));
+  await login.click();
+  assert.equal(await page.locator("#vkw-password").inputValue(), "");
+  await page.getByRole("button", { name: "Admin", exact: true }).click();
+  await page.getByLabel("Email admin").waitFor();
+  await page.getByRole("button", { name: "Tutup login" }).click();
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+    { width: 320, height: 568 },
+  ]) {
     await page.setViewportSize(viewport);
-    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'No horizontal overflow');
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    );
+    await page.getByRole("link", { name: "Latihan", exact: true }).click();
+    assert.ok(await dialog.isVisible());
+    await page.getByRole("button", { name: "Tutup login" }).click();
   }
-  await page.getByText('Apa itu VOKASI?', { exact:true }).click();
-  assert.equal(await page.locator('details').first().getAttribute('open'), '');
-  for (const [name, role] of [['Mulai Belajar','student'],['Masuk sebagai Admin','admin']]) {
-    await page.goto(baseURL); await page.getByRole('link',{name}).click();
-    await page.waitForURL(`**/login?role=${role}`);
-    assert.ok(await page.locator('input').count() >= 2);
-  }
-  const noJS = await browser.newPage({javaScriptEnabled:false}); await noJS.goto(baseURL);
-  await noJS.getByRole('heading',{name:'VOKASI',exact:true}).waitFor();
-  assert.equal(await noJS.getByRole('link',{name:'Mulai Belajar'}).getAttribute('href'),'/login?role=student');
-  assert.deepEqual(errors,[]);
-  console.log('PASS: scene readiness/fallback, scroll, pause, reduced motion, responsive layout, FAQ, login routes, no-JS.');
-} finally { await browser.close(); }
+  assert.equal(await page.locator(".vkw-champion").count(), 3);
+  assert.equal(await page.locator(".vkw-feature-card").count(), 4);
+  assert.equal(await page.locator(".vkw-steps li").count(), 4);
+  const noJS = await browser.newPage({ javaScriptEnabled: false });
+  await noJS.goto(url);
+  assert.equal(
+    await noJS
+      .getByRole("link", { name: "Latihan", exact: true })
+      .getAttribute("href"),
+    "/login?role=student",
+  );
+  assert.deepEqual(errors, []);
+  console.log(
+    "PASS: WebGL/fallback, scroll rotation/fade, reduced motion, modal controls/focus, layout and no-JS links.",
+  );
+} finally {
+  await browser.close();
+}
