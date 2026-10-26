@@ -342,3 +342,98 @@
   }
   .admin-overview-trend-track {max-width:38px;}
 }
+
+
+/* 2026-10-26: fixed school-photo backdrop and unobtrusive blue glass.
+   These overrides are scoped to the admin dashboard, not student routes. */
+.school-shell.admin-overview-shell {
+  background:#d6e6f9;
+}
+.school-shell.admin-overview-shell::before {
+  background-image:
+    linear-gradient(130deg,
+      rgba(203,225,250,.60) 0%,
+      rgba(222,235,252,.61) 45%,
+      rgba(208,227,252,.70) 100%),
+    url('/assets/foto-bersama-depan-stema-scaled.jpeg');
+  background-position:center 45%;
+  background-size:cover;
+  background-repeat:no-repeat;
+}
+.admin-overview-shell>.sidebar {
+  background:rgba(248,252,255,.77);
+  border-right:1px solid rgba(255,255,255,.68);
+  box-shadow:5px 0 30px rgba(28,71,127,.08);
+  -webkit-backdrop-filter:blur(18px) saturate(130%);
+  backdrop-filter:blur(18px) saturate(130%);
+}
+.admin-overview-shell .topbar {
+  background:rgba(248,252,255,.68);
+  border-bottom:1px solid rgba(255,255,255,.69);
+  -webkit-backdrop-filter:blur(16px) saturate(130%);
+  backdrop-filter:blur(16px) saturate(130%);
+}
+.admin-overview-grid .white-panel {
+  background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(247,251,255,.64));
+  border:1px solid rgba(255,255,255,.80);
+  box-shadow:0 15px 38px rgba(26,65,124,.085), inset 0 1px 0 rgba(255,255,255,.7);
+  -webkit-backdrop-filter:blur(16px) saturate(125%);
+  backdrop-filter:blur(16px) saturate(125%);
+}
+.admin-overview .admin-overview-performance-card {
+  background:linear-gradient(140deg,
+    rgba(17,56,113,.92) 0%,
+    rgba(24,75,150,.85) 57%,
+    rgba(36,98,190,.78) 100%);
+  border:1px solid rgba(196,223,255,.48);
+  box-shadow:0 16px 38px rgba(12,51,119,.20),inset 0 1px rgba(255,255,255,.22);
+  -webkit-backdrop-filter:blur(16px) saturate(135%);
+  backdrop-filter:blur(16px) saturate(135%);
+}
+/* Actual chart appears even before scores exist; hatched tracks mean no data. */
+.admin-overview-performance-card .admin-overview-trend-chart {
+  display:grid;
+  grid-template-columns:23px minmax(0,1fr);
+  gap:7px;
+  margin-top:16px;
+}
+.admin-overview-trend-scale {
+  display:flex;flex-direction:column;justify-content:space-between;
+  height:110px;padding-top:1px;
+  font-size:9px;font-weight:700;font-variant-numeric:tabular-nums;
+  color:rgba(230,241,255,.84);
+}
+.admin-overview-performance-card .admin-overview-trend-bars {
+  height:155px;
+  margin:0;
+  background:repeating-linear-gradient(to top,
+    transparent 0,transparent 50px,rgba(216,235,255,.16) 51px, transparent 52px);
+  background-size:100% 105px;
+  background-position:0 0;
+  background-repeat:no-repeat;
+}
+.admin-overview-performance-card .admin-overview-trend-track.is-empty {
+  border:1px dashed rgba(213,234,255,.21);
+  background:repeating-linear-gradient(-45deg,
+    rgba(216,236,255,.14) 0 3px,
+    rgba(216,236,255,.055) 3px 7px);
+}
+.admin-overview-performance-card .admin-overview-trend-track.is-empty>div {display:none;}
+.admin-overview-trend-status {
+  margin:9px 0 0;
+  color:#e2efff;font-size:10px;line-height:1.6;
+}
+.admin-overview-performance-card .admin-overview-trend-note {margin-top:12px;}
+@media(max-width:600px) {
+  .school-shell.admin-overview-shell::before {background-position:49% center;}
+}
+@media(prefers-reduced-transparency:reduce) {
+  .admin-overview-shell>.sidebar,.admin-overview-shell .topbar {background:#f9fbff;-webkit-backdrop-filter:none;backdrop-filter:none;}
+  .admin-overview-grid .white-panel{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;}
+  .admin-overview .admin-overview-performance-card{background:#23599e;-webkit-backdrop-filter:none;backdrop-filter:none;}
+}
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))) {
+  .admin-overview-shell>.sidebar,.admin-overview-shell .topbar {background:rgba(249,251,255,.95);}
+  .admin-overview-grid .white-panel {background:rgba(250,252,255,.95);}
+  .admin-overview .admin-overview-performance-card{background:#23599e;}
+}

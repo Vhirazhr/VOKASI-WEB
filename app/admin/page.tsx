@@ -193,16 +193,19 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
             <div><span>STATISTIK PERKEMBANGAN</span><h3>Tren nilai 7 hari</h3></div>
             <Link href={embed?'/admin/analitik?embed=1':'/admin/analitik'} aria-label="Lihat statistik analitik selengkapnya">Detail <ArrowRight size={14}/></Link>
           </div>
-          {busy?<p className="admin-overview-trend-state">Memuat statistik terverifikasi...</p>:
-           trendError?<p className="admin-overview-trend-state" role="status">{trendError}</p>:
-           !trendHasData?<p className="admin-overview-trend-state">Belum ada nilai latihan wajib terverifikasi selama 7 hari terakhir pada filter ini.</p>:
-           <div className="admin-overview-trend-bars" role="img" aria-label="Rata-rata nilai latihan wajib tiap hari selama tujuh hari hingga tanggal yang dipilih. Skala nol sampai seratus.">
-             {trendDays.map(d=><div className="admin-overview-trend-day" key={d.date} title={d.label+': '+d.completed+' siswa, rata-rata nilai '+(d.average??'belum ada')}>
-               <span className="admin-overview-trend-value">{d.average??'—'}</span>
-               <div className="admin-overview-trend-track"><div style={{height:(d.average??0)+'%'}}/></div>
-               <small>{d.label}</small>
-             </div>)}
-           </div>}
+          <div className="admin-overview-trend-chart">
+            <div className="admin-overview-trend-scale" aria-hidden="true"><span>100</span><span>50</span><span>0</span></div>
+            <div className="admin-overview-trend-bars" role="img" aria-label={busy?'Grafik perkembangan sedang dimuat':trendError?trendError:trendHasData?'Grafik rata-rata nilai wajib terverifikasi selama tujuh hari pada skala 0 hingga 100':'Diagram tujuh hari belum memiliki nilai terverifikasi; tidak ada nilai rekaan'}>
+              {trendDays.map(d=><div className="admin-overview-trend-day" key={d.date} title={d.label+': '+d.completed+' siswa, rata-rata nilai '+(d.average??'belum ada')}>
+                <span className="admin-overview-trend-value">{busy||trendError||d.average===null?'—':d.average}</span>
+                <div className={'admin-overview-trend-track '+(busy||trendError||d.average===null?'is-empty':'')}>
+                  <div style={{height:(busy||trendError||d.average===null?0:d.average)+'%'}}/>
+                </div>
+                <small>{d.label}</small>
+              </div>)}
+            </div>
+          </div>
+          {(busy||trendError||!trendHasData)&&<p className="admin-overview-trend-status" role="status">{busy?'Memuat data perkembangan...':trendError||'Belum ada nilai terverifikasi pada periode ini.'}</p>}
           <p className="admin-overview-trend-note">Rata-rata nilai terakhir per siswa per hari (WIB), dari hasil terverifikasi.</p>
         </div>
       </section>
