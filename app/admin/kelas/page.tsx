@@ -25,6 +25,28 @@ export default function AdminClassesPage(){
  const [deleteTarget,setDeleteTarget]=useState<ClassSummary|null>(null);
  const [newGrade,setNewGrade]=useState(10),[newYear,setNewYear]=useState('2026/2027');
  const [saveBusy,setSaveBusy]=useState(false),[feedback,setFeedback]=useState('');
+ // Dialogs lock only background scrolling, never scrolling inside the dialog.
+ useEffect(()=>{
+  if(!selected&&!classModal&&!deleteTarget)return;
+  const html=document.documentElement;
+  const body=document.body;
+  const oldHtml=html.style.overflow;
+  const oldBody=body.style.overflow;
+  html.style.overflow='hidden';
+  body.style.overflow='hidden';
+  function onEscape(event:KeyboardEvent){
+   if(event.key!=='Escape')return;
+   if(deleteTarget){if(!saveBusy){setDeleteTarget(null);setFeedback('');}}
+   else if(classModal){if(!saveBusy){setClassModal(null);setFeedback('');}}
+   else setSelected(null);
+  }
+  window.addEventListener('keydown',onEscape);
+  return ()=>{
+   html.style.overflow=oldHtml;
+   body.style.overflow=oldBody;
+   window.removeEventListener('keydown',onEscape);
+  };
+ },[selected,classModal,deleteTarget,saveBusy]);
  useEffect(()=>{if(loading||error)return;let active=true;
   async function load(){try{
  const [data,cls]=await Promise.all([
@@ -163,7 +185,28 @@ export default function AdminClassesPage(){
      {feedback&&<div className="alert danger" role="alert">{feedback}</div>}
      <div className="admin-class-modal-actions"><button type="button" className="btn secondary small" onClick={()=>setDeleteTarget(null)} disabled={saveBusy}>Batal</button><button type="button" className="btn primary small admin-class-confirm-delete" onClick={()=>void removeClass()} disabled={saveBusy||deleteTarget.count>0}><Trash2 size={15}/>{saveBusy?'Menghapus...':'Ya, hapus kelas'}</button></div>
     </section></div>}
-   {picked&&<section className="admin-data-card admin-class-members"><div className="admin-data-title"><div><span className="section-kicker">ANGGOTA KELAS</span><h2>{picked.name}</h2><p>{picked.major} · {picked.count} siswa</p></div><button type="button" className="btn secondary small" onClick={()=>setSelected(null)}>Tutup</button></div><div className="admin-workspace-table-wrap"><table><thead><tr><th>Nama siswa</th><th>Username</th><th>Status</th></tr></thead><tbody>{picked.students.slice().sort((a,b)=>a.fullName.localeCompare(b.fullName,'id')).map(s=><tr key={s.id}><td><b>{s.fullName}</b></td><td>{s.username||'—'}</td><td><span className={s.registered?'admin-workspace-status ok':'admin-workspace-status wait'}>{s.registered?'Terdaftar':'Belum terdaftar'}</span></td></tr>)}</tbody></table></div></section>}
+   {picked&&<div className="admin-modal-overlay admin-class-detail-overlay" role="presentation" onMouseDown={()=>setSelected(null)}>
+    <section role="dialog" aria-modal="true" aria-labelledby="class-detail-title" className="admin-modal-card admin-class-detail-modal" onMouseDown={e=>e.stopPropagation()}>
+     <header className="admin-modal-top admin-class-detail-head">
+      <div><span className="section-kicker">DETAIL KELAS</span><h2 id="class-detail-title">{picked.name}</h2><p>{picked.major} · Tahun ajaran {picked.year}</p></div>
+      <button type="button" aria-label="Tutup detail kelas" title="Tutup detail kelas" autoFocus onClick={()=>setSelected(null)}><X size={19}/></button>
+     </header>
+     <div className="admin-class-detail-summary">
+      <div><Users size={18}/><span>Total siswa</span><strong>{picked.count}</strong></div>
+      <div><GraduationCap size={18}/><span>Terdaftar</span><strong>{picked.registered}</strong></div>
+      <div><BookOpen size={18}/><span>Belum terdaftar</span><strong>{picked.count-picked.registered}</strong></div>
+     </div>
+     <div className="admin-class-detail-subheading"><h3>Daftar anggota kelas</h3><span>{picked.count} siswa</span></div>
+     {picked.students.length===0?<div className="admin-workspace-empty">Belum ada siswa di kelas ini.</div>:
+      <div className="admin-workspace-table-wrap admin-class-detail-table"><table><thead><tr><th>Nama siswa</th><th>Username</th><th>Status</th></tr></thead><tbody>
+       {picked.students.slice().sort((a,b)=>a.fullName.localeCompare(b.fullName,'id')).map(student=><tr key={student.id}>
+        <td><b>{student.fullName}</b></td><td>{student.username||'—'}</td>
+        <td><span className={student.registered?'admin-workspace-status ok':'admin-workspace-status wait'}>{student.registered?'Terdaftar':'Belum terdaftar'}</span></td>
+       </tr>)}
+      </tbody></table></div>}
+     <footer className="admin-class-detail-footer"><button type="button" className="btn secondary small" onClick={()=>setSelected(null)}>Tutup</button></footer>
+    </section>
+   </div>}
   </div>
  </AppShell>;
 }
