@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {BookOpen,Clock3,FileQuestion,Plus,Search,FileUp,PenLine} from 'lucide-react';
+import {BookOpen,Clock3,FileQuestion,Plus,Search,FileUp,PenLine,AlertCircle,FileText,CheckCircle2,UploadCloud,Trash2} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {fetchBank} from '@/lib/quiz';
@@ -35,10 +35,87 @@ const MATERIAL_GROUPS:Record<string,string[]>={
 const EDIT_MATERIALS=Object.keys(MATERIAL_GROUPS);
 const groupLabel=(key:string)=>GROUP_LABELS[key]||key.replaceAll('_',' ').toLocaleLowerCase('id-ID').replace(/^./,c=>c.toLocaleUpperCase('id-ID'));
 
+type DraftRow={id:string;source_number:number|null;category:string;difficulty_code:string|null;question:string;question_image_path:string|null;options:{text:string;image_path:string|null}[];correct_index:number;time_limit_seconds:number;explanation:string;created_at:string};
+type ImportDraft={id:string;file_name:string;mode:string;payload:unknown[];created_at:string};
+type ReviewItem={number:number;reasons:string[]};
+type DraftIssue={id:string;reasons:string[]};
+type BankTab='published'|'review'|'drafts';
+const blankOptions=()=>[{text:'',image_path:null},{text:'',image_path:null},{text:'',image_path:null}];
 type EditRow={source_number:number;category:string;difficulty_code:string;question:string;question_image_path:string|null;options:{text:string;image_path:string|null}[];correct_index:number;time_limit_seconds:number;explanation:string};
 export default function AdminBankPage(){
  const {loading,error,logout}=useSchoolAuth('admin');
  const [bank,setBank]=useState<BankQuestion[]>([]),[busy,setBusy]=useState(true),[issue,setIssue]=useState('');
+ const [tab,setTab]=useState<BankTab>('published');
+ const [review,setReview]=useState<ReviewItem[]>([]),[draftProblems,setDraftProblems]=useState<DraftIssue[]>([]);
+ const [drafts,setDrafts]=useState<DraftRow[]>([]),[importDrafts,setImportDrafts]=useState<ImportDraft[]>([]);
+ const [createOpen,setCreateOpen]=useState(false),[createSaving,setCreateSaving]=useState(false),[createNotice,setCreateNotice]=useState('');
+ const [draftEditing,setDraftEditing]=useState<string|null>(null);
+ const [newCategory,setNewCategory]=useState('Perkalian'),[newGroup,setNewGroup]=useState('HITUNG_DASAR');
+ const [newQuestion,setNewQuestion]=useState(''),[newOptions,setNewOptions]=useState(blankOptions);
+ const [newCorrect,setNewCorrect]=useState(0),[newExplanation,setNewExplanation]=useState('');
+ const [newImage,setNewImage]=useState<File|null>(null),[newImagePath,setNewImagePath]=useState<string|null>(null);
+ const [newChoiceFiles,setNewChoiceFiles]=useState<Record<number,File>>({}),[publishNew,setPublishNew]=useState(false);
+ const [newFilesIssue,setNewFilesIssue]=useState('');
+ function openNew(d?:DraftRow){
+  setDraftEditing(d?.id||null);setNewCategory(d?.category||'Perkalian');
+  setNewGroup(d?.difficulty_code||'HITUNG_DASAR');
+  setNewQuestion(d?.question||'');setNewOptions(d?.options.map(o=>({...o}))||blankOptions());
+  setNewCorrect(d?.correct_index||0);setNewExplanation(d?.explanation||'');
+  setNewImage(null);setNewImagePath(d?.question_image_path||null);
+  setNewChoiceFiles({});setPublishNew(false);setCreateNotice('');setNewFilesIssue('');setCreateOpen(true);
+ }
+ function changeNewCategory(category:string){
+  const options=MATERIAL_GROUPS[category]||[];
+  setNewCategory(category);setNewGroup(g=>options.includes(g)?g:options[0]||'HITUNG_DASAR');
+ }
+ async function saveNew(){
+  setCreateNotice('');
+  if(!newQuestion.trim()&&!newImage&&!newImagePath){setCreateNotice('Pertanyaan atau gambar utama wajib tersedia.');return;}
+  if(newOptions.length<2||newOptions.length>6||newOptions.some((o,i)=>!o.text.trim()&&!o.image_path&&!newChoiceFiles[i])){setCreateNotice('Lengkapi seluruh pilihan jawaban (2–6 opsi).');return;}
+  if(newCorrect<0||newCorrect>=newOptions.length){setCreateNotice('Pilih kunci jawaban.');return;}
+  if(newGroup==='POLA_GAMBAR'&&!newImage&&!newImagePath){setCreateNotice('Pola Gambar wajib memiliki gambar utama.');return;}
+  if(!MATERIAL_GROUPS[newCategory]?.includes(newGroup)||!approvedGroup(newGroup)){setCreateNotice('Materi dan kelompok tidak sesuai.');return;}
+  if(publishNew&&draftEditing){setCreateNotice('Simpan perubahan draft terlebih dahulu. Terbitkan soal baru lewat Tambah Soal.');return;}
+  if(publishNew&&!window.confirm('Terbitkan soal langsung ke bank aktif? Soal lama tidak diganti.'))return;
+  setCreateSaving(true);
+  const uploaded:string[]=[];
+  try{
+   const {data:{user},error:authError}=await supabase().auth.getUser();
+   if(authError||!user)throw new Error('Sesi admin perlu diperbarui.');
+   async function upload(file:File){
+    if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>3145728)throw new Error('Gambar harus PNG/JPG/WEBP maksimal 3 MB.');
+    const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+    const path=user!.id+'/'+crypto.randomUUID()+'.'+ext;
+    const {error:uploadError}=await supabase().storage.from('vokasi-question-figures').upload(path,file,{contentType:file.type,upsert:false});
+    if(uploadError)throw uploadError;
+    uploaded.push(path);return path;
+   }
+   const imagePath=newImage?await upload(newImage):newImagePath;
+   const answers=[];
+   for(let i=0;i<newOptions.length;i++)answers.push({text:newOptions[i].text.trim(),image_path:newChoiceFiles[i]?await upload(newChoiceFiles[i]):newOptions[i].image_path});
+   const values={category:newCategory,difficulty_code:newGroup,time_limit_seconds:APPROVED_BLUEPRINT.groups[newGroup as keyof typeof APPROVED_BLUEPRINT.groups].seconds,
+    question:newQuestion.trim(),question_image_path:imagePath,options:answers,correct_index:newCorrect,explanation:newExplanation.trim()};
+   if(publishNew){
+    const {error:publishError}=await supabase().rpc('vokasi_admin_import_questions',{p_questions:[values],p_mode:'append'});
+    if(publishError)throw publishError;
+   }else if(draftEditing){
+    const {error:saveError}=await supabase().from('vokasi_question_drafts').update(values).eq('id',draftEditing);
+    if(saveError)throw saveError;
+   }else{
+    const {error:saveError}=await supabase().from('vokasi_question_drafts').insert({...values,source_number:null,created_by:user.id});
+    if(saveError)throw saveError;
+   }
+   setCreateOpen(false);setTab(publishNew?'published':'drafts');setBusy(true);setRefreshKey(v=>v+1);
+  }catch(e){
+   if(uploaded.length)await supabase().storage.from('vokasi-question-figures').remove(uploaded);
+   setCreateNotice(e instanceof Error?e.message:'Gagal menyimpan soal.');
+  }finally{setCreateSaving(false);}
+ }
+ async function deleteDraft(d:DraftRow){
+  if(!window.confirm('Hapus draft ini? Soal aktif tetap aman.'))return;
+  const {error}=await supabase().from('vokasi_question_drafts').delete().eq('id',d.id);
+  if(error)setIssue(error.message);else{setBusy(true);setRefreshKey(v=>v+1);}
+ }
  const [edit,setEdit]=useState<EditRow|null>(null),[original,setOriginal]=useState<EditRow|null>(null);
  const [editBusy,setEditBusy]=useState(false),[editIssue,setEditIssue]=useState(''),[refreshKey,setRefreshKey]=useState(0);
  async function startEdit(id:number){
@@ -83,7 +160,35 @@ export default function AdminBankPage(){
  }
  const [search,setSearch]=useState(''),[category,setCategory]=useState(''),[code,setCode]=useState(''),[page,setPage]=useState(0),[selected,setSelected]=useState<BankQuestion|null>(null);
  useEffect(()=>{if(loading||error)return;let active=true;
-  async function load(){try{const data=await fetchBank();if(active){setBank(data);setIssue('');setBusy(false);}}catch(e){if(active){setIssue(e instanceof Error?e.message:'Bank soal tidak dapat dimuat.');setBusy(false);}}}
+  async function load(){try{
+    const [bankResult,qualityResult,draftResult,importResult]=await Promise.allSettled([
+     fetchBank(),
+     supabase().rpc('vokasi_admin_question_health'),
+     supabase().from('vokasi_question_drafts').select('id,source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation,created_at').order('created_at',{ascending:false}).limit(1000),
+     supabase().from('vokasi_web_import_drafts').select('id,file_name,mode,payload,created_at').order('created_at',{ascending:false}).limit(30)
+    ]);
+    if(bankResult.status==='rejected')throw bankResult.reason;
+    const data=bankResult.value;
+    const rawDrafts=draftResult.status==='fulfilled'&&!draftResult.value.error?(draftResult.value.data||[]) as DraftRow[]:[];
+    const rowMap=new Map(data.map(x=>[x.id,x]));
+    // Legacy migration kept 500 mirrored draft copies. Hide identical published records.
+    const actualDrafts=rawDrafts.filter(d=>{
+      const pub=d.source_number?rowMap.get(d.source_number):undefined;
+      if(!pub)return true;
+      return d.question!==pub.question||d.category!==pub.category||d.difficulty_code!==pub.difficultyCode||
+       d.time_limit_seconds!==pub.timeLimitSeconds||d.explanation!==pub.explanation||
+       d.correct_index!==pub.correctOption.charCodeAt(0)-65||
+       JSON.stringify(d.options.map(o=>o.text))!==JSON.stringify(pub.options);
+    });
+    const health=qualityResult.status==='fulfilled'&&!qualityResult.value.error?qualityResult.value.data as {published?:ReviewItem[];drafts?:DraftIssue[]}:null;
+    if(active){
+     setBank(data);setReview(health?.published||[]);
+     setDraftProblems(health?.drafts||[]);setDrafts(actualDrafts);
+     setImportDrafts(importResult.status==='fulfilled'&&!importResult.value.error?(importResult.value.data||[]) as ImportDraft[]:[]);
+     setIssue(qualityResult.status==='fulfilled'&&qualityResult.value.error?'Pemeriksaan status belum tersedia: '+qualityResult.value.error.message:'');
+     setBusy(false);
+    }
+   }catch(e){if(active){setIssue(e instanceof Error?e.message:'Bank soal tidak dapat dimuat.');setBusy(false);}}}
   queueMicrotask(()=>void load());return()=>{active=false};
  },[loading,error,refreshKey]);
  const categories=useMemo(()=>[...new Set(bank.map(b=>b.category))].sort((a,b)=>a.localeCompare(b,'id')),[bank]);
