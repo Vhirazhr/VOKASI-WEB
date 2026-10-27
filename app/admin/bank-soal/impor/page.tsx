@@ -33,7 +33,18 @@ export default function UnifiedQuestionImport(){
     supabase().from('vokasi_web_published_questions').select('source_number',{count:'exact',head:true})
    ]);
    if(drafts.error)throw drafts.error;
-   setSaved((drafts.data||[]) as Stored[]);
+   const existing=(drafts.data||[]) as Stored[];
+   setSaved(existing);
+   const requested=new URLSearchParams(window.location.search).get('draft');
+   if(requested){
+    const item=existing.find(d=>d.id===requested);
+    if(item){
+     setRows(item.payload);setFileName(item.file_name);setMode(item.mode);
+     setSavedId(item.id);setPendingImages({});setWarnings([]);setPage(0);setExpanded(0);
+     setNotice('Draft '+item.file_name+' dibuka. Periksa sebelum menerbitkan.');
+    }else setNotice('Draft impor tersebut tidak ditemukan atau tidak dapat diakses.');
+    window.history.replaceState(window.history.state,'',window.location.pathname);
+   }
    if(!bank.error)setActiveCount(bank.count);
   }catch(e){setNotice('Gagal memuat draft impor: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}
  }
