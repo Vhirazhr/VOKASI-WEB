@@ -267,3 +267,44 @@
 .admin-bank-edit-duration{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#eef5ff;color:#3269b9}
 @media(max-width:590px){.admin-bank-edit-classification{grid-template-columns:1fr 1fr}.admin-bank-edit-classification label:last-child{grid-column:1/-1}}
 @media(max-width:410px){.admin-bank-edit-classification{grid-template-columns:1fr}.admin-bank-edit-classification label:last-child{grid-column:auto}}
+
+/* Unified bank workspace: published, needs review, and unpublished drafts. */
+.admin-bank-workspace-tabs{display:flex;gap:7px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #e4ecf8;margin:-2px 0 21px;padding:0 0 12px}
+.admin-bank-workspace-tabs button{display:flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid #deebfa;border-radius:9px;background:#f7faff;color:#5d7ca7;font-size:11px;font-weight:800;cursor:pointer}
+.admin-bank-workspace-tabs button.active{background:#3268e5;border-color:#3268e5;color:#fff}
+.admin-bank-workspace-tabs button span{border-radius:30px;background:#e6eefb;color:#5279b3;padding:2px 7px;font-variant-numeric:tabular-nums;font-size:10px}
+.admin-bank-workspace-tabs button.active span{background:#ffffff33;color:#fff}
+.admin-bank-table .bank-width-status{width:143px}
+.admin-bank-page .admin-workspace-table-wrap .admin-bank-table{min-width:1080px}
+.admin-bank-quality{display:inline-flex;align-items:center;gap:5px;max-width:100%;white-space:nowrap;border:0;border-radius:8px;padding:7px 9px;font-size:10px;font-weight:800;line-height:1.25}
+.admin-bank-quality.ok{background:#e8f7f1;color:#258261}
+.admin-bank-quality.needs{background:#fff4df;color:#a16a24;cursor:pointer}
+.admin-bank-quality.draft{background:#edf2ff;color:#5275ad}
+.admin-bank-draft-list{display:grid;gap:10px}
+.admin-bank-draft-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px;border:1px solid #e1eaf7;border-radius:12px;background:#fcfdff}
+.admin-bank-draft-info{display:grid;gap:6px;min-width:0}
+.admin-bank-draft-info strong{font-size:12px;color:#254d7d;overflow-wrap:anywhere}
+.admin-bank-draft-info p{margin:0;color:#6a87a9;font-size:11px}
+.admin-bank-draft-info .admin-bank-quality{justify-self:start;white-space:normal}
+.admin-bank-draft-tag{font-size:9px;letter-spacing:.06em;font-weight:800;text-transform:uppercase;color:#3b73c0}
+.admin-bank-create-modal{width:min(100%,780px);display:grid;gap:12px}
+.admin-bank-create-modal h2{margin:4px 0 0}
+.admin-bank-create-modal>label:not(.admin-bank-publish-check){display:grid;gap:7px;font-size:11px;font-weight:800;color:#365d8a}
+.admin-bank-create-modal textarea,.admin-bank-new-choice>input{width:100%;min-width:0;padding:11px 12px;border:1px solid #d6e4f6;background:#fafcff;border-radius:10px;color:#23466f;font:inherit;font-size:12px}
+.admin-bank-create-modal textarea{resize:vertical}
+.admin-bank-create-modal fieldset{min-width:0;padding:12px;border:1px solid #dfebfa;border-radius:11px}
+.admin-bank-create-modal legend{padding:0 6px;font-size:11px;color:#41689b;font-weight:800}
+.admin-bank-new-choice{display:flex;align-items:center;gap:8px;margin:8px 0}
+.admin-bank-new-choice>label:first-child{display:flex;align-items:center;gap:5px;width:48px;flex:none;font-size:11px;font-weight:800;color:#2c67b7}
+.admin-bank-new-choice input[type=radio]{accent-color:#3268e5}
+.admin-bank-create-upload,.admin-bank-option-upload{position:relative;display:flex!important;align-items:center;justify-content:center;gap:7px;cursor:pointer;border:1px dashed #acc9eb;border-radius:10px;background:#f5f9ff;color:#416fae;padding:10px;font-size:11px;font-weight:750}
+.admin-bank-create-upload input,.admin-bank-option-upload input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+.admin-bank-option-upload{flex:none;min-width:78px;padding:10px 8px}
+.admin-bank-file-remove,.admin-bank-mini-remove,.admin-bank-add-choice{padding:7px;border:1px solid #dce8f8;border-radius:8px;background:#f4f8ff;color:#366bb8;font-size:10px;font-weight:800;cursor:pointer}
+.admin-bank-mini-remove{flex:none}
+.admin-bank-add-choice{display:flex;gap:7px;align-items:center;justify-content:center;width:100%;margin-top:8px}
+.admin-bank-publish-check{display:flex;align-items:start;gap:10px;padding:13px;border:1px solid #d7e5fa;border-radius:11px;background:#f4f8ff;color:#2d5eaa;font-size:11px;cursor:pointer}
+.admin-bank-publish-check>input{margin-top:3px;accent-color:#3268e5}
+.admin-bank-publish-check>span{display:grid;gap:4px}
+.admin-bank-publish-check small{color:#7893b3;font-size:10px}
+@media(max-width:650px){.admin-bank-draft-card{flex-direction:column;align-items:start}.admin-bank-new-choice{flex-wrap:wrap}.admin-bank-new-choice>input{flex-basis:calc(100% - 55px)}.admin-bank-option-upload{margin-left:55px}}
