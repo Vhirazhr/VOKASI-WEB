@@ -162,7 +162,7 @@ export default function AdminBankPage(){
  useEffect(()=>{if(loading||error)return;let active=true;
   async function load(){try{
     const [bankResult,qualityResult,draftResult,importResult]=await Promise.allSettled([
-     fetchBank(),
+     fetchBank({allowIncomplete:true}),
      supabase().rpc('vokasi_admin_question_health'),
      supabase().from('vokasi_question_drafts').select('id,source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation,created_at').order('created_at',{ascending:false}).limit(1000),
      supabase().from('vokasi_web_import_drafts').select('id,file_name,mode,payload,created_at').order('created_at',{ascending:false}).limit(30)
@@ -178,7 +178,9 @@ export default function AdminBankPage(){
       return d.question!==pub.question||d.category!==pub.category||d.difficulty_code!==pub.difficultyCode||
        d.time_limit_seconds!==pub.timeLimitSeconds||d.explanation!==pub.explanation||
        d.correct_index!==pub.correctOption.charCodeAt(0)-65||
-       JSON.stringify(d.options.map(o=>o.text))!==JSON.stringify(pub.options);
+       Boolean(d.question_image_path)!==Boolean(pub.questionImageUrl)||
+       JSON.stringify(d.options.map(o=>o.text))!==JSON.stringify(pub.options)||
+       JSON.stringify(d.options.map(o=>Boolean(o.image_path)))!==JSON.stringify(pub.optionImageUrls?.map(Boolean));
     });
     const health=qualityResult.status==='fulfilled'&&!qualityResult.value.error?qualityResult.value.data as {published?:ReviewItem[];drafts?:DraftIssue[]}:null;
     if(active){
