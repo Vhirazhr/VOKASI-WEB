@@ -2,23 +2,48 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {BookOpen,Clock3,FileQuestion,Plus,Search,FileUp} from 'lucide-react';
+import {BookOpen,Clock3,FileQuestion,Plus,Search,FileUp,PenLine} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {fetchBank} from '@/lib/quiz';
+import {supabase} from '@/lib/supabase';
 import type {BankQuestion} from '@/lib/types';
 import '@/app/admin-workspace.css';
 import '@/app/admin-students-ui.css';
 import '@/app/admin-bank-ui.css';
 
+type EditRow={source_number:number;category:string;difficulty_code:string;question:string;question_image_path:string|null;options:{text:string;image_path:string|null}[];correct_index:number;time_limit_seconds:number;explanation:string};
 export default function AdminBankPage(){
  const {loading,error,logout}=useSchoolAuth('admin');
  const [bank,setBank]=useState<BankQuestion[]>([]),[busy,setBusy]=useState(true),[issue,setIssue]=useState('');
+ const [edit,setEdit]=useState<EditRow|null>(null),[original,setOriginal]=useState<EditRow|null>(null);
+ const [editBusy,setEditBusy]=useState(false),[editIssue,setEditIssue]=useState(''),[refreshKey,setRefreshKey]=useState(0);
+ async function startEdit(id:number){
+  setEditBusy(true);setEditIssue('');
+  const {data,error:err}=await supabase().rpc('vokasi_admin_get_edit_question',{p_source_number:id});
+  if(err||!data){setIssue(err?.message||'Soal tidak ditemukan.');setEditBusy(false);return;}
+  const row=data as EditRow;
+  setOriginal(row);setEdit(structuredClone(row));setEditBusy(false);
+ }
+ async function saveEdit(){
+  if(!edit||!original)return;
+  if(!edit.question.trim()&&!edit.question_image_path){setEditIssue('Isi pertanyaan atau gambar soal.');return;}
+  if(edit.options.some(o=>!o.text.trim()&&!o.image_path)){setEditIssue('Setiap pilihan harus berisi teks atau gambar.');return;}
+  if(edit.correct_index<0||edit.correct_index>=edit.options.length){setEditIssue('Pilih kunci yang valid.');return;}
+  setEditBusy(true);setEditIssue('');
+  const {error:err}=await supabase().rpc('vokasi_admin_edit_published_question',{
+   p_source_number:edit.source_number,p_expected:original,
+   p_change:{question:edit.question,question_image_path:edit.question_image_path,
+    options:edit.options,correct_index:edit.correct_index,explanation:edit.explanation}
+  });
+  if(err){setEditIssue(err.message);setEditBusy(false);return;}
+  setEdit(null);setOriginal(null);setSelected(null);setBusy(true);setRefreshKey(v=>v+1);setEditBusy(false);
+ }
  const [search,setSearch]=useState(''),[category,setCategory]=useState(''),[code,setCode]=useState(''),[page,setPage]=useState(0),[selected,setSelected]=useState<BankQuestion|null>(null);
  useEffect(()=>{if(loading||error)return;let active=true;
   async function load(){try{const data=await fetchBank();if(active){setBank(data);setIssue('');setBusy(false);}}catch(e){if(active){setIssue(e instanceof Error?e.message:'Bank soal tidak dapat dimuat.');setBusy(false);}}}
   queueMicrotask(()=>void load());return()=>{active=false};
- },[loading,error]);
+ },[loading,error,refreshKey]);
  const categories=useMemo(()=>[...new Set(bank.map(b=>b.category))].sort((a,b)=>a.localeCompare(b,'id')),[bank]);
  const codes=useMemo(()=>[...new Set(bank.filter(b=>!category||b.category===category).map(b=>b.difficultyCode))].sort(),[bank,category]);
  const filtered=useMemo(()=>bank.filter(b=>(!category||b.category===category)&&(!code||b.difficultyCode===code)&&(!search||[String(b.id),b.question,b.category,b.difficultyCode].some(x=>x.toLowerCase().includes(search.trim().toLowerCase())))),[bank,category,code,search]);
@@ -40,10 +65,20 @@ export default function AdminBankPage(){
      <label>Kode<select value={code} onChange={e=>{setCode(e.target.value);setPage(0);}}><option value="">Semua kode</option>{codes.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
     </div>
     {busy?<div className="admin-workspace-empty">Mengambil bank soal aktif...</div>:filtered.length===0?<div className="admin-workspace-empty">Tidak ada soal yang sesuai.</div>:
-     <div className="admin-workspace-table-wrap"><table><thead><tr><th>ID</th><th>Kategori</th><th>Kode</th><th>Soal</th><th>Waktu</th><th>Detail</th></tr></thead><tbody>{filtered.slice(activePage*30,(activePage+1)*30).map(q=><tr key={q.id}><td><b>#{q.id}</b></td><td>{q.category}</td><td>{q.difficultyCode}</td><td>{q.question}</td><td>{q.timeLimitSeconds} detik</td><td><button type="button" className="admin-workspace-detail" onClick={()=>setSelected(q)}>Lihat</button></td></tr>)}</tbody></table></div>}
+     <div className="admin-workspace-table-wrap"><table><thead><tr><th>ID</th><th>Kategori</th><th>Kode</th><th>Soal</th><th>Waktu</th><th>Aksi</th></tr></thead><tbody>{filtered.slice(activePage*30,(activePage+1)*30).map(q=><tr key={q.id}><td><b>#{q.id}</b></td><td>{q.category}</td><td>{q.difficultyCode}</td><td>{q.question}</td><td>{q.timeLimitSeconds} detik</td><td><div className="admin-bank-row-actions"><button type="button" className="admin-workspace-detail" onClick={()=>setSelected(q)}>Detail</button><button type="button" className="admin-bank-edit-button" disabled={editBusy} onClick={()=>void startEdit(q.id)}><PenLine size={13}/> Edit</button></div></td></tr>)}</tbody></table></div>}
     <div className="admin-workspace-footer"><span>{filtered.length} soal sesuai filter</span><div><button type="button" onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={activePage===0}>Sebelumnya</button><span>{activePage+1} / {pages}</span><button type="button" onClick={()=>setPage(p=>p+1)} disabled={activePage>=pages-1}>Berikutnya</button></div></div>
    </section>
    
+   {edit&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!editBusy){setEdit(null);setOriginal(null);}}}><section className="admin-modal-card admin-bank-edit-modal" role="dialog" aria-modal="true" aria-label={'Edit soal '+edit.source_number} onMouseDown={e=>e.stopPropagation()}>
+    <div className="admin-modal-top"><div><span className="section-kicker">EDIT SOAL #{edit.source_number}</span><h2>Sunting pertanyaan</h2></div><button type="button" aria-label="Tutup editor" disabled={editBusy} onClick={()=>{setEdit(null);setOriginal(null);}}>×</button></div>
+    <p className="admin-bank-edit-note">{edit.category} · {edit.difficulty_code} · {edit.time_limit_seconds} detik. Kategori dan waktu tetap untuk menjaga blueprint ujian.</p>
+    {editIssue&&<div role="alert" className="alert danger">{editIssue}</div>}
+    <label>Pertanyaan<textarea rows={3} value={edit.question} onChange={e=>setEdit({...edit,question:e.target.value})}/></label>
+    {edit.question_image_path&&<p className="admin-bank-edit-note">Gambar soal yang sudah tersimpan tetap dipertahankan.</p>}
+    <fieldset><legend>Pilihan dan kunci jawaban</legend>{edit.options.map((o,i)=><div className="admin-bank-edit-option" key={i}><label className="admin-bank-edit-radio"><input type="radio" name="correct-bank-option" checked={edit.correct_index===i} onChange={()=>setEdit({...edit,correct_index:i})}/>{String.fromCharCode(65+i)}</label><input aria-label={'Jawaban '+String.fromCharCode(65+i)} value={o.text} onChange={e=>setEdit({...edit,options:edit.options.map((item,j)=>j===i?{...item,text:e.target.value}:item)})}/>{o.image_path&&<small>Gambar tersimpan</small>}</div>)}</fieldset>
+    <label>Pembahasan<textarea rows={2} value={edit.explanation} onChange={e=>setEdit({...edit,explanation:e.target.value})}/></label>
+    <div className="admin-bank-edit-actions"><button type="button" className="btn secondary small" disabled={editBusy} onClick={()=>{setEdit(null);setOriginal(null);}}>Batal</button><button type="button" className="btn primary small" disabled={editBusy} onClick={()=>void saveEdit()}>{editBusy?'Menyimpan...':'Simpan perubahan'}</button></div>
+   </section></div>}
    {selected&&<div role="presentation" className="admin-modal-overlay" onMouseDown={()=>setSelected(null)}><section role="dialog" aria-modal="true" aria-label="Detail soal" className="admin-modal-card admin-bank-modal" onMouseDown={e=>e.stopPropagation()}>
      <div className="admin-modal-top"><span className="admin-modal-avatar"><BookOpen size={25}/></span><button type="button" aria-label="Tutup detail" onClick={()=>setSelected(null)}>×</button></div>
      <span className="section-kicker">SOAL #{selected.id} · {selected.category} · {selected.difficultyCode}</span><h2>{selected.question}</h2>
