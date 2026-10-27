@@ -90,8 +90,9 @@ export default function AdminAnalyticsPage(){
   const hasFilters=major!==''||klass!==''||days!==14||endDate!==wibDate();
   function resetFilters(){
     const today=wibDate();
+    const requiresReload=days!==14||endDate!==today;
     setEndDate(today);setDays(14);setMajor('');setKlass('');
-    setBusy(true);
+    if(requiresReload)setBusy(true);
   }
   const maxBand=Math.max(1,...stats.bands.map(b=>b.count));
 
