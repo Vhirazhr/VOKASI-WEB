@@ -202,7 +202,7 @@ export default function AdminSettingsPage(){
      <form className="admin-settings-invite-form" onSubmit={event=>void inviteAdmin(event)}>
       <label>Nama lengkap administrator<input autoFocus required minLength={3} maxLength={100} autoComplete="name" placeholder="Contoh: Budi Santoso" value={inviteName} onChange={event=>setInviteName(event.target.value)} disabled={inviting}/></label>
       <label>Email administrator<input required type="email" maxLength={254} autoComplete="email" placeholder="admin@sekolah.sch.id" value={inviteEmail} onChange={event=>setInviteEmail(event.target.value)} disabled={inviting}/></label>
-      <div className="admin-settings-invite-info"><Mail size={17}/><span>Undangan dikirim ke alamat email di atas. Penerima membuat kata sandi sendiri melalui tautan aktivasi.</span></div>
+      
       {inviteIssue&&<div className="alert danger" role="alert">{inviteIssue}</div>}
       <footer className="admin-settings-invite-actions">
        <button className="btn secondary small" type="button" onClick={()=>setCreateOpen(false)} disabled={inviting}>Batal</button>
