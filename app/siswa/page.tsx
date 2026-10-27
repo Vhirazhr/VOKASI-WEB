@@ -189,83 +189,65 @@ export default function StudentPage(){
        view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed}/>:
        view==='profile'?<ProfileView profile={profile} attempts={attempts} busy={busy}/>:
         <main className="student-home student-home-dashboard">
-          <div className="student-dashboard-grid">
-            <div className="student-dashboard-main">
-              <section className="student-featured-practice" aria-labelledby="mandatory-practice-title">
-                <div className="student-featured-copy">
-                  <span className="student-featured-eyebrow">RUANG BELAJAR</span>
-                  <h1>Halo, {profile.fullName.split(' ')[0]} <span aria-hidden="true">👋</span></h1>
-                  <p className="student-hero-class">{profile.className} <span aria-hidden="true">·</span> {profile.majorName}</p>
-                  <p className="student-hero-description">{BANK_IS_PUBLISHED?'Ayo lanjutkan latihanmu hari ini. Sedikit demi sedikit, kemampuanmu akan semakin baik.':bankChecking?'Memeriksa ketersediaan bank soal...':'Latihan wajib belum tersedia. Tunggu sampai admin mengaktifkan bank soal.'}</p>
-                  <button type="button" className="student-start-button" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}>
-                    <Play size={17}/>{BANK_IS_PUBLISHED?'Mulai latihan sekarang':'Latihan belum tersedia'}<ArrowRight size={17}/>
-                  </button>
-                </div>
-                <div className="student-hero-illustration" aria-hidden="true">
-                  <div className="student-illustration-float student-illustration-chart"><TrendingUp size={23}/></div>
-                  <div className="student-illustration-float student-illustration-pie"><Shapes size={22}/></div>
-                  <div className="student-illustration-books">
-                    <div className="student-book book-purple"></div>
-                    <div className="student-book book-yellow"></div>
-                    <div className="student-book book-blue"></div>
-                    <div className="student-book-pages"></div>
-                    <div className="student-graduation-cap"><GraduationCap size={52}/></div>
-                  </div>
-                  <div className="student-illustration-spark"><Star size={18}/></div>
-                </div>
-              </section>
+          <section className="student-featured-practice student-reference-hero" aria-labelledby="mandatory-practice-title">
+            <div className="student-featured-copy">
+              <span className="student-featured-eyebrow"><span className="student-live-dot"/> LATIHAN WAJIB</span>
+              <h1 id="mandatory-practice-title">Siap menguji<br/>kemampuanmu?</h1>
+              <p className="student-hero-class">{profile.className} <span aria-hidden="true">·</span> {profile.majorName}</p>
+              <p className="student-hero-description">{BANK_IS_PUBLISHED?'Kerjakan latihan wajib dan lihat perkembangan hasil belajarmu.':'Latihan wajib belum tersedia. Admin sekolah perlu mengaktifkan bank soal terlebih dahulu.'}</p>
+              <div className="student-hero-actions">
+                <button type="button" className="student-start-button" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}>
+                  <span className="student-play-icon"><Play size={17}/></span>{BANK_IS_PUBLISHED?'Mulai latihan wajib':'Latihan belum tersedia'}<ArrowRight size={17}/>
+                </button>
+                <span className="student-hero-duration"><CalendarDays size={15}/> 100 soal <span aria-hidden="true">·</span> 30 menit</span>
+              </div>
+            </div>
+            <div className="student-hero-illustration student-reference-illustration" aria-hidden="true">
+              <div className="student-illustration-orbit"/>
+              <div className="student-paper-stack"><span className="student-paper-number">01</span><div className="student-paper-title">LATIHAN<br/>SOAL</div><svg viewBox="0 0 120 70" fill="none"><path d="M8 56C27 19 43 49 60 25S88 25 109 8" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/><circle cx="8" cy="56" r="3.5" fill="currentColor"/><circle cx="60" cy="25" r="3.5" fill="currentColor"/><circle cx="109" cy="8" r="3.5" fill="currentColor"/></svg></div>
+              <span className="student-hero-spark spark-a">✦</span><span className="student-hero-spark spark-b">●</span><span className="student-hero-spark spark-c">○</span>
+            </div>
+          </section>
 
-              <section className="student-progress-section" aria-label="Ringkasan progres belajar">
-                <div className="student-subsection-heading"><div><h2>Ringkasanmu</h2></div><span className="student-muted-caption">Progres belajar pribadi</span></div>
-                <div className="student-home-metrics">
-                  <div className="metric"><span className="metric-icon blue"><CheckCircle2 size={19}/></span><div><small>Selesai latihan wajib</small><strong>{busy?'—':compulsory.length}</strong></div><span className="metric-foot">Total sesi tercatat</span></div>
-                  <div className="metric"><span className="metric-icon green"><TrendingUp size={19}/></span><div><small>Rata-rata nilai</small><strong>{busy?'—':average??'—'}</strong></div><span className="metric-foot">Dari latihan wajib</span></div>
-                  <div className="metric"><span className="metric-icon purple"><Trophy size={19}/></span><div><small>Total XP</small><strong>{busy?'—':attempts.reduce((sum,attempt)=>sum+attempt.earned_xp,0)}</strong></div><span className="metric-foot">Poin pengalaman</span></div>
-                  <div className="metric"><span className="metric-icon pink"><Medal size={19}/></span><div><small>Nilai terakhir</small><strong>{busy?'—':latest?.score??'—'}</strong></div><span className="metric-foot">{today?'Sudah latihan hari ini':'Belum latihan hari ini'}</span></div>
-                </div>
-              </section>
+          <section className="student-progress-section student-reference-stats" aria-label="Ringkasan progres belajar">
+            <div className="student-home-metrics">
+              <div className="metric"><span className="metric-icon blue"><CheckCircle2 size={19}/></span><div><small>Latihan wajib selesai</small><strong>{busy?'—':compulsory.length}</strong></div><span className="metric-foot">Total sesi tercatat</span></div>
+              <div className="metric"><span className="metric-icon green"><TrendingUp size={19}/></span><div><small>Rata-rata nilai</small><strong>{busy?'—':average??'—'}</strong></div><span className="metric-foot">Dari latihan wajib</span></div>
+              <div className="metric"><span className="metric-icon purple"><Trophy size={19}/></span><div><small>Total XP</small><strong>{busy?'—':attempts.reduce((sum,attempt)=>sum+attempt.earned_xp,0)}</strong></div><span className="metric-foot">Dari sesi yang tercatat</span></div>
+            </div>
+          </section>
 
-              <section className="student-practice-section" aria-labelledby="practice-topics-title">
-                <div className="student-subsection-heading"><div><h2 id="practice-topics-title">Latihan mandiri</h2><p>Pilih materi yang ingin kamu latih.</p></div><span className="student-muted-caption">6 materi</span></div>
-                <div className="student-practice-grid">{categories.map((cat,i)=>{const TopicIcon=[Calculator,Divide,Sigma,Atom,Brain,ImageIcon][i%6];return <button type="button" className="student-topic-card" key={cat} disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(cat)}>
-                  <span className={'student-topic-icon c'+i}><TopicIcon size={21}/></span>
-                  <span className="student-topic-copy"><b>{cat}</b><small>{BANK_IS_PUBLISHED?'Latihan numerasi mandiri':'Menunggu bank soal aktif'}</small></span>
-                  <span className="student-topic-arrow"><ArrowRight size={17}/></span>
-                </button>;})}</div>
-              </section>
-
-              <div className="student-dashboard-feature-cards">
-                <section className="student-aside-card student-dashboard-history">
-                  <div className="student-dashboard-card-heading"><div><span className="student-card-eyebrow">LANJUTKAN BELAJAR</span><h2>Riwayat latihan</h2></div><span className="student-dashboard-card-icon blue"><History size={19}/></span></div>
-                  {busy?<div className="student-dashboard-empty">Memuat riwayat latihan...</div>:latest?<div className="student-latest-attempt"><div className="student-latest-illustration"><ClipboardListIcon/></div><div className="student-latest-detail"><b>Latihan wajib numerasi</b><span>{toDay(latest.completed_at_ms)} · {latest.question_count} soal</span><strong>Nilai {latest.score}/100</strong></div></div>:<div className="student-dashboard-empty"><BookOpen size={25}/><b>Belum ada riwayat latihan</b><span>Hasil latihanmu akan muncul di sini.</span></div>}
-                  <Link className="student-dashboard-card-link" href={embed?'/siswa/riwayat?embed=1':'/siswa/riwayat'}>Lihat riwayat <ArrowRight size={15}/></Link>
-                </section>
-
-                <section className="student-aside-card student-dashboard-rank">
-                  <div className="student-dashboard-card-heading"><div><span className="student-card-eyebrow">PRESTASI BELAJAR</span><h2>Peringkat sekolah</h2></div><span className="student-dashboard-card-icon gold"><Trophy size={20}/></span></div>
-                  {busy?<div className="student-dashboard-empty">Memuat peringkat...</div>:rankFailed?<div className="student-dashboard-empty"><Trophy size={25}/><b>Peringkat belum tersedia</b><span>Data belum dapat dimuat.</span></div>:(()=>{const rankIndex=leaders.findIndex(row=>row.username.trim().toLocaleLowerCase('id-ID')===profile.username.trim().toLocaleLowerCase('id-ID'));const rank=rankIndex>=0?rankIndex+1:null;const topPercent=rank&&leaders.length?Math.max(1,Math.ceil(rank/leaders.length*100)):null;return <div className="student-rank-content"><div className="student-rank-trophy" aria-hidden="true"><Trophy size={34}/><span>★</span></div><div className="student-rank-number">{rank?'#'+rank:'—'}</div><b>{rank?'Dari '+leaders.length+' siswa':'Belum masuk peringkat'}</b>{topPercent!==null&&<span className="student-rank-percent">Top {topPercent}% sekolah</span>}{!rank&&<p>Selesaikan latihan wajib untuk mulai masuk klasemen.</p>}</div>;})()}
-                  <Link className="student-dashboard-card-link" href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'}>Lihat klasemen <ArrowRight size={15}/></Link>
-                </section>
+          <section className="student-reference-content">
+            <div className="student-reference-lessons student-aside-card">
+              <div className="student-reference-section-heading"><div><span className="student-card-eyebrow">BANK SOAL</span><h2>Pilih latihan mandiri</h2><p>Latih kemampuanmu melalui enam materi numerasi.</p></div><span className="student-reference-count">6 materi</span></div>
+              <div className="student-reference-topic-list">
+                {categories.map((cat,i)=>{const TopicIcon=[Calculator,Divide,Sigma,Atom,Brain,ImageIcon][i%6];return <button type="button" className="student-reference-topic" key={cat} disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(cat)}>
+                  <span className={'student-reference-topic-icon tone-'+i}><TopicIcon size={20}/></span>
+                  <span className="student-reference-topic-copy"><b>{cat}</b><small>{BANK_IS_PUBLISHED?'10 soal latihan mandiri':'Menunggu bank soal aktif'}</small></span>
+                  <span className="student-reference-topic-arrow"><ArrowRight size={17}/></span>
+                </button>;})}
               </div>
             </div>
 
-            <aside className="student-dashboard-aside" aria-label="Informasi belajar">
-              <StudentCalendar/>
-              <section className="student-aside-card student-target-card">
-                <div className="student-aside-title"><h2>Target harian</h2><Target size={18}/></div>
-                <div className="student-target-content"><div className={'student-target-ring '+(today?'is-complete':'')}><span>{today?'100%':'0%'}</span></div><div className="student-target-copy"><b>{today?'1 dari 1 latihan':'0 dari 1 latihan'}</b><span>{today?'Target latihan wajib hari ini tercapai.':'Selesaikan 1 latihan wajib hari ini.'}</span></div></div>
-                <button type="button" className="student-aside-action" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}>{today?'Latihan lagi':'Mulai latihan'} <ArrowRight size={14}/></button>
+            <aside className="student-reference-rail" aria-label="Ringkasan hasil belajar">
+              <section className="student-aside-card student-reference-rank">
+                <div className="student-reference-section-heading"><div><span className="student-card-eyebrow">PERINGKAT SEKOLAH</span><h2>Peringkatmu saat ini</h2></div><span className="student-dashboard-card-icon blue"><TrendingUp size={19}/></span></div>
+                {busy?<div className="student-reference-empty">Memuat peringkat...</div>:rankFailed?<div className="student-reference-empty"><b>Peringkat belum tersedia</b><span>Data peringkat belum dapat dimuat.</span></div>:(()=>{const rankIndex=leaders.findIndex(row=>row.username.trim().toLocaleLowerCase('id-ID')===profile.username.trim().toLocaleLowerCase('id-ID'));const rank=rankIndex>=0?rankIndex+1:null;return <div className="student-reference-rank-value"><strong>{rank?'#'+rank:'—'}</strong><div><b>{rank?'Dari '+leaders.length+' siswa':'Belum tersedia'}</b><span>{rank?'Posisi berdasarkan hasil belajar yang tercatat.':'Peringkat tampil setelah data hasil belajar tersedia.'}</span></div></div>;})()}
+                <Link className="student-reference-primary-link" href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'}>Lihat peringkat <ArrowRight size={15}/></Link>
               </section>
-              <section className="student-aside-card student-tip-card">
-                <div className="student-aside-title"><span className="student-aside-icon yellow"><Lightbulb size={18}/></span><h2>Tips hari ini</h2></div>
-                <p>Baca soal sampai selesai, perhatikan informasi penting, lalu periksa kembali jawabanmu sebelum mengirim.</p>
+
+              <section className="student-aside-card student-reference-latest">
+                <div className="student-reference-section-heading"><div><span className="student-card-eyebrow">HASIL TERAKHIR</span><h2>Riwayat latihan</h2></div><span className="student-dashboard-card-icon blue"><History size={19}/></span></div>
+                {busy?<div className="student-reference-empty">Memuat riwayat...</div>:latest?<div className="student-reference-latest-detail"><span className="student-reference-clipboard"><ClipboardListIcon/></span><div><b>Latihan wajib</b><span>{toDay(latest.completed_at_ms)} · {latest.question_count} soal</span><strong>Nilai {latest.score}/100</strong></div></div>:<div className="student-reference-empty"><BookOpen size={23}/><b>Belum ada riwayat</b><span>Mulai latihan wajib untuk mencatat hasil belajarmu.</span></div>}
+                <Link className="student-reference-secondary-link" href={embed?'/siswa/riwayat?embed=1':'/siswa/riwayat'}>Lihat riwayat <ArrowRight size={15}/></Link>
               </section>
-              <section className="student-aside-card student-announcement-card">
-                <div className="student-aside-title"><span className="student-aside-icon rose"><Megaphone size={18}/></span><h2>Pengumuman</h2></div>
-                <p>Belum ada pengumuman terbaru. Informasi resmi dari sekolah akan ditampilkan di sini jika tersedia.</p>
+
+              <section className="student-aside-card student-reference-tip">
+                <div className="student-reference-section-heading"><div><span className="student-card-eyebrow">TIPS BELAJAR</span><h2>Kerjakan dengan teliti</h2></div><span className="student-dashboard-card-icon gold"><Lightbulb size={19}/></span></div>
+                <p>Baca setiap soal sampai selesai, perhatikan informasi penting, lalu periksa kembali jawabanmu sebelum mengirim.</p>
               </section>
             </aside>
-          </div>
+          </section>
         </main>
       }
     </>}
