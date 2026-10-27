@@ -117,13 +117,14 @@ export default function AdminBankPage(){
   if(error)setIssue(error.message);else{setBusy(true);setRefreshKey(v=>v+1);}
  }
  const [edit,setEdit]=useState<EditRow|null>(null),[original,setOriginal]=useState<EditRow|null>(null);
+ const [editImageFile,setEditImageFile]=useState<File|null>(null),[editOptionFiles,setEditOptionFiles]=useState<Record<number,File>>({});
  const [editBusy,setEditBusy]=useState(false),[editIssue,setEditIssue]=useState(''),[refreshKey,setRefreshKey]=useState(0);
  async function startEdit(id:number){
   setEditBusy(true);setEditIssue('');
   const {data,error:err}=await supabase().rpc('vokasi_admin_get_edit_question',{p_source_number:id});
   if(err||!data){setIssue(err?.message||'Soal tidak ditemukan.');setEditBusy(false);return;}
   const row=data as EditRow;
-  setOriginal(row);setEdit(structuredClone(row));setEditBusy(false);
+  setOriginal(row);setEdit(structuredClone(row));setEditImageFile(null);setEditOptionFiles({});setEditBusy(false);
  }
  function changeEditMaterial(next:string){
   if(!edit)return;
@@ -140,23 +141,44 @@ export default function AdminBankPage(){
  }
  async function saveEdit(){
   if(!edit||!original)return;
-  if(!edit.question.trim()&&!edit.question_image_path){setEditIssue('Isi pertanyaan atau gambar soal.');return;}
-  if(edit.options.some(o=>!o.text.trim()&&!o.image_path)){setEditIssue('Setiap pilihan harus berisi teks atau gambar.');return;}
+  if(!edit.question.trim()&&!edit.question_image_path&&!editImageFile){setEditIssue('Isi pertanyaan atau gambar soal.');return;}
+  if(edit.options.some((o,i)=>!o.text.trim()&&!o.image_path&&!editOptionFiles[i])){setEditIssue('Setiap pilihan harus berisi teks atau gambar.');return;}
   if(!MATERIAL_GROUPS[edit.category]?.includes(edit.difficulty_code)||!approvedGroup(edit.difficulty_code)){
    setEditIssue('Materi dan kelompok ujian tidak sesuai.');return;
   }
-  if(edit.difficulty_code==='POLA_GAMBAR'&&!edit.question_image_path){
+  if(edit.difficulty_code==='POLA_GAMBAR'&&!edit.question_image_path&&!editImageFile){
    setEditIssue('Kelompok Pola Gambar memerlukan gambar utama.');return;
   }
   if(edit.correct_index<0||edit.correct_index>=edit.options.length){setEditIssue('Pilih kunci yang valid.');return;}
   setEditBusy(true);setEditIssue('');
-  const {error:err}=await supabase().rpc('vokasi_admin_edit_published_question',{
-   p_source_number:edit.source_number,p_expected:original,
-   p_change:{category:edit.category,difficulty_code:edit.difficulty_code,question:edit.question,question_image_path:edit.question_image_path,
-    options:edit.options,correct_index:edit.correct_index,explanation:edit.explanation}
-  });
-  if(err){setEditIssue(err.message);setEditBusy(false);return;}
-  setEdit(null);setOriginal(null);setSelected(null);setBusy(true);setRefreshKey(v=>v+1);setEditBusy(false);
+  const uploads:string[]=[];
+  try{
+   const {data:{user},error:authError}=await supabase().auth.getUser();
+   if(authError||!user)throw new Error('Sesi admin tidak tersedia.');
+   async function upload(file:File){
+    if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>3145728)throw new Error('Gambar harus PNG/JPG/WEBP maksimal 3 MB.');
+    const extension=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+    const path=user!.id+'/'+crypto.randomUUID()+'.'+extension;
+    const {error:uploadError}=await supabase().storage.from('vokasi-question-figures').upload(path,file,{upsert:false,contentType:file.type});
+    if(uploadError)throw uploadError;
+    uploads.push(path);
+    return path;
+   }
+   const imagePath=editImageFile?await upload(editImageFile):edit.question_image_path;
+   const choiceRows=[];
+   for(let i=0;i<edit.options.length;i++)
+    choiceRows.push({...edit.options[i],image_path:editOptionFiles[i]?await upload(editOptionFiles[i]):edit.options[i].image_path});
+   const {error:err}=await supabase().rpc('vokasi_admin_edit_published_question',{
+    p_source_number:edit.source_number,p_expected:original,
+    p_change:{category:edit.category,difficulty_code:edit.difficulty_code,question:edit.question,question_image_path:imagePath,
+     options:choiceRows,correct_index:edit.correct_index,explanation:edit.explanation}
+   });
+   if(err)throw err;
+   setEdit(null);setOriginal(null);setSelected(null);setBusy(true);setRefreshKey(v=>v+1);
+  }catch(e){
+   if(uploads.length)await supabase().storage.from('vokasi-question-figures').remove(uploads);
+   setEditIssue(e instanceof Error?e.message:'Perubahan tidak berhasil disimpan.');
+  }finally{setEditBusy(false);}
  }
  const [search,setSearch]=useState(''),[category,setCategory]=useState(''),[code,setCode]=useState(''),[page,setPage]=useState(0),[selected,setSelected]=useState<BankQuestion|null>(null);
  useEffect(()=>{if(loading||error)return;let active=true;
@@ -311,14 +333,19 @@ export default function AdminBankPage(){
     <p className="admin-bank-edit-note">Durasi otomatis mengikuti kelompok ujian. Perubahan diperiksa agar kuota ujian wajib dan latihan tetap aman.</p>
     {editIssue&&<div role="alert" className="alert danger">{editIssue}</div>}
     <label>Pertanyaan<textarea rows={3} value={edit.question} onChange={e=>setEdit({...edit,question:e.target.value})}/></label>
-    {edit.question_image_path&&<p className="admin-bank-edit-note">Gambar soal yang sudah tersimpan tetap dipertahankan.</p>}
-    <fieldset><legend>Pilihan dan kunci jawaban</legend>{edit.options.map((o,i)=><div className="admin-bank-edit-option" key={i}><label className="admin-bank-edit-radio"><input type="radio" name="correct-bank-option" checked={edit.correct_index===i} onChange={()=>setEdit({...edit,correct_index:i})}/>{String.fromCharCode(65+i)}</label><input aria-label={'Jawaban '+String.fromCharCode(65+i)} value={o.text} onChange={e=>setEdit({...edit,options:edit.options.map((item,j)=>j===i?{...item,text:e.target.value}:item)})}/>{o.image_path&&<small>Gambar tersimpan</small>}</div>)}</fieldset>
+    <label className="admin-bank-create-upload"><UploadCloud size={16}/> {editImageFile?.name|| (edit.question_image_path?'Gambar soal tersimpan · klik untuk mengganti':'Lampirkan atau ganti gambar soal')}
+     <input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>setEditImageFile(e.target.files?.[0]||null)}/></label>
+    {(edit.question_image_path||editImageFile)&&<button type="button" className="admin-bank-file-remove" onClick={()=>{setEditImageFile(null);setEdit({...edit,question_image_path:null});}}>Hapus gambar utama</button>}
+    <fieldset><legend>Pilihan dan kunci jawaban</legend>{edit.options.map((o,i)=><div className="admin-bank-edit-option" key={i}><label className="admin-bank-edit-radio"><input type="radio" name="correct-bank-option" checked={edit.correct_index===i} onChange={()=>setEdit({...edit,correct_index:i})}/>{String.fromCharCode(65+i)}</label><input aria-label={'Jawaban '+String.fromCharCode(65+i)} value={o.text} onChange={e=>setEdit({...edit,options:edit.options.map((item,j)=>j===i?{...item,text:e.target.value}:item)})}/>
+     <label className="admin-bank-option-upload"><UploadCloud size={14}/>{editOptionFiles[i]?'Terpilih':o.image_path?'Gambar tersimpan':'Gambar'}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>{const file=e.target.files?.[0];if(file)setEditOptionFiles(v=>({...v,[i]:file}));}}/></label>
+     {(o.image_path||editOptionFiles[i])&&<button type="button" className="admin-bank-mini-remove" aria-label={'Hapus gambar pilihan '+String.fromCharCode(65+i)} onClick={()=>{setEdit({...edit,options:edit.options.map((item,j)=>j===i?{...item,image_path:null}:item)});setEditOptionFiles(v=>{const copy={...v};delete copy[i];return copy;});}}><Trash2 size={13}/></button>}</div>)}</fieldset>
     <label>Pembahasan<textarea rows={2} value={edit.explanation} onChange={e=>setEdit({...edit,explanation:e.target.value})}/></label>
     <div className="admin-bank-edit-actions"><button type="button" className="btn secondary small" disabled={editBusy} onClick={()=>{setEdit(null);setOriginal(null);}}>Batal</button><button type="button" className="btn primary small" disabled={editBusy} onClick={()=>void saveEdit()}>{editBusy?'Menyimpan...':'Simpan perubahan'}</button></div>
    </section></div>}
    {selected&&<div role="presentation" className="admin-modal-overlay" onMouseDown={()=>setSelected(null)}><section role="dialog" aria-modal="true" aria-label="Detail soal" className="admin-modal-card admin-bank-modal" onMouseDown={e=>e.stopPropagation()}>
      <div className="admin-modal-top"><span className="admin-modal-avatar"><BookOpen size={25}/></span><button type="button" aria-label="Tutup detail" onClick={()=>setSelected(null)}>×</button></div>
      <span className="section-kicker">SOAL #{selected.id} · {selected.category} · {groupLabel(selected.difficultyCode)}</span><h2>{selected.question}</h2>
+     {review.find(x=>x.number===selected.id)&&<div className="admin-bank-detail-issues"><AlertCircle size={16}/> <span>Perlu ditinjau: {review.find(x=>x.number===selected.id)?.reasons.join(', ')}</span></div>}
      {selected.questionImageUrl&&<img src={selected.questionImageUrl} alt={'Gambar pendukung soal '+selected.id} style={{maxWidth:'100%',maxHeight:380,objectFit:'contain'}}/>}
      <p>Waktu {selected.timeLimitSeconds} detik per soal</p>
      <div className="admin-bank-options">{selected.options.map((option,i)=><div key={i}><b>{String.fromCharCode(65+i)}</b><span>{option}{selected.optionImageUrls?.[i]&&<img src={selected.optionImageUrls[i]!} alt={'Gambar pilihan '+String.fromCharCode(65+i)} style={{display:'block',maxWidth:'100%',maxHeight:220,objectFit:'contain',marginTop:8}}/>}</span></div>)}</div>
