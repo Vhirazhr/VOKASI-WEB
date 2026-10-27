@@ -112,7 +112,7 @@ export default function UnifiedQuestionImport(){
    const data=await withStorageUploads();
    const {data:result,error:rpcError}=await supabase().rpc('vokasi_admin_import_questions',{p_questions:data,p_mode:mode});
    if(rpcError)throw rpcError;
-   setNotice('Berhasil! '+data.length+' soal '+(mode==='replace'?'menggantikan bank lama':'ditambahkan ke bank aktif')+'. Jumlah soal aktif: '+String((result as {after?:number})?.after??'tersinkron').');
+    setNotice('Berhasil! '+data.length+' soal '+(mode==='replace'?'menggantikan bank lama':'ditambahkan ke bank aktif')+'. Jumlah soal aktif: '+String((result as {after?:number})?.after??'tersinkron')+'.');
    if(savedId)await supabase().from('vokasi_web_import_drafts').delete().eq('id',savedId);
    setRows([]);setPendingImages({});setFileName('');setSavedId(null);setPage(0);setConfirm(false);await refresh();
   }catch(e){setNotice('Tidak ada perubahan pada bank aktif: '+(e instanceof Error?e.message:'Impor ditolak.'));}
