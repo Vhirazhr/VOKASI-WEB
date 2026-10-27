@@ -42,8 +42,10 @@ export default function AdminBankPage(){
    
    {selected&&<div role="presentation" className="admin-modal-overlay" onMouseDown={()=>setSelected(null)}><section role="dialog" aria-modal="true" aria-label="Detail soal" className="admin-modal-card admin-bank-modal" onMouseDown={e=>e.stopPropagation()}>
      <div className="admin-modal-top"><span className="admin-modal-avatar"><BookOpen size={25}/></span><button type="button" aria-label="Tutup detail" onClick={()=>setSelected(null)}>×</button></div>
-     <span className="section-kicker">SOAL #{selected.id} · {selected.category} · {selected.difficultyCode}</span><h2>{selected.question}</h2><p>Waktu {selected.timeLimitSeconds} detik per soal</p>
-     <div className="admin-bank-options">{selected.options.map((option,i)=><div key={i}><b>{String.fromCharCode(65+i)}</b><span>{option}</span></div>)}</div>
+     <span className="section-kicker">SOAL #{selected.id} · {selected.category} · {selected.difficultyCode}</span><h2>{selected.question}</h2>
+     {selected.questionImageUrl&&<img src={selected.questionImageUrl} alt={'Gambar pendukung soal '+selected.id} style={{maxWidth:'100%',maxHeight:380,objectFit:'contain'}}/>}
+     <p>Waktu {selected.timeLimitSeconds} detik per soal</p>
+     <div className="admin-bank-options">{selected.options.map((option,i)=><div key={i}><b>{String.fromCharCode(65+i)}</b><span>{option}{selected.optionImageUrls?.[i]&&<img src={selected.optionImageUrls[i]!} alt={'Gambar pilihan '+String.fromCharCode(65+i)} style={{display:'block',maxWidth:'100%',maxHeight:220,objectFit:'contain',marginTop:8}}/>}</span></div>)}</div>
      <button type="button" className="btn primary" onClick={()=>setSelected(null)}>Tutup detail</button>
    </section></div>}
   </div>
