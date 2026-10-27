@@ -19,17 +19,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
-      - name: Temporary dependency lock audit
-        run: |
-          node - <<'NODE'
-          const fs = require('node:fs');
-          const cp = require('node:child_process');
-          const current = JSON.parse(fs.readFileSync('package-lock.json','utf8'));
-          const original = JSON.parse(cp.execFileSync('git',['show','HEAD:package-lock.json'],{encoding:'utf8'}));
-          const changed = Object.fromEntries(Object.entries(current.packages).filter(([path,value])=>JSON.stringify(value)!==JSON.stringify(original.packages[path])));
-          console.log('VOKASI_LOCK_DELTA_START'+JSON.stringify(changed)+'VOKASI_LOCK_DELTA_END');
-          NODE
+        run: npm ci --no-audit --no-fund
       - name: Verify original 500-question bank
         run: npm run check:bank
       - name: Verify approved 100-question / 30-minute blueprint
