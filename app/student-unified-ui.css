@@ -986,3 +986,294 @@
  .school-shell.student-shell .student-dashboard-aside{grid-template-columns:minmax(0,1fr)}
  .school-shell.student-shell .student-dashboard-aside .student-calendar-card{grid-column:auto}
 }
+
+
+/* Dashboard siswa — layout diselaraskan dengan referensi VOKASI, memakai data yang benar-benar tersedia. */
+.school-shell.student-shell .student-home-dashboard{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:18px;
+  width:100%;max-width:1500px;min-width:0;margin:0 auto;
+}
+.school-shell.student-shell .student-reference-hero{
+  position:relative;isolation:isolate;overflow:hidden;
+  display:grid;grid-template-columns:minmax(0,1.1fr) minmax(230px,.9fr);
+  align-items:center;gap:24px;min-height:280px;margin:0;padding:32px 42px;
+  border:0;border-radius:25px;
+  background:linear-gradient(112deg,#12477e 0%,#1764ad 58%,#2d86d2 100%);
+  box-shadow:0 18px 38px rgba(20,79,143,.14);
+}
+.school-shell.student-shell .student-reference-hero:before{
+  content:"";position:absolute;z-index:-1;right:-105px;top:-220px;
+  width:470px;height:470px;border:1px solid rgba(255,255,255,.11);border-radius:50%;
+  box-shadow:0 0 0 44px rgba(255,255,255,.035),0 0 0 94px rgba(255,255,255,.025);
+}
+.school-shell.student-shell .student-reference-hero:after{
+  content:"";position:absolute;z-index:-1;right:8%;bottom:-100px;width:240px;height:240px;
+  border-radius:50%;background:rgba(86,169,255,.12);filter:blur(1px);
+}
+.school-shell.student-shell .student-reference-hero .student-featured-copy{position:relative;z-index:2;min-width:0}
+.school-shell.student-shell .student-reference-hero .student-featured-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;padding:0;border:0;border-radius:0;
+  background:transparent;color:#bcdcff;font-size:10px;font-weight:850;letter-spacing:.14em;
+}
+.school-shell.student-shell .student-live-dot{
+  display:inline-block;width:8px;height:8px;border:2px solid #fff;border-radius:50%;
+  background:#86baff;box-shadow:0 0 0 4px rgba(255,255,255,.16);
+}
+.school-shell.student-shell .student-reference-hero .student-featured-copy h1{
+  max-width:570px;margin:18px 0 10px;color:#fff;font-size:clamp(34px,3vw,48px);
+  font-weight:800;line-height:1.08;letter-spacing:-.055em;
+}
+.school-shell.student-shell .student-reference-hero .student-hero-class{
+  display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:0 0 7px;
+  color:#e3efff;font-size:13px;line-height:1.6;
+}
+.school-shell.student-shell .student-reference-hero .student-hero-description{
+  max-width:520px;margin:0;color:#c8e0fa;font-size:13px;line-height:1.7;
+}
+.school-shell.student-shell .student-reference-hero .student-hero-actions{
+  display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px;margin-top:25px;
+}
+.school-shell.student-shell .student-reference-hero .student-start-button{
+  display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:52px;
+  margin:0;padding:8px 20px 8px 9px;border:1px solid rgba(255,255,255,.8);
+  border-radius:13px;background:#fff;color:#15559a;font-size:12px;font-weight:850;
+  box-shadow:0 6px 16px rgba(9,39,82,.13);transition:transform .15s,box-shadow .15s;
+}
+.school-shell.student-shell .student-reference-hero .student-start-button:hover:not(:disabled){
+  transform:translateY(-1px);background:#f6faff;box-shadow:0 9px 20px rgba(9,39,82,.18);
+}
+.school-shell.student-shell .student-reference-hero .student-start-button:disabled{
+  color:#6e829c;background:#e9eff7;border-color:#e9eff7;box-shadow:none;
+}
+.school-shell.student-shell .student-reference-hero .student-play-icon{
+  display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:10px;
+  background:#2879e5;color:#fff;
+}
+.school-shell.student-shell .student-reference-hero .student-start-button>svg:last-child{color:#2874d4}
+.school-shell.student-shell .student-reference-hero .student-hero-duration{
+  display:inline-flex;align-items:center;gap:8px;color:#b9d8f6;font-size:11px;font-weight:650;
+}
+.school-shell.student-shell .student-reference-hero .student-hero-duration svg{color:#9ecbff}
+.school-shell.student-shell .student-reference-illustration{
+  position:relative;display:grid;place-items:center;align-self:stretch;min-width:0;min-height:205px;
+  overflow:hidden;
+}
+.school-shell.student-shell .student-reference-illustration .student-illustration-orbit{
+  position:absolute;right:-80px;top:-95px;width:310px;height:310px;border:1px solid rgba(255,255,255,.12);
+  border-radius:50%;box-shadow:0 0 0 30px rgba(255,255,255,.035),0 0 0 66px rgba(255,255,255,.025);
+}
+.school-shell.student-shell .student-reference-illustration .student-paper-stack{
+  position:relative;z-index:1;display:flex;flex-direction:column;justify-content:flex-start;
+  width:min(245px,85%);min-height:170px;padding:27px 22px 18px;
+  border:1px solid #dceaff;border-radius:8px 14px 18px 8px;background:#fff;
+  color:#2d80ed;box-shadow:-12px 9px 0 #a6d1ff,-22px 17px 0 #80b9f4,0 18px 27px rgba(9,43,86,.2);
+  transform:rotate(-4deg);
+}
+.school-shell.student-shell .student-reference-illustration .student-paper-stack:before{
+  content:"";position:absolute;top:-16px;right:10px;width:45px;height:38px;
+  background:#edf5ff;box-shadow:0 6px 12px rgba(8,42,84,.16);transform:rotate(7deg);
+}
+.school-shell.student-shell .student-reference-illustration .student-paper-number{
+  position:absolute;top:-20px;right:9px;z-index:2;display:grid;place-items:center;
+  width:42px;height:38px;color:#2872d2;font-size:12px;font-weight:850;
+}
+.school-shell.student-shell .student-reference-illustration .student-paper-title{
+  color:#155ba8;font-size:23px;font-weight:850;line-height:1.08;letter-spacing:-.04em;
+}
+.school-shell.student-shell .student-reference-illustration .student-paper-stack svg{
+  display:block;width:110px;height:64px;margin:13px 0 0 auto;overflow:visible;
+}
+.school-shell.student-shell .student-reference-illustration .student-hero-spark{
+  position:absolute;z-index:2;display:block;line-height:1;pointer-events:none;
+}
+.school-shell.student-shell .student-reference-illustration .spark-a{left:14%;top:20%;color:#ffc15d;font-size:21px}
+.school-shell.student-shell .student-reference-illustration .spark-b{right:9%;bottom:13%;color:#79baff;font-size:35px}
+.school-shell.student-shell .student-reference-illustration .spark-c{left:22%;bottom:18%;color:#ffc15d;font-size:22px}
+
+.school-shell.student-shell .student-reference-stats{min-width:0;margin:0}
+.school-shell.student-shell .student-reference-stats .student-home-metrics{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;
+}
+.school-shell.student-shell .student-reference-stats .student-home-metrics .metric{
+  position:relative;display:grid;grid-template-columns:36px minmax(0,1fr);
+  grid-template-rows:auto auto;align-items:center;column-gap:12px;row-gap:4px;
+  min-width:0;min-height:112px;margin:0;padding:19px 21px;
+  border:1px solid #dce7f5;border-radius:18px;background:#fff;
+  box-shadow:0 5px 16px rgba(30,73,128,.035);
+}
+.school-shell.student-shell .student-reference-stats .student-home-metrics .metric-icon{
+  grid-column:1;grid-row:1 / span 2;display:grid;place-items:center;width:36px;height:36px;
+  margin:0;border-radius:11px;background:#e8f1ff;color:#2f76d8;
+}
+.school-shell.student-shell .student-reference-stats .student-home-metrics .metric-icon.green{background:#e0f5ee;color:#238c77}
+.school-shell.student-shell .student-reference-stats .student-home-metrics .metric-icon.purple{background:#eee8fc;color:#8065c6}
+.school-shell.student-shell .student-reference-stats .student-home-metrics .metric>div{grid-column:2;grid-row:1;min-width:0}
+.school-shell.student-shell .student-reference-stats .student-home-metrics .metric>div small{
+  display:block;color:#748aa6;font-size:11px;font-weight:650;line-height:1.45;
+}
+.school-shell.student-shell .student-reference-stats .student-home-metrics .metric>div strong{
+  display:block;margin-top:4px;color:#173e6b;font-size:29px;line-height:1.1;
+  letter-spacing:-.045em;font-variant-numeric:tabular-nums;
+}
+.school-shell.student-shell .student-reference-stats .student-home-metrics .metric-foot{
+  grid-column:2;grid-row:2;margin:0;color:#8799af;font-size:10px;line-height:1.45;
+}
+
+.school-shell.student-shell .student-reference-content{
+  display:grid;grid-template-columns:minmax(0,1.8fr) minmax(270px,.78fr);
+  align-items:start;gap:18px;min-width:0;
+}
+.school-shell.student-shell .student-reference-lessons,
+.school-shell.student-shell .student-reference-rail .student-aside-card{
+  min-width:0;margin:0;padding:24px;border:1px solid #dce7f5;border-radius:20px;
+  background:#fff;box-shadow:0 7px 22px rgba(30,73,128,.035);
+}
+.school-shell.student-shell .student-reference-section-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;margin-bottom:17px;
+}
+.school-shell.student-shell .student-reference-section-heading>div{min-width:0}
+.school-shell.student-shell .student-reference-section-heading .student-card-eyebrow{
+  margin-bottom:6px;color:#3479df;font-size:9px;font-weight:850;letter-spacing:.14em;
+}
+.school-shell.student-shell .student-reference-section-heading h2{
+  margin:0;color:#183e69;font-size:20px;font-weight:800;line-height:1.3;letter-spacing:-.035em;
+}
+.school-shell.student-shell .student-reference-section-heading p{
+  margin:5px 0 0;color:#8194ad;font-size:11px;line-height:1.55;
+}
+.school-shell.student-shell .student-reference-count{
+  flex:none;padding:7px 10px;border:1px solid #dce9fb;border-radius:999px;
+  background:#f2f7ff;color:#3972bf;font-size:10px;font-weight:800;
+}
+.school-shell.student-shell .student-reference-topic-list{display:grid;gap:9px}
+.school-shell.student-shell .student-reference-topic{
+  display:flex;align-items:center;gap:13px;width:100%;min-width:0;min-height:69px;margin:0;
+  padding:11px 13px;border:1px solid #e2e9e3;border-radius:15px;background:#fff;
+  color:#21476f;text-align:left;transition:border-color .15s,background .15s,transform .15s;
+}
+.school-shell.student-shell .student-reference-topic:hover:not(:disabled){
+  transform:translateY(-1px);border-color:#bdd5f4;background:#f8fbff;
+}
+.school-shell.student-shell .student-reference-topic:disabled{cursor:not-allowed;opacity:.62}
+.school-shell.student-shell .student-reference-topic-icon{
+  display:grid;place-items:center;flex:none;width:43px;height:43px;border-radius:12px;
+  background:#e8efff;color:#3477d7;
+}
+.school-shell.student-shell .student-reference-topic-icon.tone-1{background:#e0f4eb;color:#21896d}
+.school-shell.student-shell .student-reference-topic-icon.tone-2{background:#eee6fb;color:#8261c1}
+.school-shell.student-shell .student-reference-topic-icon.tone-3{background:#ffedd9;color:#c17b32}
+.school-shell.student-shell .student-reference-topic-icon.tone-4{background:#e2f3f8;color:#287e9d}
+.school-shell.student-shell .student-reference-topic-icon.tone-5{background:#f9e8f4;color:#a45c9a}
+.school-shell.student-shell .student-reference-topic-copy{display:grid;gap:4px;min-width:0;flex:1}
+.school-shell.student-shell .student-reference-topic-copy b{
+  color:#1e426b;font-size:12px;font-weight:800;line-height:1.4;overflow-wrap:anywhere;
+}
+.school-shell.student-shell .student-reference-topic-copy small{color:#8396ad;font-size:10px;line-height:1.4}
+.school-shell.student-shell .student-reference-topic-arrow{
+  display:grid;place-items:center;flex:none;width:31px;height:31px;border-radius:50%;
+  background:#f1f5f2;color:#587e77;
+}
+.school-shell.student-shell .student-reference-topic:hover:not(:disabled) .student-reference-topic-arrow{
+  background:#e6f0ff;color:#2e70d0;
+}
+.school-shell.student-shell .student-reference-rail{display:grid;gap:14px;min-width:0}
+.school-shell.student-shell .student-reference-rail .student-aside-card{padding:20px}
+.school-shell.student-shell .student-reference-rail .student-reference-section-heading{align-items:flex-start;margin-bottom:13px}
+.school-shell.student-shell .student-reference-rail .student-reference-section-heading h2{font-size:16px}
+.school-shell.student-shell .student-reference-rail .student-dashboard-card-icon{
+  display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:11px;
+  background:#eaf2ff;color:#3478d8;
+}
+.school-shell.student-shell .student-reference-rail .student-dashboard-card-icon.gold{background:#fff2dd;color:#c48a2b}
+.school-shell.student-shell .student-reference-rank-value{
+  display:flex;align-items:center;gap:12px;min-height:73px;margin:2px 0 12px;
+}
+.school-shell.student-shell .student-reference-rank-value>strong{
+  flex:none;color:#236bd0;font-size:31px;line-height:1;font-weight:850;letter-spacing:-.05em;
+}
+.school-shell.student-shell .student-reference-rank-value>div{display:grid;gap:5px;min-width:0}
+.school-shell.student-shell .student-reference-rank-value b{color:#23476f;font-size:11px;line-height:1.4}
+.school-shell.student-shell .student-reference-rank-value span{color:#8295ac;font-size:9px;line-height:1.5}
+.school-shell.student-shell .student-reference-primary-link,
+.school-shell.student-shell .student-reference-secondary-link{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:39px;
+  padding:10px 12px;border:1px solid #1d68ca;border-radius:11px;background:#216bd0;
+  color:#fff;font-size:11px;font-weight:800;transition:background .15s;
+}
+.school-shell.student-shell .student-reference-primary-link:hover{background:#1859b5}
+.school-shell.student-shell .student-reference-secondary-link{
+  margin-top:12px;border-color:#d7e5f7;background:#f2f7ff;color:#2d68bd;
+}
+.school-shell.student-shell .student-reference-secondary-link:hover{background:#e6f0ff}
+.school-shell.student-shell .student-reference-latest-detail{
+  display:flex;align-items:center;gap:12px;min-height:82px;
+}
+.school-shell.student-shell .student-reference-clipboard{
+  display:grid;place-items:center;flex:none;width:55px;height:62px;border:1px solid #dce9fb;
+  border-radius:12px;background:linear-gradient(145deg,#e8f5ff,#dce9ff);color:#4c83d0;
+}
+.school-shell.student-shell .student-reference-latest-detail>div{display:grid;gap:5px;min-width:0}
+.school-shell.student-shell .student-reference-latest-detail b{color:#264a73;font-size:11px}
+.school-shell.student-shell .student-reference-latest-detail span{color:#8195ae;font-size:9px;line-height:1.45}
+.school-shell.student-shell .student-reference-latest-detail strong{color:#2d70ce;font-size:12px}
+.school-shell.student-shell .student-reference-empty{
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;
+  min-height:78px;color:#8497af;font-size:10px;line-height:1.55;
+}
+.school-shell.student-shell .student-reference-empty>svg{color:#7d9fd0}
+.school-shell.student-shell .student-reference-empty b{color:#35577e;font-size:11px}
+.school-shell.student-shell .student-reference-empty span{color:#8497af;font-size:9px}
+.school-shell.student-shell .student-reference-tip p{
+  margin:0;color:#7c90a9;font-size:11px;line-height:1.7;
+}
+.school-shell.student-shell .student-reference-rail .student-reference-tip{background:linear-gradient(145deg,#fff,#f8fbff)}
+
+@media(max-width:1120px){
+  .school-shell.student-shell .student-reference-hero{padding:27px 30px;grid-template-columns:minmax(0,1fr) minmax(190px,.72fr)}
+  .school-shell.student-shell .student-reference-content{grid-template-columns:minmax(0,1.45fr) minmax(250px,.8fr);gap:13px}
+  .school-shell.student-shell .student-reference-stats .student-home-metrics .metric{padding:15px}
+}
+@media(max-width:900px){
+  .school-shell.student-shell .student-reference-hero{grid-template-columns:minmax(0,1fr) 190px;min-height:245px}
+  .school-shell.student-shell .student-reference-content{grid-template-columns:minmax(0,1fr)}
+  .school-shell.student-shell .student-reference-rail{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .school-shell.student-shell .student-reference-tip{grid-column:1/-1}
+}
+@media(max-width:600px){
+  .school-shell.student-shell .student-home-dashboard{gap:13px}
+  .school-shell.student-shell .student-reference-hero{grid-template-columns:minmax(0,1fr);min-height:0;padding:24px 21px;border-radius:20px}
+  .school-shell.student-shell .student-reference-hero .student-featured-copy h1{font-size:clamp(29px,8vw,38px);margin-top:14px}
+  .school-shell.student-shell .student-reference-hero .student-hero-class{font-size:11px}
+  .school-shell.student-shell .student-reference-hero .student-hero-description{font-size:11px}
+  .school-shell.student-shell .student-reference-hero .student-hero-actions{gap:11px;margin-top:18px}
+  .school-shell.student-shell .student-reference-hero .student-start-button{min-height:46px;font-size:11px;padding-right:13px}
+  .school-shell.student-shell .student-reference-hero .student-play-icon{width:32px;height:32px}
+  .school-shell.student-shell .student-reference-hero .student-hero-duration{font-size:10px}
+  .school-shell.student-shell .student-reference-illustration{display:none}
+  .school-shell.student-shell .student-reference-stats .student-home-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .school-shell.student-shell .student-reference-stats .student-home-metrics .metric{
+    display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-height:112px;padding:11px 10px;border-radius:13px;
+  }
+  .school-shell.student-shell .student-reference-stats .student-home-metrics .metric-icon{width:29px;height:29px;border-radius:9px}
+  .school-shell.student-shell .student-reference-stats .student-home-metrics .metric>div small{font-size:9px}
+  .school-shell.student-shell .student-reference-stats .student-home-metrics .metric>div strong{font-size:21px}
+  .school-shell.student-shell .student-reference-stats .student-home-metrics .metric-foot{font-size:8px}
+  .school-shell.student-shell .student-reference-content{gap:13px}
+  .school-shell.student-shell .student-reference-lessons{padding:17px;border-radius:16px}
+  .school-shell.student-shell .student-reference-section-heading h2{font-size:17px}
+  .school-shell.student-shell .student-reference-topic{min-height:63px;padding:9px;gap:9px;border-radius:12px}
+  .school-shell.student-shell .student-reference-topic-icon{width:36px;height:36px;border-radius:10px}
+  .school-shell.student-shell .student-reference-topic-copy b{font-size:11px}
+  .school-shell.student-shell .student-reference-topic-copy small{font-size:9px}
+  .school-shell.student-shell .student-reference-topic-arrow{width:27px;height:27px}
+  .school-shell.student-shell .student-reference-rail{grid-template-columns:minmax(0,1fr);gap:11px}
+  .school-shell.student-shell .student-reference-tip{grid-column:auto}
+  .school-shell.student-shell .student-reference-rail .student-aside-card{padding:16px;border-radius:15px}
+}
+@media(max-width:360px){
+  .school-shell.student-shell .student-reference-stats .student-home-metrics{grid-template-columns:1fr}
+  .school-shell.student-shell .student-reference-stats .student-home-metrics .metric{display:grid;grid-template-columns:30px 1fr;min-height:78px}
+  .school-shell.student-shell .student-reference-stats .student-home-metrics .metric-icon{grid-column:1;grid-row:1 / span 2}
+  .school-shell.student-shell .student-reference-stats .student-home-metrics .metric>div{grid-column:2;grid-row:1}
+  .school-shell.student-shell .student-reference-stats .student-home-metrics .metric-foot{grid-column:2;grid-row:2}
+}
