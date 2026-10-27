@@ -267,7 +267,7 @@ export default function AdminBankPage(){
       {importDrafts.map(d=><article key={d.id} className="admin-bank-draft-card">
        <div className="admin-bank-draft-info"><span className="admin-bank-draft-tag">Draft impor</span><strong>{d.file_name}</strong>
         <p>{d.payload.length} soal · {d.mode==='replace'?'Ganti bank':'Tambahkan soal'}</p><span className="admin-bank-quality draft"><FileText size={13}/> Perlu ditinjau sebelum terbit</span></div>
-       <Link className="admin-workspace-detail" href="/admin/bank-soal/impor">Buka impor</Link>
+       <Link className="admin-workspace-detail" href={"/admin/bank-soal/impor?draft="+encodeURIComponent(d.id)}>Lanjutkan</Link>
       </article>)}
      </>}
     </div>:busy?<div className="admin-workspace-empty">Mengambil bank soal aktif...</div>:filtered.filter(q=>tab==='published'||review.some(r=>r.number===q.id)).length===0?<div className="admin-workspace-empty">{tab==='review'?'Tidak ada soal aktif yang perlu ditinjau.':'Tidak ada soal yang sesuai.'}</div>:
