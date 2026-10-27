@@ -94,10 +94,10 @@ export default function AdminSettingsPage(){
  async function inviteAdmin(event:React.FormEvent<HTMLFormElement>){
   event.preventDefault();
   if(inviting)return;
-  const displayName=inviteName.trim().replace(/\\s+/g,' ');
+  const displayName=inviteName.trim().replace(/\s+/g,' ');
   const destination=inviteEmail.trim().toLowerCase();
   if(displayName.length<3||displayName.length>100){setInviteIssue('Isi nama lengkap minimal 3 karakter.');return;}
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(destination)){setInviteIssue('Masukkan alamat email yang valid.');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(destination)){setInviteIssue('Masukkan alamat email yang valid.');return;}
   setInviting(true);setInviteIssue('');
   try{
    const {data,error:inviteError}=await supabase().functions.invoke('invite-school-admin',{
