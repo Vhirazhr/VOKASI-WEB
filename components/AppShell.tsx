@@ -56,7 +56,7 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
   }
   const active=(href:string)=>href.includes('#')?false:pathname===href;
   const linkTo=(href:string)=>href.includes('#')?(embedMode?href.replace('#','?embed=1#'):href):href+suffix;
-  return <div className={'shell school-shell '+(embedMode?'shell-embed ':'')+(dashboardStyle?'admin-overview-shell':'')}>
+  return <div className={'shell school-shell '+(embedMode?'shell-embed ':'')+(isAdmin?'admin-shell ':'student-shell ')+(dashboardStyle?'admin-overview-shell':'')}>
     <aside className="sidebar" aria-label={isAdmin?'Menu admin':'Menu siswa'}>
       <Link onClick={askBeforeLeave} href="/" className="brand"><span className="brand-mark">V</span><span>VOKASI<span className="brand-dot">.</span></span></Link>
       <div className="side-label">{isAdmin?'PANEL SEKOLAH':'AREA BELAJAR'}</div>
@@ -81,10 +81,13 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
               <span className="admin-header-avatar"><ShieldCheck size={19}/></span>
               <span className="admin-header-identity"><strong>{adminEmail||displayName}</strong><small>Administrator · Aktif</small></span>
             </div>
-          </div>:<>
-            <button type="button" className="top-logout" title="Keluar akun" onClick={onLogout}><LogOut size={16}/> Keluar</button>
-            <span className="topbar-tag"><GraduationCap size={15}/> Siswa</span>
-          </>}
+          </div>:<div className="student-header-actions">
+            <div className="student-header-account" aria-label="Akun siswa yang sedang masuk">
+              <span className="student-header-avatar"><GraduationCap size={19}/></span>
+              <span className="student-header-identity"><strong>{displayName}</strong><small>Siswa · SMK Negeri 1 Singosari</small></span>
+            </div>
+            <button type="button" className="top-logout student-header-logout" title="Keluar akun" onClick={onLogout}><LogOut size={16}/><span>Keluar</span></button>
+          </div>}
         </div>
       </header>
       <div className="shell-body">{children}</div>
