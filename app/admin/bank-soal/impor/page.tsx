@@ -24,7 +24,7 @@ export default function UnifiedQuestionImport(){
  const [saved,setSaved]=useState<Stored[]>([]);const [activeCount,setActiveCount]=useState<number|null>(null);
  const [savedId,setSavedId]=useState<string|null>(null);
  const problems=useMemo(()=>inspectQuestionRows(rows.map((row,i)=>pendingImages[i]?{...row,question_image_path:row.question_image_path||'[local-upload]'}:row)),[rows,pendingImages]);
- const imagesCount=Object.keys(pendingImages).length;
+
  async function refresh(){
   try{
    const [drafts,bank]=await Promise.all([
@@ -46,7 +46,7 @@ export default function UnifiedQuestionImport(){
    const data=await parseQuestionFile(file);
    setRows(data.questions);
    setWarnings(data.warnings);
-   if(data.imageFile)setPendingImages({0:data.imageFile});
+   
    setNotice('Berhasil membaca '+data.questions.length+' soal dari '+file.name+'. Periksa pertanyaan dan kunci sebelum diterbitkan.');
   }catch(e){setNotice('File tidak berhasil diproses: '+(e instanceof Error?e.message:'Gagal membaca isi file.'));}
   finally{setReading(false);}
@@ -95,9 +95,12 @@ export default function UnifiedQuestionImport(){
    const data=await withStorageUploads();
    const {data:{user},error:e}=await supabase().auth.getUser();
    if(e||!user)throw new Error('Login admin perlu diulang.');
-   const result=await supabase().from('vokasi_web_import_drafts')
-     .insert({file_name:(fileName||'Buat soal manual').slice(0,250),mode,payload:data,owner_id:user.id});
+   const values={file_name:(fileName||'Buat soal manual').slice(0,250),mode,payload:data};
+   const result=savedId
+     ?await supabase().from('vokasi_web_import_drafts').update(values).eq('id',savedId).eq('owner_id',user.id).select('id').single()
+     :await supabase().from('vokasi_web_import_drafts').insert({...values,owner_id:user.id}).select('id').single();
    if(result.error)throw result.error;
+   setSavedId(result.data.id);
    setNotice('Draft '+data.length+' soal tersimpan. Bank aktif belum diubah. Buka kembali dari daftar draft di bawah.');
    setConfirm(false);await refresh();
   }catch(e){setNotice('Gagal menyimpan draft: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}
