@@ -144,7 +144,7 @@ export default function AdminClassesPage(){
      <header className="admin-modal-top"><div><span className="section-kicker">STRUKTUR SEKOLAH</span><h2>{classModal==='add'?'Tambah kelas':'Edit kelas'}</h2><p>Kelola data kelas langsung dari halaman ini.</p></div><button type="button" aria-label="Tutup" onClick={closeModal}><X size={19}/></button></header>
      {feedback&&<div className="alert danger" role="alert">{feedback}</div>}
      <form className="admin-class-modal-form" onSubmit={e=>void addClass(e)}>
-      <label>Jurusan<select required value={newMajor} onChange={e=>setNewMajor(e.target.value)} disabled={classModal==='edit'&&groups.find(g=>g.key===editClassId)?.count!>0}><option value="">Pilih jurusan</option>{majorsDb.map(m=><option value={m.id} key={m.id}>{m.name}</option>)}</select></label>
+      <label>Jurusan<select required value={newMajor} onChange={e=>setNewMajor(e.target.value)} disabled={classModal==='edit'&&(groups.find(g=>g.key===editClassId)?.count??0)>0}><option value="">Pilih jurusan</option>{majorsDb.map(m=><option value={m.id} key={m.id}>{m.name}</option>)}</select></label>
       <div className="admin-class-form-row">
        <label>Tingkat<select value={newGrade} onChange={e=>setNewGrade(Number(e.target.value))}>{[10,11,12].map(g=><option key={g} value={g}>{romanGrade(g)} · Kelas {g}</option>)}</select></label>
        {classModal==='add'&&!manualName&&<label>Rombel<input required type="number" min="1" max="30" value={rombel} onChange={e=>setRombel(e.target.value)} placeholder="1"/></label>}
