@@ -11,7 +11,7 @@ END $$;
 DO $$
 DECLARE owner_id uuid; matches integer;
 BEGIN
- SELECT count(*),min(a.user_id) INTO matches,owner_id
+ SELECT count(*),min(a.user_id::text)::uuid INTO matches,owner_id
  FROM public.school_admins a JOIN auth.users u ON u.id=a.user_id
  WHERE lower(btrim(u.email))='fakhirazahra88@gmail.com' AND a.is_active AND u.deleted_at IS NULL;
  IF matches<>1 OR owner_id IS NULL THEN
