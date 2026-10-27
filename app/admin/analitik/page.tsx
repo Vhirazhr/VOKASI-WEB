@@ -3,9 +3,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BarChart3, CalendarDays, CheckCircle2, Clock3, GraduationCap, RefreshCw, School2, TrendingUp, Users } from 'lucide-react';
 import AppShell from '@/components/AppShell';
+import BankFilterDropdown from '@/components/BankFilterDropdown';
 import { useSchoolAuth } from '@/lib/use-school-auth';
 import { getAdminAnalyticsAttempts, getSchoolStudents, wibDate, wibRange } from '@/lib/school';
 import type { SchoolStudent, AttemptSummary } from '@/lib/types';
+import '@/app/admin-workspace.css';
+import '@/app/admin-students-ui.css';
 import '@/app/admin-analytics.css';
 
 type DailyStats = { date:string; label:string; completed:number; percent:number; average:number|null; scores:number[] };
@@ -84,32 +87,56 @@ export default function AdminAnalyticsPage(){
   const endRate=denominator?Math.round(endCount/denominator*100):0;
   const periodAverage=average(stats.daily.flatMap(d=>d.scores));
   const maxComplete=Math.max(1,...stats.daily.map(d=>d.completed));
+  const hasFilters=major!==''||klass!==''||days!==14||endDate!==wibDate();
+  function resetFilters(){
+    const today=wibDate();
+    setEndDate(today);setDays(14);setMajor('');setKlass('');
+    setBusy(true);
+  }
   const maxBand=Math.max(1,...stats.bands.map(b=>b.count));
 
   if(loading)return <main className="page-loader">Memverifikasi akses admin...</main>;
   if(error)return <main className="page-loader">{error}</main>;
   return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()}>
-    <div className="admin-analytics">
-      <header className="analytics-heading"><div><span className="section-kicker">MONITORING SEKOLAH</span><h1>Analitik hasil belajar</h1><p>Tren latihan wajib berdasarkan catatan Supabase. Rekap per siswa menggunakan sesi terakhir pada setiap tanggal WIB.</p></div>
-        <button className="btn secondary small" type="button" disabled={busy} onClick={()=>{setBusy(true);reload();}}><RefreshCw size={16}/> Segarkan</button>
-      </header>
-      <section className="analytics-filter-card" aria-label="Filter analitik">
-        <label>Tanggal akhir (WIB)<span className="analytics-input-wrap"><CalendarDays size={16}/><input type="date" value={endDate} max={wibDate()} onChange={e=>{if(e.target.value){setEndDate(e.target.value);setBusy(true);}}}/></span></label>
-        <label>Periode<select value={days} onChange={e=>{setDays(Number(e.target.value));setBusy(true);}}><option value={7}>7 hari</option><option value={14}>14 hari</option><option value={30}>30 hari</option></select></label>
-        <label>Jurusan<select value={major} onChange={e=>{setMajor(e.target.value);setKlass('');}}><option value="">Semua jurusan</option>{majors.map(m=><option key={m} value={m}>{m}</option>)}</select></label>
-        <label>Kelas<select value={klass} onChange={e=>setKlass(e.target.value)}><option value="">Semua kelas</option>{classes.map(k=><option key={k} value={k}>{k}</option>)}</select></label>
+    <div className="admin-analytics admin-students-page">
+      <section className="admin-students-hero admin-analytics-hero" aria-label="Ringkasan analitik hasil belajar">
+        <header className="admin-workspace-header analytics-hero-heading">
+          <span className="section-kicker">MONITORING SEKOLAH</span>
+          <h1>Analitik hasil belajar</h1>
+          <p>Pantau partisipasi latihan wajib dan perkembangan nilai siswa berdasarkan data yang tersimpan di Supabase.</p>
+          <button type="button" className="analytics-hero-refresh" disabled={busy} onClick={()=>{setBusy(true);reload();}}><RefreshCw size={16}/> {busy?'Memuat data...':'Segarkan data'}</button>
+        </header>
+        <div className="admin-mini-stats analytics-hero-stats">
+          <div><Users size={20}/><span>Siswa dalam filter</span><strong>{busy?'—':denominator.toLocaleString('id-ID')}</strong></div>
+          <div><CheckCircle2 size={20}/><span>Latihan pada {formatDay(endDate)}</span><strong>{busy?'—':endCount.toLocaleString('id-ID')}<small> / {denominator.toLocaleString('id-ID')}</small></strong></div>
+          <div><TrendingUp size={20}/><span>Rata-rata nilai harian</span><strong>{busy?'—':stats.latestAverage===null?'—':stats.latestAverage.toLocaleString('id-ID')}</strong></div>
+          <div><Clock3 size={20}/><span>Rata-rata nilai periode</span><strong>{busy?'—':periodAverage===null?'—':periodAverage.toLocaleString('id-ID')}</strong></div>
+        </div>
+      </section>
+      <section className="analytics-filter-card" aria-label="Filter laporan analitik">
+        <div className="analytics-filter-heading"><div><span className="section-kicker">ATUR LAPORAN</span><h2>Filter analitik</h2><p>Pilih periode, jurusan, atau kelas untuk menampilkan hasil yang relevan.</p></div>
+          {hasFilters&&<button type="button" className="analytics-reset" onClick={resetFilters}>Reset filter</button>}
+        </div>
+        <div className="analytics-filter-grid">
+          <label className="analytics-date-field">Tanggal akhir (WIB)
+            <span className="analytics-input-wrap"><CalendarDays size={16}/><input aria-label="Tanggal akhir laporan" type="date" value={endDate} max={wibDate()} onChange={e=>{if(e.target.value){setEndDate(e.target.value);setBusy(true);}}}/></span>
+          </label>
+          <fieldset className="analytics-period-field"><legend>Periode</legend>
+            <div className="analytics-period-options" aria-label="Pilihan rentang hari">
+              {[7,14,30].map(value=><button type="button" key={value} aria-pressed={days===value} className={days===value?'active':''} onClick={()=>{if(days!==value){setDays(value);setBusy(true);}}}>{value} hari</button>)}
+            </div>
+          </fieldset>
+          <BankFilterDropdown label="Jurusan" value={major} items={[{value:'',label:'Semua jurusan'},...majors.map(name=>({value:name,label:name}))]} onChange={value=>{setMajor(value);setKlass('');}}/>
+          <BankFilterDropdown label="Kelas" value={klass} items={[{value:'',label:'Semua kelas'},...classes.map(name=>({value:name,label:name}))]} onChange={setKlass}/>
+        </div>
       </section>
       {notice&&<div className="alert danger" role="alert">{notice}<button className="link-action" type="button" onClick={()=>{setBusy(true);reload();}}> Coba lagi</button></div>}
       {!busy&&!notice&&<>
-        <div className="analytics-stats-grid">
-          <article><span className="analytics-stat-icon blue"><Users size={20}/></span><small>Siswa dalam filter</small><strong>{denominator}</strong><p>Seluruh roster termasuk akun belum terdaftar</p></article>
-          <article><span className="analytics-stat-icon green"><CheckCircle2 size={20}/></span><small>Sudah latihan pada {formatDay(endDate)}</small><strong>{endCount}<em> / {denominator}</em></strong><p>{endRate}% dari siswa dalam filter</p></article>
-          <article><span className="analytics-stat-icon purple"><TrendingUp size={20}/></span><small>Rata-rata nilai tanggal akhir</small><strong>{stats.latestAverage??'—'}</strong><p>Hanya siswa dengan sesi wajib tercatat</p></article>
-          <article><span className="analytics-stat-icon peach"><Clock3 size={20}/></span><small>Rata-rata nilai selama periode</small><strong>{periodAverage??'—'}</strong><p>Rata-rata siswa-harian yang tercatat</p></article>
-        </div>
+        <div className="analytics-context" role="status"><div><CheckCircle2 size={15}/><span><strong>{endRate}% partisipasi</strong> pada {formatDay(endDate)} · {days} hari pengamatan</span></div><p>Nilai kosong berarti belum ada sesi latihan wajib yang tercatat, bukan nilai nol.</p></div>
         <div className="analytics-main-grid">
           <section className="analytics-panel">
             <div className="analytics-panel-head"><div><span className="section-kicker">AKTIVITAS HARIAN</span><h2>Partisipasi latihan wajib</h2><p>Jumlah siswa dengan minimal satu sesi pada setiap hari.</p></div><BarChart3 size={23}/></div>
+            {stats.daily.every(d=>d.completed===0)&&<div className="analytics-empty-note">Belum ada sesi latihan wajib pada periode yang dipilih.</div>}
             <div className="analytics-bar-chart" role="img" aria-label="Grafik jumlah siswa yang telah mengerjakan latihan wajib per hari">
               {stats.daily.map(d=><div key={d.date} className="analytics-bar-column" title={d.label+': '+d.completed+' siswa, rata-rata '+(d.average??'—')}>
                 <span className="analytics-bar-count">{d.completed}</span><div className="analytics-bar-track"><div style={{height:(d.completed===0?0:Math.max(4,d.completed/maxComplete*100))+'%'}}/></div><span className="analytics-bar-day">{d.label}</span>
@@ -119,6 +146,7 @@ export default function AdminAnalyticsPage(){
           </section>
           <section className="analytics-panel analytics-band-panel">
             <div className="analytics-panel-head"><div><span className="section-kicker">SEBARAN NILAI</span><h2>Kelompok hasil belajar</h2><p>Nilai terakhir per siswa pada {formatDay(endDate)}.</p></div><GraduationCap size={23}/></div>
+            {endCount===0&&<div className="analytics-empty-note">Belum ada nilai pada tanggal yang dipilih.</div>}
             {stats.bands.map((band,i)=><div className="analytics-band-row" key={band.label}><span>{band.label}</span><div className={'analytics-band-track shade-'+i}><div style={{width:Math.round(band.count/maxBand*100)+'%'}}/></div><strong>{band.count}</strong></div>)}
             <div className="analytics-band-footer"><span>Total siswa dengan nilai</span><strong>{endCount}</strong></div>
           </section>
