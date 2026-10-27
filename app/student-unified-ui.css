@@ -1346,3 +1346,226 @@
   .school-shell.student-shell .topbar small{font-size:14px}
   .school-shell.student-shell .student-header-avatar{width:36px;height:36px;font-size:10px}
 }
+
+
+/* Ranking page: editorial leaderboard inspired by the supplied top-performers reference.
+   Flat cards and typography only; ranking values continue to come from Supabase. */
+.school-shell.student-shell:has(.student-ranking-experience) .shell-body{
+  padding:0;background:#070707;color:#fff;
+}
+.school-shell.student-shell .student-ranking-experience{
+  width:100%;max-width:none;min-width:0;min-height:calc(100vh - 88px);
+  margin:0;padding:28px clamp(18px,3vw,44px) 38px;
+  color:#f8f5f0;background:
+    radial-gradient(ellipse at 50% -10%,rgba(136,45,12,.35),transparent 48%),
+    linear-gradient(180deg,#160b07 0%,#080808 48%,#050505 100%);
+}
+.school-shell.student-shell .student-ranking-masthead{
+  max-width:1060px;margin:0 auto 26px;padding:8px 0 3px;text-align:center;
+}
+.school-shell.student-shell .student-ranking-kicker{
+  display:block;margin-bottom:8px;color:#f08b61;font-size:11px;font-weight:850;
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.school-shell.student-shell .student-ranking-masthead h1{
+  display:flex;flex-direction:column;align-items:center;gap:0;margin:0;
+  color:#ffe28a;font-size:clamp(36px,5vw,62px);font-weight:950;
+  line-height:.98;letter-spacing:-.045em;
+}
+.school-shell.student-shell .student-ranking-masthead h1 span{
+  color:#ffe58e;background:linear-gradient(180deg,#fff1a8 0%,#ffc84f 95%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.school-shell.student-shell .student-ranking-masthead h1 small{
+  display:block;margin-top:7px;color:#f28d63;font-size:clamp(17px,2.1vw,27px);
+  font-weight:900;letter-spacing:.07em;line-height:1.1;
+}
+.school-shell.student-shell .student-ranking-masthead p{
+  max-width:650px;margin:13px auto 0;color:#c5b8b0;font-size:12px;line-height:1.65;
+}
+.school-shell.student-shell .student-ranking-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  max-width:1060px;margin:0 auto 12px;
+}
+.school-shell.student-shell .student-ranking-experience .student-segments{
+  display:flex;gap:4px;padding:4px;border:1px solid #38302c;border-radius:10px;background:#171412;
+}
+.school-shell.student-shell .student-ranking-experience .student-segments button{
+  min-height:34px;padding:0 15px;border:0;border-radius:7px;background:transparent;
+  color:#c5b8b0;font-size:11px;font-weight:750;
+}
+.school-shell.student-shell .student-ranking-experience .student-segments button.active{
+  color:#211307;background:#ffd66e;box-shadow:none;
+}
+.school-shell.student-shell .student-ranking-experience .student-ranking-search{
+  display:flex;align-items:center;gap:9px;width:min(280px,100%);min-height:39px;
+  padding:0 12px;border:1px solid #3a302b;border-radius:9px;background:#151312;color:#c9b8ac;
+}
+.school-shell.student-shell .student-ranking-experience .student-ranking-search input{
+  width:100%;min-width:0;border:0;outline:0;background:transparent;color:#fff;font-size:11px;
+}
+.school-shell.student-shell .student-ranking-experience .student-ranking-search input::placeholder{color:#8d8179}
+.school-shell.student-shell .student-ranking-info{
+  display:flex;align-items:center;gap:8px;max-width:1060px;margin:0 auto 22px;
+  padding:10px 12px;border:1px solid #302720;border-radius:9px;
+  background:rgba(28,22,18,.7);color:#b9a99c;font-size:10px;line-height:1.5;
+}
+.school-shell.student-shell .student-ranking-info svg{flex:none;color:#e8b967}
+.school-shell.student-shell .student-podium{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;
+  gap:14px;width:100%;max-width:1000px;margin:0 auto 25px;
+}
+.school-shell.student-shell .student-podium-item{
+  position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:stretch;
+  min-width:0;height:292px;overflow:hidden;padding:18px 19px 17px;
+  border:1px solid rgba(255,255,255,.32);border-radius:24px;
+  color:#fff;box-shadow:none;
+}
+.school-shell.student-shell .student-podium-item:before{
+  content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;
+  background:linear-gradient(145deg,rgba(255,255,255,.15),transparent 45%);
+}
+.school-shell.student-shell .student-podium-2{
+  background:linear-gradient(145deg,#77747a 0%,#aaa5a9 50%,#59545a 100%);
+}
+.school-shell.student-shell .student-podium-1{
+  height:330px;border-color:#d6a071;
+  background:linear-gradient(145deg,#d49a64 0%,#a84e28 55%,#713019 100%);
+}
+.school-shell.student-shell .student-podium-3{
+  background:linear-gradient(145deg,#c99b91 0%,#9c6c64 54%,#58332f 100%);
+}
+.school-shell.student-shell .student-rank-card-top{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+}
+.school-shell.student-shell .student-rank-medal{
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  width:35px;height:35px;border:1px solid rgba(255,255,255,.5);border-radius:50%;
+  background:rgba(0,0,0,.15);color:#fff;font-size:12px;font-weight:900;
+}
+.school-shell.student-shell .student-rank-medal svg{width:15px;height:15px}
+.school-shell.student-shell .student-rank-avatar,
+.school-shell.student-shell .student-rank-row-avatar{
+  display:grid;place-items:center;flex:none;width:43px;height:43px;border:2px solid rgba(255,255,255,.75);
+  border-radius:50%;background:rgba(26,20,16,.34);color:#fff;font-size:16px;font-weight:850;
+}
+.school-shell.student-shell .student-rank-score-label{
+  display:block;margin-top:15px;color:rgba(255,255,255,.84);font-size:9px;font-weight:850;letter-spacing:.08em;
+}
+.school-shell.student-shell .student-ranking-experience .student-rank-score{
+  display:block;margin:1px 0 9px;color:#fff;font-size:clamp(37px,4vw,53px);font-weight:950;
+  line-height:1;letter-spacing:-.055em;
+}
+.school-shell.student-shell .student-ranking-experience .student-rank-score small{
+  margin-left:4px;color:rgba(255,255,255,.72);font-size:12px;font-weight:650;letter-spacing:0;
+}
+.school-shell.student-shell .student-rank-facts{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px;
+}
+.school-shell.student-shell .student-rank-facts span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.school-shell.student-shell .student-rank-facts b{
+  overflow:hidden;color:#fff;font-size:12px;font-weight:850;text-overflow:ellipsis;white-space:nowrap;
+}
+.school-shell.student-shell .student-rank-facts small{
+  color:rgba(255,255,255,.72);font-size:8px;font-weight:700;letter-spacing:.04em;
+}
+.school-shell.student-shell .student-rank-card-name{position:relative;z-index:1;margin-top:auto;min-width:0}
+.school-shell.student-shell .student-rank-card-name>b{
+  display:block;overflow:hidden;color:#fff;font-size:clamp(16px,1.8vw,23px);font-weight:950;
+  line-height:1.08;letter-spacing:-.035em;text-overflow:ellipsis;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow-wrap:anywhere;
+}
+.school-shell.student-shell .student-rank-card-name>small{
+  display:block;overflow:hidden;margin-top:5px;color:rgba(255,255,255,.76);
+  font-size:9px;text-overflow:ellipsis;white-space:nowrap;
+}
+.school-shell.student-shell .student-rank-you{
+  display:inline-flex;margin-top:5px;padding:3px 6px;border-radius:4px;
+  background:#ffe18a;color:#3a1e0c;font-size:8px;font-weight:900;letter-spacing:.06em;
+}
+.school-shell.student-shell .student-rank-watermark{
+  position:absolute;z-index:-1;right:-7px;bottom:40px;width:105px;height:105px;
+  color:rgba(255,255,255,.2);transform:rotate(-9deg);pointer-events:none;
+}
+.school-shell.student-shell .student-podium-placeholder{height:292px;border:1px dashed #3a2d25;border-radius:24px;background:rgba(255,255,255,.02)}
+.school-shell.student-shell .student-podium-placeholder-1{height:330px}
+.school-shell.student-shell .student-ranking-list{
+  width:100%;max-width:1000px;margin:0 auto 17px;padding:18px 18px 8px;
+  border:1px solid #2b2927;border-radius:22px;background:#111;
+}
+.school-shell.student-shell .student-ranking-list-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;
+}
+.school-shell.student-shell .student-ranking-list-heading>div>span{
+  color:#d7a85d;font-size:9px;font-weight:850;letter-spacing:.15em;
+}
+.school-shell.student-shell .student-ranking-list-heading h2{
+  margin:5px 0 0;color:#fff;font-size:19px;font-weight:850;letter-spacing:-.025em;
+}
+.school-shell.student-shell .student-ranking-list-heading> b{
+  padding:7px 9px;border:1px solid #3a332d;border-radius:7px;color:#bdb0a5;font-size:9px;letter-spacing:.05em;
+}
+.school-shell.student-shell .student-ranking-list-items{display:flex;flex-direction:column;gap:8px}
+.school-shell.student-shell .student-rank-row{
+  display:grid;grid-template-columns:38px 40px minmax(120px,1fr) minmax(90px,120px) minmax(70px,85px);
+  align-items:center;gap:12px;min-width:0;padding:12px 14px;
+  border:1px solid #2b2a29;border-radius:15px;background:#1a1a1a;color:#f9f6f1;
+}
+.school-shell.student-shell .student-rank-row-self{border-color:#d8a957;background:#272018}
+.school-shell.student-shell .student-rank-row-number{
+  display:grid;place-items:center;width:32px;height:32px;border:1px solid #4b443d;border-radius:50%;
+  color:#d6c7b9;font-size:12px;font-weight:900;
+}
+.school-shell.student-shell .student-rank-row-avatar{width:38px;height:38px;font-size:13px;border-color:#49413a;background:#2c2824}
+.school-shell.student-shell .student-rank-row-name{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
+.school-shell.student-shell .student-rank-row-name>b{
+  max-width:100%;overflow:hidden;color:#fff;font-size:13px;font-weight:850;text-overflow:ellipsis;white-space:nowrap;
+}
+.school-shell.student-shell .student-rank-row-name>small{max-width:100%;overflow:hidden;color:#9f968e;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.school-shell.student-shell .student-rank-row-name>span{color:#ffda7d;font-size:8px;font-weight:900;letter-spacing:.06em}
+.school-shell.student-shell .student-rank-row-stat,
+.school-shell.student-shell .student-rank-row-score{display:flex;flex-direction:column;align-items:center;gap:3px}
+.school-shell.student-shell .student-rank-row-stat>b{color:#f1e9e0;font-size:13px;font-weight:850}
+.school-shell.student-shell .student-rank-row-score>b{color:#fff;font-size:19px;font-weight:950}
+.school-shell.student-shell .student-rank-row-stat>small,
+.school-shell.student-shell .student-rank-row-score>small{color:#9c9289;font-size:8px;font-weight:750;letter-spacing:.04em}
+.school-shell.student-shell .student-ranking-experience .student-personal-rank{
+  display:flex;align-items:center;justify-content:center;gap:9px;width:fit-content;max-width:100%;
+  margin:0 auto;padding:10px 15px;border:1px solid #3b3024;border-radius:10px;
+  background:#17120e;color:#e4c28a;font-size:11px;font-weight:750;text-align:center;
+}
+.school-shell.student-shell .student-ranking-experience .student-rank-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  min-height:250px;margin:0 auto;max-width:1000px;padding:35px 20px;
+  border:1px solid #30251e;border-radius:20px;background:#111;color:#d9b36e;text-align:center;
+}
+.school-shell.student-shell .student-ranking-experience .student-rank-empty b{color:#fff;font-size:16px}
+.school-shell.student-shell .student-ranking-experience .student-rank-empty span{max-width:440px;color:#a99b8f;font-size:11px;line-height:1.7}
+@media(max-width:760px){
+  .school-shell.student-shell:has(.student-ranking-experience) .shell-body{padding:0}
+  .school-shell.student-shell .student-ranking-experience{padding:22px 14px 30px;min-height:calc(100vh - 66px)}
+  .school-shell.student-shell .student-ranking-masthead{margin-bottom:20px}
+  .school-shell.student-shell .student-ranking-masthead h1{font-size:clamp(32px,8vw,46px)}
+  .school-shell.student-shell .student-ranking-toolbar{align-items:stretch;flex-direction:column}
+  .school-shell.student-shell .student-ranking-experience .student-ranking-search{width:100%}
+  .school-shell.student-shell .student-podium{grid-template-columns:minmax(0,1fr);max-width:460px;gap:10px}
+  .school-shell.student-shell .student-podium-item,
+  .school-shell.student-shell .student-podium-1,
+  .school-shell.student-shell .student-podium-placeholder,
+  .school-shell.student-shell .student-podium-placeholder-1{height:auto;min-height:235px}
+  .school-shell.student-shell .student-podium-1{order:0}
+  .school-shell.student-shell .student-podium-2{order:1}
+  .school-shell.student-shell .student-podium-3{order:2}
+  .school-shell.student-shell .student-podium-placeholder{display:none}
+  .school-shell.student-shell .student-rank-row{
+    grid-template-columns:30px 36px minmax(0,1fr) 58px;gap:8px;padding:11px 9px;
+  }
+  .school-shell.student-shell .student-rank-row-avatar{width:34px;height:34px}
+  .school-shell.student-shell .student-rank-row-stat{display:none}
+  .school-shell.student-shell .student-rank-row-score>b{font-size:16px}
+  .school-shell.student-shell .student-ranking-list{padding:14px 10px 8px;border-radius:16px}
+}
+@media(prefers-reduced-motion:reduce){
+  .school-shell.student-shell .student-ranking-experience *{scroll-behavior:auto}
+}
