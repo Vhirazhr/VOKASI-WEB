@@ -465,3 +465,70 @@ body:has(.admin-bank-page)::-webkit-scrollbar{
   width:0;
   height:0;
 }
+
+
+/* Import uses the same wide popup pattern as Tambah Soal. */
+.admin-bank-page .admin-modal-card.admin-bank-import-modal{
+ width:min(1190px,calc(100vw - 44px));
+ max-width:none;
+ max-height:calc(100dvh - 36px);
+ padding:0;
+ border-radius:23px;
+ overflow-y:auto;
+ overflow-x:hidden;
+ overscroll-behavior:contain;
+ scrollbar-width:none;
+ -ms-overflow-style:none;
+}
+.admin-bank-page .admin-bank-import-modal::-webkit-scrollbar{display:none;width:0;height:0}
+.admin-bank-page .admin-bank-import-heading{
+ position:sticky;
+ top:0;
+ z-index:12;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ margin:0;
+ padding:22px 30px 19px;
+ background:#fff;
+ border-bottom:1px solid #e5eefb;
+ box-shadow:0 5px 15px rgba(25,70,140,.035);
+}
+.admin-bank-page .admin-bank-import-heading h2{font-size:24px;color:#214b7f;margin:7px 0 0}
+.admin-bank-page .unified-import-embedded{
+ max-width:none;
+ margin:0;
+ padding:21px 30px 26px;
+}
+.admin-bank-page .unified-import-embedded .unified-import-header{margin-bottom:19px}
+.admin-bank-page .unified-import-embedded .unified-import-header h1{display:none}
+.admin-bank-page .unified-import-embedded .unified-import-header .section-kicker{display:none}
+.admin-bank-page .unified-import-embedded .unified-import-panel{
+ padding:21px 24px;
+ margin-bottom:15px;
+ box-shadow:none;
+}
+.admin-bank-page .unified-import-embedded .unified-import-drop{min-height:128px;padding:20px}
+.admin-bank-page .unified-import-embedded .unified-import-modes{gap:12px}
+.admin-bank-page .unified-import-embedded .unified-import-mode{min-height:92px}
+.admin-bank-page .unified-import-embedded .unified-import-actions{
+ position:sticky;
+ bottom:0;
+ z-index:8;
+ background:#fff;
+ border:1px solid #e0eafa;
+ border-radius:12px;
+ box-shadow:0 6px 24px rgba(28,69,131,.1);
+ padding:12px;
+}
+@media(max-width:720px){
+ .admin-bank-page .admin-modal-card.admin-bank-import-modal{
+  width:calc(100vw - 22px);
+  max-height:calc(100dvh - 22px);
+  border-radius:17px;
+ }
+ .admin-bank-page .admin-bank-import-heading{padding:17px 19px 14px}
+ .admin-bank-page .unified-import-embedded{padding:17px 16px 21px}
+ .admin-bank-page .unified-import-embedded .unified-import-panel{padding:16px}
+ .admin-bank-page .unified-import-embedded .unified-import-active{white-space:normal}
+}
