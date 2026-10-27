@@ -1,0 +1,373 @@
+/* Unified student UI — mirrors the approved VOKASI admin dashboard.
+   Visual-only styles: scores, quiz logic, and Supabase remain untouched. */
+
+.school-shell.student-shell{
+ --student-blue:#3268e5;
+ --student-ink:#234a78;
+ --student-border:#dfe9f7;
+ background:#f4f7fd;
+ align-items:stretch;
+}
+.school-shell.student-shell .shell-main{min-width:0;flex:1;position:relative}
+.school-shell.student-shell:not(.shell-embed) .sidebar{
+ position:sticky;top:0;height:100dvh;min-height:0;align-self:flex-start;
+ overflow-y:auto;overscroll-behavior:contain;
+ z-index:51;border-right:1px solid #e2eaf6;
+ padding:25px 17px 20px;background:#fff;
+}
+.school-shell.student-shell .sidebar .brand{
+ margin:0 8px 39px;font-weight:800;font-size:22px;letter-spacing:-.07em;
+}
+.school-shell.student-shell .side-label{color:#8196b1;font-size:9px;letter-spacing:.13em;padding:0 14px}
+.school-shell.student-shell .side-menu{gap:6px}
+.school-shell.student-shell .side-link{border-radius:11px;min-height:45px;padding:12px 13px;color:#6680a4;font-size:12px;font-weight:750}
+.school-shell.student-shell .side-menu .side-link span{font-weight:750}
+.school-shell.student-shell .side-link.selected{background:#edf4ff;color:#2864c7;box-shadow:inset 3px 0 0 #3268e5}
+.school-shell.student-shell .side-link:not(.selected):hover{background:#f4f8ff;color:#2c65bb}
+.school-shell.student-shell .side-bottom{margin-top:auto}
+.school-shell.student-shell .side-user{border-top:1px solid #e5edf9}
+.school-shell.student-shell .user-badge{background:#e7f0ff;color:#2a66bd}
+.school-shell.student-shell .side-link.signout{color:#ad5566}
+.school-shell.student-shell .side-link.signout:hover{background:#fff2f3}
+
+.school-shell.student-shell .topbar{
+ position:sticky;top:0;z-index:50;
+ display:flex;align-items:center;justify-content:space-between;gap:20px;
+ height:76px;min-height:76px;
+ padding:0 clamp(18px,3vw,39px);
+ background:rgba(255,255,255,.96);
+ border-bottom:1px solid #e2eaf6;
+ -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+}
+.school-shell.student-shell .topbar>div:first-child{min-width:0}
+.school-shell.student-shell .topbar-title{
+ font-size:14px;color:#21466f;font-weight:800;letter-spacing:-.025em;
+ white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+}
+.school-shell.student-shell .topbar small{font-size:10px;color:#8198b4}
+.school-shell.student-shell .student-header-actions{display:flex;align-items:center;gap:15px;min-width:0}
+.school-shell.student-shell .student-header-account{
+ display:flex;align-items:center;gap:10px;min-width:0;
+ max-width:270px;
+}
+.school-shell.student-shell .student-header-avatar{
+ flex:none;display:grid;place-items:center;width:40px;height:40px;
+ background:linear-gradient(145deg,#387be9,#265bbf);color:#fff;border-radius:12px;
+}
+.school-shell.student-shell .student-header-identity{min-width:0}
+.school-shell.student-shell .student-header-identity strong{
+ display:block;font-size:11px;color:#23466f;font-weight:800;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px;
+}
+.school-shell.student-shell .student-header-identity small{
+ margin-top:4px;white-space:nowrap;color:#8297b1;font-size:9px;
+}
+.school-shell.student-shell .student-header-logout{
+ display:inline-flex;align-items:center;gap:7px;padding:10px 12px;
+ border:1px solid #dce6f7;border-radius:10px;background:#f7faff;
+ color:#5a78a2;font-size:11px;
+}
+.school-shell.student-shell .student-header-logout:hover{background:#eaf3ff;color:#2e62b7}
+.school-shell.student-shell .shell-body{width:100%;max-width:1480px;margin:0 auto;padding:27px clamp(18px,2.9vw,39px) 54px}
+.school-shell.student-shell .shell-body>*{min-width:0}
+.school-shell.student-shell.shell-embed .embed-shortcuts{
+ position:sticky;top:65px;z-index:49;background:rgba(250,252,255,.97);
+}
+.school-shell.student-shell .student-bottom-nav a.active{background:#e7f0ff;color:#2766c5}
+.school-shell.student-shell .student-bottom-nav{
+ border-top:1px solid #dce7f7;
+ background:rgba(255,255,255,.97);backdrop-filter:blur(14px);
+}
+
+.school-shell.student-shell .student-home,.school-shell.student-shell .student-experience{width:100%;max-width:100%;min-width:0}
+.school-shell.student-shell .student-home-hero{
+ position:relative;isolation:isolate;
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,.98fr);gap:23px;
+ min-height:275px;padding:clamp(22px,2.6vw,35px);
+ border-radius:20px;
+ background:linear-gradient(114deg,#234e9d 0%,#3169cd 55%,#4789e7 100%);
+ box-shadow:0 16px 42px rgba(36,93,178,.15);
+ color:#fff;overflow:hidden;
+}
+.school-shell.student-shell .student-home-hero:after,
+.school-shell.student-shell .student-section-hero:after{
+ content:"";position:absolute;z-index:-1;
+ border:1px solid rgba(255,255,255,.14);border-radius:50%;
+ width:340px;height:340px;right:-110px;top:-170px;
+ box-shadow:0 0 0 70px rgba(255,255,255,.035),0 0 0 150px rgba(255,255,255,.018);
+ pointer-events:none;
+}
+.school-shell.student-shell .student-home-hero-main{position:relative;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.school-shell.student-shell .student-home-greeting .section-kicker,
+.school-shell.student-shell .student-section-hero .section-kicker{
+ font-size:10px;font-weight:800;letter-spacing:.13em;color:#cde3ff;
+}
+.school-shell.student-shell .student-home-greeting h1{
+ font-size:clamp(26px,2.6vw,34px);line-height:1.2;letter-spacing:-.04em;
+ color:white;margin:8px 0 7px;
+}
+.school-shell.student-shell .student-home-greeting h1>span{font-size:.8em}
+.school-shell.student-shell .student-home-greeting p{
+ display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+ font-size:11px;color:#dbe9ff;line-height:1.5;margin:0;
+}
+.school-shell.student-shell .student-home-invitation{margin-top:21px;max-width:520px}
+.school-shell.student-shell .student-home-invitation .welcome-eyebrow{font-size:9px;color:#d2e6ff}
+.school-shell.student-shell .student-home-invitation h2{
+ max-width:520px;color:#fff;
+ font-size:clamp(17px,1.65vw,21px);line-height:1.45;margin:8px 0;
+ letter-spacing:-.035em;
+}
+.school-shell.student-shell .student-home-invitation p{
+ font-size:11px;line-height:1.7;color:#e0eaff;margin:0 0 16px;
+ max-width:480px;
+}
+.school-shell.student-shell .student-home-invitation .btn.white{
+ min-height:42px;padding:11px 17px;font-size:11px;border-radius:10px;
+ color:#2b63bd;box-shadow:0 6px 16px rgba(15,47,107,.12);
+}
+.school-shell.student-shell .student-home-date{
+ display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+ font-size:10px;font-weight:700;color:#d6e8ff;margin-top:auto;padding-top:20px;
+}
+.school-shell.student-shell .student-home-metrics{
+ position:relative;z-index:2;display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;align-content:center;
+}
+.school-shell.student-shell .student-home-metrics .metric{
+ display:grid;align-content:start;gap:4px;
+ min-width:0;min-height:109px;margin:0;padding:16px 17px;
+ border:1px solid rgba(255,255,255,.27);border-radius:14px;
+ background:rgba(255,255,255,.15);
+ -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+ box-shadow:none;
+}
+.school-shell.student-shell .student-home-metrics .metric-icon{
+ width:29px;height:29px;margin:0 0 3px;border-radius:9px;
+ color:#fff;background:rgba(255,255,255,.18);
+}
+.school-shell.student-shell .student-home-metrics .metric-icon svg{width:17px;height:17px}
+.school-shell.student-shell .student-home-metrics .metric>small{
+ font-size:10px;color:#e1edff;font-weight:700;
+}
+.school-shell.student-shell .student-home-metrics .metric strong{
+ margin:0;color:#fff;font-size:clamp(23px,2.2vw,30px);line-height:1.2;font-variant-numeric:tabular-nums;
+}
+.school-shell.student-shell .student-home-metrics .metric-foot{font-size:9px;color:#dbeaff;margin-top:1px;line-height:1.5}
+
+.school-shell.student-shell .student-home .white-panel,
+.school-shell.student-shell .student-experience .student-panel{
+ padding:clamp(19px,2vw,27px);
+ background:#fff;border:1px solid #dfe8f7;
+ border-radius:18px;box-shadow:0 11px 30px rgba(29,69,129,.055);
+}
+.school-shell.student-shell .student-home .dashboard-columns{gap:18px;margin:20px 0}
+.school-shell.student-shell .student-home .white-panel .section-kicker,
+.school-shell.student-shell .student-experience .student-panel .section-kicker{font-size:9px;letter-spacing:.12em;color:#3977d4}
+.school-shell.student-shell .student-home .panel-heading h2,
+.school-shell.student-shell .student-panel-heading h2{
+ font-size:18px;letter-spacing:-.035em;color:#244875;margin-top:7px;
+}
+.school-shell.student-shell .student-home .panel-heading,
+.school-shell.student-shell .student-panel-heading{margin-bottom:17px}
+.school-shell.student-shell .student-home .practice-list{gap:8px}
+.school-shell.student-shell .student-home .practice-item{
+ width:100%;margin:0;padding:12px 14px;min-height:67px;
+ border:1px solid #e2ebf8;border-radius:12px;
+ background:#fafcff;color:#285180;box-shadow:none;
+}
+.school-shell.student-shell .student-home .practice-item:hover:not(:disabled){
+ transform:translateY(-2px);border-color:#adcaf2;background:#f1f7ff;
+}
+.school-shell.student-shell .student-home .practice-ico{
+ display:grid;place-items:center;flex:none;
+ width:40px;height:40px;border-radius:11px;
+ background:#eaf2ff;color:#2e69c8;font-size:20px;
+}
+.school-shell.student-shell .student-home .practice-item b{font-size:12px;color:#234978}
+.school-shell.student-shell .student-home .practice-item small{font-size:10px;color:#8198b5;line-height:1.5}
+.school-shell.student-shell .student-home .practice-item>svg{color:#7e9bc4}
+.school-shell.student-shell .student-home .history-row{padding:15px 2px;border-bottom:1px solid #e9eff9}
+.school-shell.student-shell .student-home .history-row b{color:#2b527e}
+.school-shell.student-shell .student-home .leaderboard{margin:0}
+.school-shell.student-shell .student-home .leader-list{gap:0 20px}
+.school-shell.student-shell .student-home .leader-item{padding:13px 2px}
+.school-shell.student-shell .student-home .leader-avatar{background:#e9f2ff;color:#3267bf}
+.school-shell.student-shell .student-home .leader-points{color:#265fb8}
+.school-shell.student-shell .student-home .empty-state{border:1px dashed #dce8f8;border-radius:13px;background:#f9fbff;min-height:190px}
+
+.school-shell.student-shell .student-section-hero{
+ position:relative;isolation:isolate;overflow:hidden;
+ display:flex;align-items:center;justify-content:space-between;gap:24px;
+ padding:clamp(24px,3vw,35px);
+ min-height:178px;margin-bottom:20px;
+ border:1px solid #4c82d8;border-radius:19px;
+ background:linear-gradient(115deg,#2453a5,#3474d8 65%,#5390ec);
+ color:#fff;box-shadow:0 14px 34px rgba(30,79,159,.13);
+}
+.school-shell.student-shell .student-section-hero-copy{flex:1;min-width:0}
+.school-shell.student-shell .student-section-hero h1{font-size:clamp(25px,2.8vw,34px);color:#fff;line-height:1.2;margin:8px 0 10px}
+.school-shell.student-shell .student-section-hero p{max-width:630px;color:#e0eaff;font-size:12px;line-height:1.7;margin:0}
+.school-shell.student-shell .student-section-hero-icon{
+ flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+ width:119px;height:115px;border:1px solid rgba(255,255,255,.26);
+ background:rgba(255,255,255,.12);border-radius:23px;
+ -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+ color:#fff;
+}
+.school-shell.student-shell .student-section-hero-icon span{font-size:9px;letter-spacing:.16em;font-weight:800;color:#e2edff}
+.school-shell.student-shell .student-experience .student-filter-bar{
+ grid-template-columns:minmax(155px,1fr) minmax(165px,1fr) minmax(190px,1.3fr) auto;
+ gap:12px;padding:17px;border:1px solid #e1ebf8;
+ border-radius:13px;background:#f8fbff;
+}
+.school-shell.student-shell .student-experience .student-filter-bar label{gap:7px;color:#52749c}
+.school-shell.student-shell .student-experience :is(input,select):not([type=radio]){
+ min-height:44px;border:1px solid #d5e3f6;border-radius:10px;
+ background:#fff;color:#2c527e;
+}
+.school-shell.student-shell .student-clear-btn{
+ height:44px;padding:0 14px;background:#ebf3ff;
+ border-color:#d2e3fb;color:#2e67c2;
+}
+.school-shell.student-shell .student-session-list{gap:10px}
+.school-shell.student-shell .student-session-card{
+ border-radius:12px;border-color:#dfe8f5;background:#fff;
+}
+.school-shell.student-shell .student-session-card[open]{border-color:#98baed;background:#fbfdff}
+.school-shell.student-shell .student-session-card summary{min-height:76px}
+.school-shell.student-shell .student-session-icon{background:#e8f2ff;color:#2e69c9}
+.school-shell.student-shell .student-session-score{font-size:22px;color:#2d65be}
+.school-shell.student-shell .student-session-detail>div{border:1px solid #dce8f8;background:#f4f8ff;border-radius:10px}
+.school-shell.student-shell .student-segments{padding:4px;border:1px solid #dce8f7;background:#eef4ff;border-radius:10px}
+.school-shell.student-shell .student-segments button{min-height:37px;border-radius:8px}
+.school-shell.student-shell .student-segments button.active{background:#3268e5;color:#fff;box-shadow:0 5px 12px rgba(39,92,193,.14)}
+.school-shell.student-shell .student-ranking-search{
+ min-height:45px;border-color:#d5e3f6;background:#fff;
+}
+.school-shell.student-shell .student-ranking-info{
+ border-color:#dce8f8;background:#f2f7ff;color:#5579a6;
+}
+.school-shell.student-shell .student-podium{gap:13px;margin-top:12px}
+.school-shell.student-shell .student-podium-item{
+ background:#fff;border:1px solid #dfebf8;border-radius:16px;
+ box-shadow:0 12px 30px rgba(28,68,131,.06);
+}
+.school-shell.student-shell .student-podium-1{
+ background:linear-gradient(180deg,#eaf3ff,#fff 80%);border-color:#9ac0f4;
+}
+.school-shell.student-shell .student-podium-3{background:#fbfdff}
+.school-shell.student-shell .student-podium-item strong{color:#2964bd}
+.school-shell.student-shell .student-ranking-table .grade-table{
+ border-collapse:separate;border-spacing:0;min-width:700px;
+}
+.school-shell.student-shell .student-ranking-table .grade-table th{
+ background:#f0f6ff;color:#607fa6;font-size:10px;padding:15px 13px;
+}
+.school-shell.student-shell .student-ranking-table .grade-table td{
+ padding:14px 13px;border-bottom:1px solid #e8eff9;
+}
+.school-shell.student-shell .student-personal-rank{border:1px solid #cfdef8;background:#ecf4ff;color:#305fa7}
+.school-shell.student-shell .student-profile-grid{gap:18px}
+.school-shell.student-shell .student-profile-avatar{border-radius:22px;background:linear-gradient(145deg,#3273da,#2651a1)}
+.school-shell.student-shell .student-profile-card h2{color:#244a77}
+.school-shell.student-shell .student-profile-stats{gap:10px}
+.school-shell.student-shell .student-profile-stats>div{
+ border:1px solid #dbe8fa;background:#f3f8ff;border-radius:12px;padding:21px;
+}
+.school-shell.student-shell .student-profile-next{
+ background:linear-gradient(120deg,#f3f8ff,#e9f2ff);border-color:#cfe1fa;
+}
+.school-shell.student-shell .student-profile-next h2{color:#27518a}
+
+/* Quiz gets the same typography/border palette as the admin screens.
+   Only presentation is overridden — timer, answers, state and scoring are unchanged. */
+.school-shell.student-shell .quiz-playful{max-width:960px;margin:0 auto;background:transparent;padding:10px 0 40px}
+.school-shell.student-shell .quiz-playful .quiz-card{
+ border-color:#d9e5f6;border-radius:20px;
+ box-shadow:0 15px 38px rgba(30,70,131,.075);background:#fff;
+}
+.school-shell.student-shell .quiz-playful .question-type{
+ border-radius:10px;background:#eaf2ff;color:#3164b4;
+}
+.school-shell.student-shell .quiz-playful .quiz-topic{background:#e9f2ff;color:#2d65b9}
+.school-shell.student-shell .quiz-playful .quiz-playful-deco{
+ background:#eff5ff;border:1px solid #dce8f9;color:#386ab6;
+}
+.school-shell.student-shell .quiz-playful .answer{
+ border-radius:14px;
+ --quiz-answer-bg:#f3f8ff;
+ --quiz-answer-border:#ccdffa;
+ --quiz-answer-ink:#2d65bb;
+ background:var(--quiz-answer-bg);box-shadow:0 5px 0 #d3e2f7;
+}
+.school-shell.student-shell .quiz-playful .answer:nth-child(n){
+ --quiz-answer-bg:#f3f8ff;--quiz-answer-border:#cadcf6;--quiz-answer-ink:#2d65bb;
+}
+.school-shell.student-shell .quiz-playful .answer.chosen{
+ background:#e9f2ff;border-color:#2d68cc;box-shadow:0 0 0 3px #a8c8fa;
+}
+.school-shell.student-shell .quiz-playful .quiz-footer .btn.primary{
+ border-radius:11px;background:#3268e5;box-shadow:0 5px 0 #2453b6;
+}
+
+@media(max-width:1100px){
+ .school-shell.student-shell .student-home-hero{grid-template-columns:1fr;gap:18px}
+ .school-shell.student-shell .student-home-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .school-shell.student-shell .student-home-metrics .metric{min-height:125px}
+ .school-shell.student-shell .student-experience .student-filter-bar{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .school-shell.student-shell .student-clear-btn{grid-column:1/-1}
+}
+@media(min-width:601px) and (max-width:860px){
+ .school-shell.student-shell:not(.shell-embed) .sidebar{width:80px;min-width:80px;padding:23px 12px}
+ .school-shell.student-shell .sidebar .brand{margin:0 auto 36px}
+ .school-shell.student-shell .side-menu .side-link{justify-content:center;padding:12px 9px}
+ .school-shell.student-shell .side-menu .side-link span,.school-shell.student-shell .sidebar .side-bottom .signout span{display:none}
+ .school-shell.student-shell .side-bottom .side-user{justify-content:center}
+ .school-shell.student-shell .student-header-identity strong{max-width:145px}
+}
+@media(max-width:720px){
+ .school-shell.student-shell .student-header-identity{display:none}
+ .school-shell.student-shell .student-header-account{max-width:none}
+ .school-shell.student-shell .student-header-actions{gap:8px}
+ .school-shell.student-shell .student-header-logout{padding:9px;width:38px;height:38px;justify-content:center}
+ .school-shell.student-shell .student-header-logout>span{display:none}
+ .school-shell.student-shell .student-section-hero-icon{width:78px;height:80px;border-radius:17px}
+ .school-shell.student-shell .student-section-hero-icon svg{width:33px;height:33px}
+ .school-shell.student-shell .student-section-hero-icon span{font-size:7px}
+}
+@media(max-width:600px){
+ .school-shell.student-shell:not(.shell-embed) .sidebar{display:none}
+ .school-shell.student-shell .topbar{height:66px;min-height:66px;padding:0 16px}
+ .school-shell.student-shell .topbar-title{font-size:12px}
+ .school-shell.student-shell .shell-body{padding:18px 14px calc(102px + env(safe-area-inset-bottom,0px))}
+ .school-shell.student-shell.shell-embed .shell-body{padding-bottom:30px}
+ .school-shell.student-shell .student-home-hero{padding:20px 17px;border-radius:17px;gap:18px}
+ .school-shell.student-shell .student-home-invitation h2{font-size:19px}
+ .school-shell.student-shell .student-home-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .school-shell.student-shell .student-home-metrics .metric{min-height:118px;padding:12px;gap:4px}
+ .school-shell.student-shell .student-home-metrics .metric strong{font-size:24px}
+ .school-shell.student-shell .student-section-hero{padding:22px 17px;min-height:155px;border-radius:16px;margin-bottom:16px}
+ .school-shell.student-shell .student-section-hero h1{font-size:23px}
+ .school-shell.student-shell .student-section-hero p{font-size:11px}
+ .school-shell.student-shell .student-home .white-panel,
+ .school-shell.student-shell .student-experience .student-panel{padding:17px;border-radius:15px}
+ .school-shell.student-shell .student-home .dashboard-columns{gap:13px;margin:14px 0}
+ .school-shell.student-shell .student-experience .student-filter-bar{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:13px}
+ .school-shell.student-shell .student-experience .student-filter-bar label:nth-child(3){grid-column:1/-1}
+ .school-shell.student-shell .student-experience .student-clear-btn{grid-column:1/-1}
+ .school-shell.student-shell .student-home .leader-list{grid-template-columns:1fr}
+ .school-shell.student-shell .student-podium{gap:7px}
+ .school-shell.student-shell .student-ranking-controls{gap:10px}
+ .school-shell.student-shell .student-profile-stats>div{padding:15px}
+}
+@media(max-width:380px){
+ .school-shell.student-shell .student-section-hero-icon{display:none}
+ .school-shell.student-shell .student-home-greeting h1{font-size:25px}
+ .school-shell.student-shell .student-session-card summary{gap:7px}
+ .school-shell.student-shell .student-session-score{font-size:18px}
+}
+@media(prefers-reduced-motion:reduce){
+ .school-shell.student-shell .topbar,.school-shell.student-shell .side-link,
+ .school-shell.student-shell .student-home .practice-item{transition:none}
+}
