@@ -258,3 +258,12 @@
 @media(prefers-reduced-motion:reduce){
  .admin-bank-page .bank-filter-trigger,.admin-bank-page .bank-filter-trigger svg{transition:none}
 }
+
+/* Editable material/group placement in the question editor. */
+.admin-bank-edit-classification{display:grid;grid-template-columns:1.1fr 1.2fr .75fr;gap:11px;align-items:end}
+.admin-bank-edit-classification label{display:grid;gap:7px;min-width:0;color:#365d8a;font-size:11px;font-weight:800}
+.admin-bank-edit-classification select,.admin-bank-edit-duration{width:100%;min-width:0;height:43px;border:1px solid #d5e3f6;border-radius:10px;background:#fafcff;color:#284e81;padding:0 11px;font-size:11px;font-weight:750}
+.admin-bank-edit-classification select:focus-visible{outline:2px solid #427ce2;outline-offset:2px}
+.admin-bank-edit-duration{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#eef5ff;color:#3269b9}
+@media(max-width:590px){.admin-bank-edit-classification{grid-template-columns:1fr 1fr}.admin-bank-edit-classification label:last-child{grid-column:1/-1}}
+@media(max-width:410px){.admin-bank-edit-classification{grid-template-columns:1fr}.admin-bank-edit-classification label:last-child{grid-column:auto}}
