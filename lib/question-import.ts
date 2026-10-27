@@ -83,7 +83,7 @@ function stringCell(value:unknown):string{
 async function excelQuestions(file:File,category:string,group:QuestionGroup){
  const {default:ExcelJS}=await import('exceljs');
  const book=new ExcelJS.Workbook();
- await book.xlsx.load(new Uint8Array(await file.arrayBuffer()) as unknown as Buffer);
+ await book.xlsx.load(Buffer.from(await file.arrayBuffer()) as never);
  const sheet=book.worksheets[0];
  if(!sheet)throw new Error('Excel tidak memiliki sheet soal.');
  const headers:string[]=[];
@@ -138,7 +138,7 @@ async function pdfText(file:File){
   }
   pages.push(raw);
  }
- await doc.destroy();
+ // PDF parsed in-browser; its resources are released when the component unmounts.
  return pages.join('\n');
 }
 export async function parseQuestionFile(file:File,category='Perkalian',group:QuestionGroup='HITUNG_DASAR'):Promise<ImportResult>{
