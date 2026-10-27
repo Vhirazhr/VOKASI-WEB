@@ -27,7 +27,7 @@ export default function AdminNotificationBell(){
   finally{setLoading(false);pending.current=false;}
  }
  useEffect(()=>{
-  void reload();
+  queueMicrotask(()=>void reload());
   const interval=window.setInterval(()=>{if(document.visibilityState==='visible')void reload();},30000);
   const focused=()=>void reload();
   window.addEventListener('focus',focused);
@@ -35,7 +35,7 @@ export default function AdminNotificationBell(){
  },[]);
  useEffect(()=>{
   if(!open)return;
-  void reload();
+  queueMicrotask(()=>void reload());
   const onPointer=(event:PointerEvent)=>{
    if(!container.current?.contains(event.target as Node))setOpen(false);
   };
