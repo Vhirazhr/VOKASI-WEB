@@ -130,10 +130,10 @@ export default function CreatePictureQuestion(){
    const {error:err}=await supabase().from('vokasi_question_drafts').delete().eq('id',d.id);
    if(err)setNotice('Gagal menghapus: '+err.message);
    else{
-     const paths=[d.question_image_path,...d.options.map(v=>v.image_path)].filter((p):p is string=>!!p);
-     if(paths.length)await supabase().storage.from(BUCKET).remove(paths);
+     // Drafts may reference Storage objects also used by published questions
+     // or by other drafts. Never delete the shared assets as a side effect.
      if(editing===d.id)clear();
-     setNotice('Draft berhasil dihapus.');await refresh();
+     setNotice('Draft berhasil dihapus. Gambar yang mungkin digunakan soal lain tetap aman.');await refresh();
    }
    setSaving(false);
  }
@@ -186,7 +186,7 @@ export default function CreatePictureQuestion(){
      </div>)}
      <p>Pratinjau tidak memengaruhi hasil atau waktu ujian.</p></section>}
    <section className="vqe-card vqe-list"><div className="vqe-row-heading"><h2>Draft tersimpan ({drafts.length})</h2><button type="button" className="btn secondary small" disabled={busy} onClick={()=>void refresh()}>Segarkan</button></div>
-    <label className="vqe-label">Cari nomor soal yang ingin diperbaiki<input type="number" min="1" max="500" value={searchNumber} onChange={e=>setSearchNumber(e.target.value)} placeholder="Misalnya 479"/></label>
+    <label className="vqe-label">Cari nomor soal yang ingin diperbaiki<input type="number" min="1" max="100000" value={searchNumber} onChange={e=>setSearchNumber(e.target.value)} placeholder="Misalnya 479"/></label>
     <p className="vqe-note">Periksa dan ganti gambar matriks soal 479–484. File asli dari Word hanya 700 × 115 piksel dan bagian bawah pola hilang. Jangan gunakan gambar yang sama.</p>
     {busy?<p>Mengambil data...</p>:drafts.length===0?<p>Belum ada soal baru tersimpan.</p>:
      drafts.filter(d=>!searchNumber||String(d.source_number||'').includes(searchNumber)).map(d=><article key={d.id}><div><b>{d.source_number?('No. '+d.source_number+' · '):''}{d.question||'Soal bergambar'}</b>
