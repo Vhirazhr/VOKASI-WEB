@@ -28,7 +28,7 @@ export async function getPublishedBankVersion():Promise<string|null>{
  return data.active?String(data.version):null;
 }
 
-export async function fetchBank():Promise<BankQuestion[]>{
+export async function fetchBank(options:{allowIncomplete?:boolean}={}):Promise<BankQuestion[]>{
  const version=await getPublishedBankVersion();
  if(!version||!version.startsWith('VOKASI-NEW-'))
     throw new Error('Bank soal baru masih menunggu aktivasi admin. Latihan belum tersedia.');
@@ -44,7 +44,7 @@ export async function fetchBank():Promise<BankQuestion[]>{
    collected.push(...batch);
    if(batch.length<500)break;
  }
- if(collected.length<APPROVED_BLUEPRINT.bankCount)
+ if(!options.allowIncomplete&&collected.length<APPROVED_BLUEPRINT.bankCount)
    throw new Error('Bank soal resmi harus memiliki setidaknya 500 soal untuk blueprint. Hubungi admin sekolah.');
  const rows=collected;
  const filePaths=[...new Set(rows.flatMap(r=>[
@@ -58,9 +58,9 @@ export async function fetchBank():Promise<BankQuestion[]>{
      const paths=filePaths.slice(offset,offset+100);
      const {data:urls,error:signError}=await supabase().storage.from('vokasi-question-figures')
        .createSignedUrls(paths,7200);
-     if(signError||!urls)throw new Error('Gambar soal tidak dapat diakses: '+(signError?.message||'Storage tidak tersedia.'));
+     if(signError||!urls){if(options.allowIncomplete)continue;throw new Error('Gambar soal tidak dapat diakses: '+(signError?.message||'Storage tidak tersedia.'));}
      urls.forEach((item,i)=>{
-       if(item.error||!item.signedUrl)throw new Error('Gambar soal tidak dapat dibuka: '+paths[i]);
+       if(item.error||!item.signedUrl){if(options.allowIncomplete)return;throw new Error('Gambar soal tidak dapat dibuka: '+paths[i]);}
        signed.set(paths[i],item.signedUrl);
      });
    }
@@ -80,13 +80,13 @@ export async function fetchBank():Promise<BankQuestion[]>{
      optionImageUrls:r.options.map(o=>o.image_path?signed.get(o.image_path)||null:null)
    };
  });
- for(const group of APPROVED_GROUPS){
+ if(!options.allowIncomplete)for(const group of APPROVED_GROUPS){
    const rule=APPROVED_BLUEPRINT.groups[group];
    const rowsForGroup=bank.filter(q=>q.difficultyCode===group);
    if(rowsForGroup.length<rule.quota||rowsForGroup.some(q=>q.timeLimitSeconds!==rule.seconds))
      throw new Error('Blueprint '+rule.label+' tidak sesuai kuota/timer.');
  }
- if(bank.filter(q=>q.difficultyCode==='POLA_GAMBAR').some(q=>!q.questionImageUrl))
+ if(!options.allowIncomplete&&bank.filter(q=>q.difficultyCode==='POLA_GAMBAR').some(q=>!q.questionImageUrl))
    throw new Error('Gambar soal penalaran visual belum lengkap.');
  return bank;
 }
