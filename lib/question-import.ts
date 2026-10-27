@@ -151,12 +151,10 @@ export async function parseQuestionFile(file:File,category='Perkalian',group:Que
  else if(ext==='pdf'){questions=textQuestions(await pdfText(file),category,group);warnings.push('PDF hasil scan/gambar tidak dapat dibaca otomatis. Periksa hasil ekstraksi dan kunci jawaban.');}
  else if(ext==='txt'){questions=textQuestions(await file.text(),category,group);}
  else if(['png','jpg','jpeg','webp'].includes(ext)){
-  questions=[emptyQuestion('Pola Gambar','POLA_GAMBAR')];
-  warnings.push('Gambar siap dilampirkan sebagai soal visual. Isi pertanyaan, pilihan, dan kunci jawaban sebelum terbit.');
-  return {questions,warnings,imageFile:file};
+  throw new Error('Gambar tidak bisa menjadi file impor tersendiri. Gunakan lampiran gambar saat membuat atau menyunting soal.');
  }else if(ext==='xls'||ext==='doc'){
   throw new Error('Format lama '+ext.toUpperCase()+' perlu disimpan ulang menjadi '+(ext==='xls'?'XLSX':'DOCX')+'.');
- }else throw new Error('Format belum didukung. Gunakan XLSX, DOCX, PDF, TXT, PNG, JPG, atau WEBP.');
+ }else throw new Error('Format belum didukung. Gunakan XLSX, DOCX, PDF, atau TXT.');
  if(!questions.length)throw new Error('Tidak ada soal terstruktur yang berhasil dibaca. Gunakan nomor "1. Pertanyaan", pilihan "A. ...", dan "Kunci: A", atau template XLSX.');
  if(questions.length>500)throw new Error('Maksimal 500 soal per impor.');
  if(questions.some(q=>q.correct_index===null))warnings.push('Ada soal tanpa kunci jawaban. Lengkapi melalui pratinjau sebelum terbit.');
