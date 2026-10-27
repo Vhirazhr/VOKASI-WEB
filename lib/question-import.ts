@@ -83,7 +83,7 @@ function stringCell(value:unknown):string{
 async function excelQuestions(file:File,category:string,group:QuestionGroup){
  const {default:ExcelJS}=await import('exceljs');
  const book=new ExcelJS.Workbook();
- await book.xlsx.load(Buffer.from(await file.arrayBuffer()) as never);
+ await book.xlsx.load(new Uint8Array(await file.arrayBuffer()) as never);
  const sheet=book.worksheets[0];
  if(!sheet)throw new Error('Excel tidak memiliki sheet soal.');
  const headers:string[]=[];
