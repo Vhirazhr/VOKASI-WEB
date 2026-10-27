@@ -65,7 +65,23 @@ export default function AdminBankPage(){
      <label>Kode<select value={code} onChange={e=>{setCode(e.target.value);setPage(0);}}><option value="">Semua kode</option>{codes.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
     </div>
     {busy?<div className="admin-workspace-empty">Mengambil bank soal aktif...</div>:filtered.length===0?<div className="admin-workspace-empty">Tidak ada soal yang sesuai.</div>:
-     <div className="admin-workspace-table-wrap"><table><thead><tr><th>ID</th><th>Kategori</th><th>Kode</th><th>Soal</th><th>Waktu</th><th>Aksi</th></tr></thead><tbody>{filtered.slice(activePage*30,(activePage+1)*30).map(q=><tr key={q.id}><td><b>#{q.id}</b></td><td>{q.category}</td><td>{q.difficultyCode}</td><td>{q.question}</td><td>{q.timeLimitSeconds} detik</td><td><div className="admin-bank-row-actions"><button type="button" className="admin-workspace-detail" onClick={()=>setSelected(q)}>Detail</button><button type="button" className="admin-bank-edit-button" disabled={editBusy} onClick={()=>void startEdit(q.id)}><PenLine size={13}/> Edit</button></div></td></tr>)}</tbody></table></div>}
+     <div className="admin-workspace-table-wrap">
+      <table className="admin-bank-table">
+       <colgroup><col className="bank-width-id"/><col className="bank-width-category"/><col className="bank-width-code"/><col className="bank-width-question"/><col className="bank-width-time"/><col className="bank-width-actions"/></colgroup>
+       <thead><tr><th scope="col">ID</th><th scope="col">Kategori</th><th scope="col">Kode</th><th scope="col">Soal</th><th scope="col">Waktu</th><th scope="col">Aksi</th></tr></thead>
+       <tbody>{filtered.slice(activePage*30,(activePage+1)*30).map(q=><tr key={q.id}>
+        <td className="bank-cell-id"><b>#{q.id}</b></td>
+        <td><span className="admin-bank-category">{q.category}</span></td>
+        <td><span className="admin-bank-code">{q.difficultyCode}</span></td>
+        <td><span className="admin-bank-question" title={q.question||'Soal bergambar'}>{q.question||'Soal bergambar'}</span></td>
+        <td className="bank-cell-time">{q.timeLimitSeconds} detik</td>
+        <td><div className="admin-bank-row-actions">
+         <button type="button" className="admin-workspace-detail" onClick={()=>setSelected(q)}>Detail</button>
+         <button type="button" className="admin-bank-edit-button" disabled={editBusy} onClick={()=>void startEdit(q.id)}><PenLine size={13}/> Edit</button>
+        </div></td>
+       </tr>)}</tbody>
+      </table>
+     </div>
     <div className="admin-workspace-footer"><span>{filtered.length} soal sesuai filter</span><div><button type="button" onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={activePage===0}>Sebelumnya</button><span>{activePage+1} / {pages}</span><button type="button" onClick={()=>setPage(p=>p+1)} disabled={activePage>=pages-1}>Berikutnya</button></div></div>
    </section>
    
