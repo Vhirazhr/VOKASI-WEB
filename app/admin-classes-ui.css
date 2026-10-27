@@ -236,3 +236,146 @@
 .admin-classes-page .admin-class-delete-modal p{color:#6b86a9;font-size:12px;line-height:1.7}
 .admin-classes-page .admin-class-confirm-delete.btn.primary{background:#bd5364}
 @media(max-width:620px){.admin-classes-page .admin-classes-list-heading{align-items:flex-start}.admin-classes-page .admin-classes-list-heading .admin-classes-heading-actions{justify-content:flex-end}.admin-classes-page .admin-modal-card.admin-class-form-modal{padding:22px 19px}.admin-classes-page .admin-class-form-row{grid-template-columns:1fr}}
+
+
+/* Class details belong in a dialog, never appended beneath the directory. */
+.admin-classes-page .admin-modal-card.admin-class-detail-modal{
+ width:min(940px,calc(100vw - 36px));
+ max-width:none;
+ max-height:calc(100dvh - 36px);
+ min-height:0;
+ padding:0;
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
+ border-radius:22px;
+}
+.admin-classes-page .admin-class-detail-head{
+ flex:none;
+ display:flex;
+ align-items:flex-start;
+ gap:18px;
+ margin:0;
+ padding:25px 29px 20px;
+ border-bottom:1px solid #e6edf7;
+}
+.admin-classes-page .admin-class-detail-head>div{min-width:0}
+.admin-classes-page .admin-class-detail-head h2{
+ color:#204672;
+ font-size:24px;
+ font-weight:800;
+ margin:8px 0;
+ overflow-wrap:anywhere;
+}
+.admin-classes-page .admin-class-detail-head p{
+ margin:0;
+ color:#758caa;
+ font-size:11px;
+ line-height:1.6;
+}
+.admin-classes-page .admin-class-detail-head>button{
+ flex:none;
+ display:grid;
+ place-items:center;
+ width:40px;
+ height:40px;
+ border-radius:11px;
+}
+.admin-classes-page .admin-class-detail-summary{
+ flex:none;
+ display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:11px;
+ padding:19px 29px 15px;
+}
+.admin-classes-page .admin-class-detail-summary>div{
+ display:grid;
+ grid-template-columns:32px minmax(0,1fr);
+ align-items:center;
+ column-gap:10px;
+ row-gap:3px;
+ border:1px solid #dce9fa;
+ border-radius:12px;
+ padding:13px;
+ background:#f5f9ff;
+}
+.admin-classes-page .admin-class-detail-summary svg{
+ grid-row:span 2;
+ color:#3671cb;
+}
+.admin-classes-page .admin-class-detail-summary span{
+ font-size:10px;
+ font-weight:700;
+ color:#6685ae;
+}
+.admin-classes-page .admin-class-detail-summary strong{
+ font-size:18px;
+ color:#204c84;
+ font-weight:800;
+ font-variant-numeric:tabular-nums;
+}
+.admin-classes-page .admin-class-detail-subheading{
+ flex:none;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:12px;
+ padding:8px 29px 13px;
+}
+.admin-classes-page .admin-class-detail-subheading h3{
+ font-size:14px;
+ font-weight:800;
+ margin:0;
+ color:#2b507d;
+}
+.admin-classes-page .admin-class-detail-subheading>span{
+ font-size:11px;
+ font-weight:750;
+ color:#6d8caf;
+}
+.admin-classes-page .admin-class-detail-table{
+ flex:1 1 auto;
+ min-height:0;
+ margin:0 29px 18px;
+ overflow:auto;
+ border:1px solid #e2ecf9;
+ border-radius:11px;
+ overscroll-behavior:contain;
+}
+.admin-classes-page .admin-class-detail-table th{
+ position:sticky;
+ top:0;
+ background:#f2f7fe;
+ z-index:1;
+}
+.admin-classes-page .admin-class-detail-modal>.admin-workspace-empty{
+ overflow:auto;
+ margin:0 29px 18px;
+}
+.admin-classes-page .admin-class-detail-footer{
+ flex:none;
+ display:flex;
+ justify-content:flex-end;
+ padding:14px 29px 19px;
+ border-top:1px solid #e6edf7;
+ background:white;
+}
+.admin-classes-page .admin-class-detail-footer button{min-width:87px;min-height:39px}
+@media(max-width:620px){
+ .admin-classes-page .admin-modal-card.admin-class-detail-modal{
+  width:calc(100vw - 20px);
+  max-height:calc(100dvh - 20px);
+  border-radius:16px;
+ }
+ .admin-classes-page .admin-class-detail-head{padding:18px 17px 15px}
+ .admin-classes-page .admin-class-detail-head h2{font-size:20px}
+ .admin-classes-page .admin-class-detail-summary{padding:13px 17px;gap:7px}
+ .admin-classes-page .admin-class-detail-summary>div{
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:9px;
+ }
+ .admin-classes-page .admin-class-detail-summary svg{width:16px;height:16px}
+ .admin-classes-page .admin-class-detail-summary strong{font-size:15px}
+ .admin-classes-page .admin-class-detail-subheading{padding:7px 17px 12px}
+ .admin-classes-page .admin-class-detail-table{margin:0 17px 15px}
+ .admin-classes-page .admin-class-detail-footer{padding:12px 17px 15px}
+}
