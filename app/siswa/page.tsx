@@ -12,6 +12,7 @@ import {useSchoolAuth} from '@/lib/use-school-auth';
 import {getOwnAttempts,getLeaderboard,wibDate} from '@/lib/school';
 import type {Attempt,LeaderboardEntry,StudentProfile} from '@/lib/types';
 import '@/app/student-experience.css';
+import '@/app/student-unified-ui.css';
 
 const categories=[...PRACTICE_CATEGORIES];
 const toDay=(ms:number)=>new Intl.DateTimeFormat('id-ID',{dateStyle:'long',timeZone:'Asia/Jakarta'}).format(new Date(ms));
@@ -19,7 +20,10 @@ const toTime=(seconds:number)=>seconds>=60?Math.floor(seconds/60)+' mnt '+Math.f
 type PageView='home'|'history'|'ranking'|'profile';
 
 function StudentHeading({kicker,title,description}:{kicker:string;title:string;description:string}) {
-  return <div className="dashboard-heading student-heading"><div><span className="section-kicker">{kicker}</span><h1>{title}</h1><p>{description}</p></div></div>;
+  return <header className="student-section-hero" aria-label={title}>
+    <div className="student-section-hero-copy"><span className="section-kicker">{kicker}</span><h1>{title}</h1><p>{description}</p></div>
+    <div className="student-section-hero-icon" aria-hidden="true"><GraduationCap size={45}/><span>VOKASI</span></div>
+  </header>;
 }
 
 function HistoryView({attempts,busy}:{attempts:Attempt[];busy:boolean}) {
@@ -159,12 +163,33 @@ export default function StudentPage(){
        view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed}/>:
        view==='profile'?<ProfileView profile={profile} attempts={attempts} busy={busy}/>:
        <>
-        <div className="dashboard-heading"><div><div className="section-kicker">DASHBOARD SISWA</div><h1>Halo, {profile.fullName.split(' ')[0]} <span>👋</span></h1><p>{profile.className} • {profile.majorName}</p></div><span className="today-tag"><Clock3 size={16}/> {new Intl.DateTimeFormat('id-ID',{dateStyle:'full',timeZone:'Asia/Jakarta'}).format(new Date())}</span></div>
-        <div className="welcome-banner"><div><span className="welcome-eyebrow">TERUS MELANGKAH MAJU</span><h2>Setiap latihan membawa<br/>kamu lebih dekat ke tujuan.</h2><p>{BANK_IS_PUBLISHED?'Bank soal baru bergambar telah aktif. Siap menjawab 100 soal dengan total waktu 30 menit.':bankChecking?'Memeriksa status bank soal baru...':'Bank lama telah dicabut. Latihan baru akan tersedia setelah admin mengaktifkan 500 soal bergambar.'}</p><button className="btn white" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}><Play size={16}/> {BANK_IS_PUBLISHED?'Mulai latihan wajib':'Latihan sementara ditutup'}</button></div><div className="welcome-art"><BookOpen size={84}/><span>100</span></div></div>
-        <div className="metric-grid"><div className="metric"><span className="metric-icon blue"><BookOpen size={21}/></span><small>Latihan wajib</small><strong>{busy?'—':compulsory.length}</strong><span className="metric-foot">Total sesi tercatat</span></div><div className="metric"><span className="metric-icon green"><TrendingUp size={21}/></span><small>Rata-rata nilai</small><strong>{busy?'—':average??'—'}</strong><span className="metric-foot">Dari latihan wajib</span></div><div className="metric"><span className="metric-icon purple"><Star size={21}/></span><small>XP dari riwayat</small><strong>{busy?'—':attempts.reduce((s,a)=>s+a.earned_xp,0)}</strong><span className="metric-foot">Dari sesi tercatat</span></div><div className="metric"><span className="metric-icon orange"><Medal size={21}/></span><small>Nilai terakhir</small><strong>{busy?'—':latest?.score??'—'}</strong><span className="metric-foot">{today?'Sudah latihan hari ini':'Belum latihan hari ini'}</span></div></div>
+        <main className="student-home">
+         <section className="student-home-hero" aria-label="Ringkasan belajar">
+          <div className="student-home-hero-main">
+           <div className="student-home-greeting">
+            <span className="section-kicker">DASHBOARD SISWA</span>
+            <h1>Halo, {profile.fullName.split(' ')[0]} <span aria-hidden="true">👋</span></h1>
+            <p><GraduationCap size={15}/>{profile.className} · {profile.majorName}</p>
+           </div>
+           <div className="student-home-invitation">
+            <span className="welcome-eyebrow">TERUS MELANGKAH MAJU</span>
+            <h2>Setiap latihan membawa kamu lebih dekat ke tujuan.</h2>
+            <p>{BANK_IS_PUBLISHED?'Bank soal baru bergambar telah aktif. Siap menjawab 100 soal dengan total waktu 30 menit.':bankChecking?'Memeriksa status bank soal baru...':'Bank lama telah dicabut. Latihan baru akan tersedia setelah admin mengaktifkan 500 soal bergambar.'}</p>
+            <button className="btn white" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}><Play size={16}/> {BANK_IS_PUBLISHED?'Mulai latihan wajib':'Latihan sementara ditutup'}</button>
+           </div>
+           <span className="student-home-date"><CalendarDays size={15}/>{new Intl.DateTimeFormat('id-ID',{dateStyle:'full',timeZone:'Asia/Jakarta'}).format(new Date())}</span>
+          </div>
+          <div className="student-home-metrics">
+           <div className="metric"><span className="metric-icon blue"><BookOpen size={20}/></span><small>Latihan wajib</small><strong>{busy?'—':compulsory.length}</strong><span className="metric-foot">Total sesi tercatat</span></div>
+           <div className="metric"><span className="metric-icon green"><TrendingUp size={20}/></span><small>Rata-rata nilai</small><strong>{busy?'—':average??'—'}</strong><span className="metric-foot">Dari latihan wajib</span></div>
+           <div className="metric"><span className="metric-icon purple"><Star size={20}/></span><small>XP dari riwayat</small><strong>{busy?'—':attempts.reduce((sum,attempt)=>sum+attempt.earned_xp,0)}</strong><span className="metric-foot">Dari sesi tercatat</span></div>
+           <div className="metric"><span className="metric-icon orange"><Medal size={20}/></span><small>Nilai terakhir</small><strong>{busy?'—':latest?.score??'—'}</strong><span className="metric-foot">{today?'Sudah latihan hari ini':'Belum latihan hari ini'}</span></div>
+          </div>
+         </section>
         <div className="dashboard-columns"><section className="white-panel"><div className="panel-heading"><div><span className="section-kicker">PILIH MATERI</span><h2>Latihan numerasi</h2></div><button className="link-action" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}>Wajib <ArrowRight size={16}/></button></div><div className="practice-list">{categories.map((cat,i)=><button className="practice-item" key={cat} disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(cat)}><span className={'practice-ico c'+i}>{['×','÷','∑','⚙','◇','▣'][i]}</span><span><b>{cat}</b><small>{BANK_IS_PUBLISHED?'10 soal latihan mandiri':'Menunggu bank baru aktif'}</small></span><ArrowRight size={18}/></button>)}</div></section>
         <section className="white-panel"><div className="panel-heading"><div><span className="section-kicker">HASILMU</span><h2>Riwayat latihan</h2></div><Link aria-label="Lihat semua riwayat" className="icon-action" href={embed?'/siswa/riwayat?embed=1':'/siswa/riwayat'}><ArrowRight size={17}/></Link></div>{busy?<div className="empty-state">Memuat riwayat...</div>:compulsory.length===0?<div className="empty-state"><GraduationCap size={35}/><b>Belum ada riwayat latihan</b><p>Kerjakan latihan wajib pertamamu untuk mulai mencatat nilai.</p></div>:<div className="history-list">{compulsory.slice(0,6).map(a=><div key={a.session_key} className="history-row"><span className="history-dot"/><div><b>{toDay(a.completed_at_ms)}</b><small>{a.correct}/{a.question_count} jawaban benar</small></div><span className={'score-chip '+(a.score>=75?'positive':'')}>{a.score}/100</span></div>)}</div>}</section></div>
         <section className="white-panel leaderboard"><div className="panel-heading"><div><span className="section-kicker">KOMUNITAS BELAJAR</span><h2>Peringkat sekolah</h2></div><Link href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'} className="link-action"><Users size={16}/> Semua peringkat <ArrowRight size={16}/></Link></div>{rankFailed?<div className="empty-state"><p>Peringkat belum dapat dimuat dari Supabase.</p></div>:leaders.length?<div className="leader-list">{leaders.slice(0,8).map((row,i)=><div key={row.username+'-'+i} className="leader-item"><b className="leader-rank">#{i+1}</b><span className="leader-avatar">{row.display_name.slice(0,1)}</span><div><b>{row.display_name}</b><small>{row.classroom} • {row.major}</small></div><span className="leader-points">{row.mandatory_average??'—'} <small>rata-rata nilai</small></span></div>)}</div>:<div className="empty-state"><p>Belum ada peringkat latihan wajib yang tercatat.</p></div>}</section>
+        </main>
        </>}
     </>}
   </AppShell>;
