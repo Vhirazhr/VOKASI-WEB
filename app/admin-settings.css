@@ -47,3 +47,70 @@
   .admin-settings-signout{flex-direction:column;align-items:stretch;}
   .admin-settings-signout-button{width:100%;}
 }
+
+/* Admin settings: same blue overview and cards as the VOKASI school workspace. */
+.admin-settings-page{width:100%;max-width:1370px;margin:0 auto;padding-bottom:26px}
+.admin-settings-page .admin-settings-hero{margin-bottom:20px;grid-template-columns:minmax(225px,.8fr) minmax(0,1.65fr);gap:25px}
+.admin-settings-page .admin-settings-hero .admin-mini-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.admin-settings-page .admin-settings-hero .admin-mini-stats>div{min-height:91px}
+.admin-settings-page .admin-settings-hero .admin-mini-stats span{line-height:1.5}
+.admin-settings-page .admin-settings-hero .admin-mini-stats strong{font-variant-numeric:tabular-nums}
+.admin-settings-page .admin-settings-panel{margin:0 0 20px;padding:25px clamp(19px,2vw,29px);border-radius:19px}
+.admin-settings-page .admin-settings-directory-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px}
+.admin-settings-page .admin-settings-directory-heading .section-kicker{font-size:9px;letter-spacing:.12em;font-weight:800;color:#3476da}
+.admin-settings-page .admin-settings-directory-heading h2{color:#23466f;font-size:19px;font-weight:800;letter-spacing:-.035em;margin:8px 0 7px}
+.admin-settings-page .admin-settings-directory-heading p{margin:0;font-size:11px;line-height:1.7;color:#8298b3}
+.admin-settings-refresh{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 15px;flex:none;border:1px solid #d0e2fa;border-radius:10px;background:#edf4ff;color:#2d65be;font-size:11px;font-weight:800}
+.admin-settings-refresh:hover:not(:disabled){background:#dceaff}
+.admin-settings-page .admin-settings-directory-tools{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+.admin-settings-search{flex:1;min-width:0;max-width:600px;display:flex;align-items:center;gap:11px;min-height:46px;padding:0 14px;border:1px solid #d7e4f5;border-radius:11px;background:#fafcff;color:#6c8eb8}
+.admin-settings-search:focus-within{border-color:#5d95e7;box-shadow:0 0 0 3px rgba(65,120,220,.08)}
+.admin-settings-search input{width:100%;min-width:0;background:transparent;border:0;outline:0;color:#284f7e;font-size:12px}
+.admin-settings-search input::placeholder{color:#91a5c0}
+.admin-settings-count{flex:none;padding:8px 13px;border:1px solid #dce8fa;border-radius:99px;background:#f0f6ff;color:#3c6daf;font-size:10px;font-weight:800}
+.admin-settings-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.admin-settings-admin-card{min-width:0;padding:19px;border:1px solid #dfe9f8;border-radius:15px;background:linear-gradient(155deg,#fff,#fbfdff);box-shadow:0 5px 16px rgba(35,76,135,.035)}
+.admin-settings-admin-main{display:flex;align-items:flex-start;gap:12px;min-width:0}
+.admin-settings-person-icon{width:43px;height:43px;flex:none;display:grid;place-items:center;border-radius:12px;background:#eaf2ff;color:#3270d2}
+.admin-settings-admin-identity{flex:1;min-width:0;padding-top:3px}
+.admin-settings-admin-name{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.admin-settings-admin-name strong{font-size:12px;font-weight:800;color:#254a79;line-height:1.5;overflow-wrap:anywhere}
+.admin-settings-self-tag{padding:3px 8px;border-radius:99px;background:#e6f0ff;color:#2e66be;font-weight:800;font-size:9px}
+.admin-settings-admin-email{display:flex;align-items:center;gap:6px;margin-top:5px;color:#7089a9;font-size:10px;line-height:1.65;overflow-wrap:anywhere}
+.admin-settings-admin-email svg{flex:none}
+.admin-settings-access{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 8px;border-radius:8px;font-size:10px;font-weight:800}
+.admin-settings-access.enabled{background:#e8f7f0;color:#1f8963}
+.admin-settings-access.restricted{background:#fff2e8;color:#a86c31}
+.admin-settings-admin-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:19px;padding-top:15px;border-top:1px solid #e6edf8}
+.admin-settings-admin-meta>div{display:flex;flex-direction:column;gap:7px;min-width:0}
+.admin-settings-admin-meta small{color:#8499b5;font-size:9px;font-weight:750}
+.admin-settings-admin-meta strong{display:inline-flex;align-items:flex-start;gap:5px;color:#3e628e;font-size:10px;font-weight:750;line-height:1.65;overflow-wrap:anywhere}
+.admin-settings-admin-meta strong svg{flex:none;margin-top:2px;color:#6894d1}
+.admin-settings-verify-note{font-size:10px;color:#a56d31;background:#fff8e9;border-radius:8px;margin:13px 0 0;padding:9px}
+.admin-settings-access-note{margin:17px 0 0;padding:11px 14px;border:1px solid #e1ebf9;border-radius:10px;background:#f5f9ff;color:#7290b1;font-size:10px;line-height:1.8}
+.admin-settings-retry{margin-left:10px;border:0;background:transparent;color:#255faf;font-size:11px;font-weight:800;text-decoration:underline}
+.admin-settings-empty{text-align:center;border:1px dashed #d6e4f8;border-radius:12px;padding:28px;color:#7190b2;font-size:12px}
+.admin-settings-page .admin-settings-section-heading h2{font-size:18px}
+.admin-settings-page .admin-settings-current .admin-settings-account{margin-top:20px}
+@media(max-width:1200px){
+ .admin-settings-page .admin-settings-hero{grid-template-columns:1fr}
+ .admin-settings-page .admin-settings-admin-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:800px){.admin-settings-page .admin-settings-admin-grid{grid-template-columns:1fr}}
+@media(max-width:600px){
+ .admin-settings-page .admin-settings-hero{padding:21px 18px}
+ .admin-settings-page .admin-settings-hero .admin-mini-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ .admin-settings-page .admin-settings-hero .admin-mini-stats>div{display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:11px;min-height:120px}
+ .admin-settings-page .admin-settings-hero .admin-mini-stats svg{width:30px;height:30px;flex:none}
+ .admin-settings-page .admin-settings-hero .admin-mini-stats strong{font-size:23px}
+ .admin-settings-page .admin-settings-directory-heading{align-items:flex-start;flex-direction:column}
+ .admin-settings-page .admin-settings-directory-tools{gap:9px}
+ .admin-settings-page .admin-settings-admin-main{flex-wrap:wrap}
+ .admin-settings-page .admin-settings-access{margin-left:54px}
+}
+@media(max-width:400px){
+ .admin-settings-page .admin-settings-hero .admin-mini-stats{grid-template-columns:1fr}
+ .admin-settings-page .admin-settings-hero .admin-mini-stats>div{display:grid;grid-template-columns:33px 1fr;grid-template-rows:auto auto;min-height:65px}
+ .admin-settings-page .admin-settings-hero .admin-mini-stats svg{grid-row:span 2}
+ .admin-settings-page .admin-settings-admin-meta{grid-template-columns:1fr}
+}
