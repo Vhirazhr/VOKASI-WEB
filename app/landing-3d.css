@@ -2,7 +2,7 @@
 .vkw-page {
   background: #123d63;
   color: #f0f8ff;
-  font-family: "Roboto Variable", system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans Variable", system-ui, sans-serif;
   overflow: clip;
 }
 .vkw-page *,
@@ -99,7 +99,7 @@
   display: none;
 }
 .vkw-nav {
-  text-transform: uppercase;
+  text-transform: none;
   position: absolute;
   top: 16px;
   left: 50%;
@@ -192,7 +192,7 @@
   justify-content: space-between;
   width: min(100%, 980px);
   margin: 0 auto;
-  font-family: "Roboto Variable", system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans Variable", system-ui, sans-serif;
   font-size: clamp(44px, 5.1vw, 78px);
   font-weight: 900;
   letter-spacing: 0;
@@ -678,7 +678,7 @@
   align-items: center;
 }
 .vkw-login-dialog {
-  font-family: "Roboto Variable", system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans Variable", system-ui, sans-serif;
   position: fixed;
   inset: 0;
   margin: auto;
@@ -1288,4 +1288,90 @@
 }
 @media (max-width: 359px) {
   .vkw-nav nav { font-size: 10px; gap: 2px; }
+}
+
+/* Reference typography: Jakarta for UI, Sora for headings. */
+.vkw-page, .vkw-login-dialog {
+  font-family: "Plus Jakarta Sans Variable", system-ui, sans-serif;
+  font-optical-sizing: auto;
+}
+.vkw-page h1, .vkw-section h2, .vkw-feature-card h3,
+.vkw-steps h3, .vkw-login-dialog h2 {
+  font-family: "Sora Variable", system-ui, sans-serif;
+  font-weight: 800;
+}
+.vkw-hero h1 {
+  width: min(100%, 900px);
+  font-size: clamp(48px, 7vw, 100px);
+  font-weight: 800;
+  letter-spacing: .06em;
+  line-height: 1.15;
+  color: #082e55;
+}
+.vkw-hero h1 span {
+  background: linear-gradient(180deg, #164e80, #041d38);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.vkw-hero-bottom > p {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(12px, 2vw, 28px);
+  font-size: clamp(12px, 1.3vw, 18px);
+  font-weight: 700;
+  letter-spacing: .08em;
+  line-height: 1.5;
+}
+.vkw-hero-bottom > p::before, .vkw-hero-bottom > p::after {
+  content: "";
+  width: clamp(24px, 4vw, 64px);
+  height: 1px;
+  flex-shrink: 0;
+  background: #173c6266;
+}
+.vkw-brand {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.7px;
+}
+.vkw-nav nav {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -.2px;
+}
+.vkw-nav nav a { padding-inline: 10px; }
+.vkw-page .vkw-nav-login {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+}
+.vkw-login-brand { font-weight: 800; letter-spacing: -.02em; }
+.vkw-primary { font-weight: 700; }
+.vkw-about-copy > p:not(.vkw-kicker), .vkw-feature-card p,
+.vkw-steps p, .vkw-login-dialog #vkw-login-description {
+  line-height: 1.8;
+  letter-spacing: 0;
+}
+@media (min-width: 701px) and (max-width: 1000px) {
+  .vkw-nav { gap: 14px; }
+  .vkw-brand { font-size: 18px; }
+  .vkw-nav nav, .vkw-page .vkw-nav-login { font-size: 13px; }
+  .vkw-nav nav a { padding-inline: 8px; }
+}
+@media (max-width: 700px) {
+  .vkw-brand { font-size: 18px; letter-spacing: -.4px; }
+  .vkw-nav nav { font-size: 10px; letter-spacing: 0; gap: 2px; }
+  .vkw-nav nav a { padding-inline: 3px; }
+  .vkw-page .vkw-nav-login { font-size: 12px; }
+  .vkw-hero h1 { width: 94%; font-size: clamp(38px, 9vw, 58px); }
+  .vkw-hero-bottom > p { font-size: 11px; letter-spacing: .06em; gap: 10px; }
+  .vkw-hero-bottom > p::before, .vkw-hero-bottom > p::after { display: none; }
+}
+@media (max-height: 550px) and (min-width: 701px) {
+  .vkw-hero h1 { font-size: 58px; }
+}
+@media (forced-colors: active) {
+  .vkw-hero h1 span { background: none; color: CanvasText; }
 }

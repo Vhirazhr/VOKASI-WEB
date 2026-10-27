@@ -13,7 +13,8 @@ import SchoolMark from "@/components/landing/SchoolMark";
 import LandingRanking from "@/components/landing/LandingRanking";
 import LandingAccess, { AccessLink } from "@/components/landing/LandingAccess";
 import MotionSettings from "@/components/landing/MotionSettings";
-import "@fontsource-variable/roboto/wght.css";
+import "@fontsource-variable/plus-jakarta-sans/wght.css";
+import "@fontsource-variable/sora/wght.css";
 import "./landing-3d.css";
 const features = [
   {
