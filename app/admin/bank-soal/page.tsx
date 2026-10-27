@@ -9,6 +9,7 @@ import {fetchBank} from '@/lib/quiz';
 import {supabase} from '@/lib/supabase';
 import {APPROVED_BLUEPRINT,APPROVED_GROUPS,approvedGroup} from '@/lib/new-bank-blueprint';
 import BankFilterDropdown from '@/components/BankFilterDropdown';
+import QuestionImportWorkspace from '@/components/QuestionImportWorkspace';
 import type {BankQuestion} from '@/lib/types';
 import '@/app/admin-workspace.css';
 import '@/app/admin-students-ui.css';
@@ -49,6 +50,12 @@ export default function AdminBankPage(){
  const [review,setReview]=useState<ReviewItem[]>([]),[draftProblems,setDraftProblems]=useState<DraftIssue[]>([]);
  const [drafts,setDrafts]=useState<DraftRow[]>([]),[importDrafts,setImportDrafts]=useState<ImportDraft[]>([]);
  const [createOpen,setCreateOpen]=useState(false),[createSaving,setCreateSaving]=useState(false),[createNotice,setCreateNotice]=useState('');
+ const [importOpen,setImportOpen]=useState(false),[importDraftId,setImportDraftId]=useState<string|null>(null);
+ function openImport(draftId:string|null=null){setImportDraftId(draftId);setImportOpen(true);}
+ function importFinished(mode:'draft'|'published'){
+  setImportOpen(false);setImportDraftId(null);setTab(mode==='draft'?'drafts':'published');
+  setBusy(true);setRefreshKey(v=>v+1);
+ }
  const [draftEditing,setDraftEditing]=useState<string|null>(null);
  const [newCategory,setNewCategory]=useState('Perkalian'),[newGroup,setNewGroup]=useState('HITUNG_DASAR');
  const [newQuestion,setNewQuestion]=useState(''),[newOptions,setNewOptions]=useState(blankOptions);
@@ -184,7 +191,7 @@ export default function AdminBankPage(){
  // Prevent the background page's scrollbar from appearing beside a question modal.
  // The modal itself remains scrollable (wheel, keyboard, and touch).
  useEffect(()=>{
-  if(!createOpen&&!edit&&!selected)return;
+  if(!createOpen&&!edit&&!selected&&!importOpen)return;
   const html=document.documentElement;
   const body=document.body;
   const previousHtmlOverflow=html.style.overflow;
@@ -195,7 +202,7 @@ export default function AdminBankPage(){
    html.style.overflow=previousHtmlOverflow;
    body.style.overflow=previousBodyOverflow;
   };
- },[createOpen,edit,selected]);
+ },[createOpen,edit,selected,importOpen]);
  useEffect(()=>{if(loading||error)return;let active=true;
   async function load(){try{
     const [bankResult,qualityResult,draftResult,importResult]=await Promise.allSettled([
@@ -259,7 +266,7 @@ export default function AdminBankPage(){
     <div className="admin-mini-stats"><div><BookOpen size={20}/><span>Jumlah soal</span><strong>{busy?'—':bank.length.toLocaleString('id-ID')}</strong></div><div><FileQuestion size={20}/><span>Kategori</span><strong>{busy?'—':categories.length}</strong></div><div><Clock3 size={20}/><span>Blueprint wajib</span><strong>100 soal</strong></div></div>
    </section>
    <section className="admin-data-card">
-    <div className="admin-data-title"><div><h2>Daftar pertanyaan</h2><p>Cari berdasarkan materi atau kelompok ujian. Keduanya berbeda: materi adalah topik, kelompok menentukan pembagian soal dan waktu ujian.</p></div><div className="admin-bank-actions"><Link href="/admin/bank-soal/impor" className="btn secondary small"><FileUp size={16}/> Impor soal</Link><button type="button" className="btn primary small" onClick={()=>openNew()}><Plus size={17}/> Tambah soal</button></div></div>
+    <div className="admin-data-title"><div><h2>Daftar pertanyaan</h2><p>Cari berdasarkan materi atau kelompok ujian. Keduanya berbeda: materi adalah topik, kelompok menentukan pembagian soal dan waktu ujian.</p></div><div className="admin-bank-actions"><button type="button" className="btn secondary small" onClick={()=>openImport()}><FileUp size={16}/> Impor soal</button><button type="button" className="btn primary small" onClick={()=>openNew()}><Plus size={17}/> Tambah soal</button></div></div>
     {issue&&<div className="alert danger" role="alert">{issue}</div>}
     <div className="admin-bank-workspace-tabs" role="tablist" aria-label="Status bank soal">
       <button role="tab" type="button" aria-selected={tab==='published'} className={tab==='published'?'active':''} onClick={()=>{setTab('published');setPage(0);}}><BookOpen size={15}/> Semua soal <span>{bank.length}</span></button>
@@ -282,7 +289,7 @@ export default function AdminBankPage(){
       {importDrafts.map(d=><article key={d.id} className="admin-bank-draft-card">
        <div className="admin-bank-draft-info"><span className="admin-bank-draft-tag">Draft impor</span><strong>{d.file_name}</strong>
         <p>{d.payload.length} soal · {d.mode==='replace'?'Ganti bank':'Tambahkan soal'}</p><span className="admin-bank-quality draft"><FileText size={13}/> Perlu ditinjau sebelum terbit</span></div>
-       <Link className="admin-workspace-detail" href={"/admin/bank-soal/impor?draft="+encodeURIComponent(d.id)}>Lanjutkan</Link>
+       <button type="button" className="admin-workspace-detail" onClick={()=>openImport(d.id)}>Lanjutkan</button>
       </article>)}
      </>}
     </div>:busy?<div className="admin-workspace-empty">Mengambil bank soal aktif...</div>:filtered.filter(q=>tab==='published'||review.some(r=>r.number===q.id)).length===0?<div className="admin-workspace-empty">{tab==='review'?'Tidak ada soal aktif yang perlu ditinjau.':'Tidak ada soal yang sesuai.'}</div>:
@@ -307,6 +314,14 @@ export default function AdminBankPage(){
     {tab!=='drafts'&&<div className="admin-workspace-footer"><span>{tab==='review'?filtered.filter(q=>review.some(r=>r.number===q.id)).length:filtered.length} soal sesuai filter</span><div><button type="button" onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={activePage===0}>Sebelumnya</button><span>{activePage+1} / {tab==='review'?Math.max(1,Math.ceil(filtered.filter(q=>review.some(r=>r.number===q.id)).length/30)):pages}</span><button type="button" onClick={()=>setPage(p=>p+1)} disabled={activePage>=(tab==='review'?Math.max(1,Math.ceil(filtered.filter(q=>review.some(r=>r.number===q.id)).length/30)):pages)-1}>Berikutnya</button></div></div>}
    </section>
    
+   {importOpen&&<div className="admin-modal-overlay admin-bank-import-overlay" role="presentation" onMouseDown={()=>setImportOpen(false)}>
+    <section className="admin-modal-card admin-bank-import-modal" role="dialog" aria-modal="true" aria-label="Impor soal" onMouseDown={e=>e.stopPropagation()}>
+     <div className="admin-modal-top admin-bank-import-heading"><div><span className="section-kicker">BANK SOAL</span><h2>Impor soal</h2></div>
+      <button type="button" aria-label="Tutup impor soal" onClick={()=>setImportOpen(false)}>×</button>
+     </div>
+     <QuestionImportWorkspace key={importDraftId||'new'} embedded initialDraftId={importDraftId} onComplete={importFinished}/>
+    </section>
+   </div>}
    {createOpen&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!createSaving)setCreateOpen(false);}}>
     <section role="dialog" aria-modal="true" aria-label={draftEditing?'Lanjutkan draft':'Tambah soal'} className="admin-modal-card admin-bank-create-modal" onMouseDown={e=>e.stopPropagation()}>
      <div className="admin-modal-top"><div><span className="section-kicker">BANK SOAL</span><h2>{draftEditing?'Lanjutkan draft':'Tambah soal'}</h2></div><button aria-label="Tutup" type="button" disabled={createSaving} onClick={()=>setCreateOpen(false)}>×</button></div>
