@@ -371,3 +371,290 @@
  .school-shell.student-shell .topbar,.school-shell.student-shell .side-link,
  .school-shell.student-shell .student-home .practice-item{transition:none}
 }
+
+
+/* Student dashboard refinement: practice first, progress second, history last. */
+.school-shell.student-shell .student-home{
+ display:grid;gap:25px;width:100%;max-width:100%;min-width:0;
+}
+.school-shell.student-shell .student-dashboard-intro{
+ display:flex;align-items:center;justify-content:space-between;gap:18px;
+ min-width:0;margin:0 0 -3px;
+}
+.school-shell.student-shell .student-dashboard-greeting{min-width:0}
+.school-shell.student-shell .student-dashboard-greeting .section-kicker{
+ color:#3974cc;font-size:10px;font-weight:800;letter-spacing:.13em;
+}
+.school-shell.student-shell .student-dashboard-greeting h1{
+ color:#204775;font-size:clamp(26px,2.4vw,32px);line-height:1.2;
+ letter-spacing:-.045em;margin:7px 0 6px;
+}
+.school-shell.student-shell .student-dashboard-greeting h1 span{font-size:.8em}
+.school-shell.student-shell .student-dashboard-greeting p{
+ display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+ color:#7188a5;font-size:12px;margin:0;line-height:1.6;
+}
+.school-shell.student-shell .student-home-date{
+ display:flex;align-items:center;justify-content:center;gap:8px;
+ flex:none;border:1px solid #dfe8f5;border-radius:11px;
+ background:#fff;padding:11px 14px;color:#617c9f;
+ font-size:11px;font-weight:700;line-height:1.5;
+}
+.school-shell.student-shell .student-featured-practice{
+ position:relative;isolation:isolate;overflow:hidden;
+ display:grid;grid-template-columns:minmax(0,1fr) 210px;align-items:center;gap:24px;
+ min-width:0;padding:25px 28px;
+ border:1px solid #d4e3f9;border-left:4px solid #326be0;border-radius:17px;
+ background:linear-gradient(112deg,#edf4ff 0%,#f8fbff 75%,#eef5ff 100%);
+ box-shadow:0 9px 24px rgba(37,83,153,.045);
+}
+.school-shell.student-shell .student-featured-copy{position:relative;z-index:2;min-width:0}
+.school-shell.student-shell .student-featured-eyebrow{
+ display:inline-flex;align-items:center;gap:7px;
+ padding:6px 9px;border:1px solid #d7e5fb;border-radius:7px;
+ background:#e1edff;color:#2e65bd;font-size:9px;font-weight:850;letter-spacing:.09em;
+}
+.school-shell.student-shell .student-featured-copy h2{
+ color:#204a7a;font-size:clamp(22px,2.1vw,27px);line-height:1.25;
+ letter-spacing:-.04em;margin:13px 0 8px;
+}
+.school-shell.student-shell .student-featured-copy>p{
+ max-width:640px;color:#667f9f;font-size:12px;line-height:1.75;margin:0;
+}
+.school-shell.student-shell .student-featured-meta{
+ display:flex;align-items:center;flex-wrap:wrap;gap:9px 17px;margin-top:16px;
+}
+.school-shell.student-shell .student-featured-meta span{
+ display:inline-flex;align-items:center;gap:7px;color:#53749e;
+ font-size:10px;font-weight:750;white-space:nowrap;
+}
+.school-shell.student-shell .student-featured-meta svg{color:#3771ce}
+.school-shell.student-shell .student-start-button{
+ display:inline-flex;align-items:center;justify-content:center;gap:10px;
+ min-height:44px;margin-top:20px;padding:12px 16px;
+ border:1px solid #2e64cc;border-radius:10px;
+ background:#326be0;color:#fff;
+ font-size:11px;font-weight:800;
+ box-shadow:0 5px 12px rgba(42,95,193,.17);
+ transition:background .15s,transform .15s,box-shadow .15s;
+}
+.school-shell.student-shell .student-start-button:hover:not(:disabled){
+ background:#2458bd;transform:translateY(-1px);box-shadow:0 7px 15px rgba(42,95,193,.2);
+}
+.school-shell.student-shell .student-start-button:disabled{
+ cursor:not-allowed;background:#a8bad4;border-color:#a8bad4;box-shadow:none;
+}
+.school-shell.student-shell .student-featured-visual{
+ position:relative;isolation:isolate;overflow:hidden;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ min-height:190px;padding:17px 12px;border:1px solid #b7cff2;border-radius:15px;
+ background:linear-gradient(145deg,#3675d8,#2757b1);
+ color:#fff;box-shadow:0 9px 22px rgba(36,82,157,.15);
+}
+.school-shell.student-shell .student-featured-orbit{
+ position:absolute;z-index:-1;border:1px solid rgba(255,255,255,.16);
+ border-radius:50%;pointer-events:none;
+}
+.school-shell.student-shell .student-featured-orbit-one{width:225px;height:225px;right:-95px;top:-112px}
+.school-shell.student-shell .student-featured-orbit-two{width:165px;height:165px;left:-90px;bottom:-105px}
+.school-shell.student-shell .student-featured-book{
+ display:grid;place-items:center;width:53px;height:53px;margin-bottom:6px;
+ border:1px solid rgba(255,255,255,.22);border-radius:15px;
+ background:rgba(255,255,255,.13);color:#fff;
+}
+.school-shell.student-shell .student-featured-visual>strong{
+ font-size:40px;line-height:1.05;letter-spacing:-.055em;color:#fff;
+}
+.school-shell.student-shell .student-featured-visual>span{
+ margin-top:5px;color:#e0ecff;font-size:9px;font-weight:850;letter-spacing:.14em;
+}
+.school-shell.student-shell .student-featured-visual>small{
+ display:flex;align-items:center;gap:6px;margin-top:13px;padding:6px 9px;
+ border:1px solid rgba(255,255,255,.2);border-radius:8px;
+ background:rgba(255,255,255,.12);color:#fff;font-size:10px;font-weight:700;
+}
+.school-shell.student-shell .student-subsection-heading{
+ display:flex;align-items:flex-end;justify-content:space-between;gap:14px;
+ min-width:0;margin-bottom:13px;
+}
+.school-shell.student-shell .student-subsection-heading .section-kicker{
+ color:#3b75cc;font-size:9px;font-weight:850;letter-spacing:.13em;
+}
+.school-shell.student-shell .student-subsection-heading h2{
+ color:#244a76;font-size:20px;line-height:1.3;letter-spacing:-.035em;margin:5px 0 0;
+}
+.school-shell.student-shell .student-subsection-heading p{
+ color:#8295ae;font-size:11px;line-height:1.6;margin:5px 0 0;
+}
+.school-shell.student-shell .student-muted-caption{
+ color:#8a9cb4;font-size:10px;text-align:right;
+}
+.school-shell.student-shell .student-progress-section,
+.school-shell.student-shell .student-practice-section{min-width:0}
+.school-shell.student-shell .student-home-metrics{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+}
+.school-shell.student-shell .student-home-metrics .metric{
+ display:grid;grid-template-columns:37px minmax(0,1fr);grid-template-rows:auto auto;
+ align-items:center;column-gap:11px;row-gap:5px;
+ min-width:0;min-height:100px;margin:0;padding:15px 16px;
+ border:1px solid #e0e9f6;border-radius:13px;background:#fff;
+ box-shadow:0 5px 15px rgba(37,72,123,.035);
+}
+.school-shell.student-shell .student-home-metrics .metric-icon{
+ grid-column:1;grid-row:1 / span 2;display:grid;place-items:center;
+ width:37px;height:37px;margin:0;border-radius:11px;
+ background:#edf4ff;color:#3971c8;
+}
+.school-shell.student-shell .student-home-metrics .metric-icon.green{background:#eaf8f0;color:#28936b}
+.school-shell.student-shell .student-home-metrics .metric-icon.purple{background:#f0edff;color:#7962c6}
+.school-shell.student-shell .student-home-metrics .metric-icon.orange{background:#fff4e7;color:#c18331}
+.school-shell.student-shell .student-home-metrics .metric>div{
+ grid-column:2;grid-row:1;min-width:0;
+}
+.school-shell.student-shell .student-home-metrics .metric>div small{
+ display:block;overflow-wrap:anywhere;color:#7890ad;font-size:10px;font-weight:750;line-height:1.45;
+}
+.school-shell.student-shell .student-home-metrics .metric>div strong{
+ display:block;margin-top:3px;color:#24538f;font-size:25px;line-height:1.12;
+ font-variant-numeric:tabular-nums;letter-spacing:-.04em;
+}
+.school-shell.student-shell .student-home-metrics .metric-foot{
+ grid-column:2;grid-row:2;display:block;margin:0;color:#91a2b8;
+ font-size:9px;line-height:1.4;
+}
+.school-shell.student-shell .student-practice-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+}
+.school-shell.student-shell .student-topic-card{
+ display:flex;align-items:center;gap:12px;position:relative;
+ width:100%;min-width:0;min-height:88px;margin:0;padding:14px;
+ border:1px solid #e0e9f6;border-radius:13px;background:#fff;
+ color:#284f7c;text-align:left;box-shadow:0 5px 15px rgba(37,72,123,.025);
+ transition:border-color .15s,background .15s,transform .15s,box-shadow .15s;
+}
+.school-shell.student-shell .student-topic-card:hover:not(:disabled){
+ transform:translateY(-2px);border-color:#aac8f1;background:#f9fbff;
+ box-shadow:0 8px 20px rgba(37,83,153,.07);
+}
+.school-shell.student-shell .student-topic-card:disabled{cursor:not-allowed;opacity:.72}
+.school-shell.student-shell .student-topic-icon{
+ display:grid;place-items:center;flex:none;width:43px;height:43px;
+ border-radius:12px;background:#eaf2ff;color:#326bd0;font-size:22px;font-weight:850;
+}
+.school-shell.student-shell .student-topic-icon.c1{background:#f0edff;color:#7d66c9}
+.school-shell.student-shell .student-topic-icon.c2{background:#e9f8f0;color:#28936b}
+.school-shell.student-shell .student-topic-icon.c3{background:#fff2e6;color:#c7802c}
+.school-shell.student-shell .student-topic-icon.c4{background:#e9f6fb;color:#2983a4}
+.school-shell.student-shell .student-topic-icon.c5{background:#fceefa;color:#b05ca2}
+.school-shell.student-shell .student-topic-copy{display:grid;gap:5px;min-width:0;flex:1}
+.school-shell.student-shell .student-topic-copy b{
+ color:#294f7a;font-size:12px;font-weight:800;line-height:1.45;overflow-wrap:anywhere;
+}
+.school-shell.student-shell .student-topic-copy small{color:#879ab3;font-size:10px;line-height:1.45}
+.school-shell.student-shell .student-topic-arrow{
+ display:grid;place-items:center;flex:none;width:29px;height:29px;
+ border-radius:8px;color:#7595c2;background:#f2f6fd;
+}
+.school-shell.student-shell .student-topic-card:hover:not(:disabled) .student-topic-arrow{
+ color:#2c65c5;background:#e7f0ff;
+}
+.school-shell.student-shell .student-secondary-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:17px;
+ min-width:0;
+}
+.school-shell.student-shell .student-home .student-secondary-grid .white-panel{
+ min-width:0;margin:0;padding:20px 21px;
+ border:1px solid #e0e9f6;border-radius:15px;background:#fff;
+ box-shadow:0 6px 18px rgba(37,72,123,.035);
+}
+.school-shell.student-shell .student-secondary-grid .panel-heading{margin-bottom:13px}
+.school-shell.student-shell .student-secondary-grid .panel-heading h2{
+ font-size:17px;color:#244a76;margin-top:5px;
+}
+.school-shell.student-shell .student-secondary-grid .panel-heading .section-kicker{
+ color:#3b75cc;font-size:9px;font-weight:850;letter-spacing:.11em;
+}
+.school-shell.student-shell .student-home .student-secondary-grid .history-row{
+ padding:11px 1px;border-bottom:1px solid #edf2f9;
+}
+.school-shell.student-shell .student-home .student-secondary-grid .history-row b{font-size:11px}
+.school-shell.student-shell .student-home .student-secondary-grid .history-row small{font-size:9px}
+.school-shell.student-shell .student-home .student-secondary-grid .score-chip{padding:6px 8px;font-size:10px}
+.school-shell.student-shell .student-home .student-secondary-grid .leader-list{grid-template-columns:1fr;gap:0}
+.school-shell.student-shell .student-home .student-secondary-grid .leader-item{padding:10px 1px;gap:9px}
+.school-shell.student-shell .student-home .student-secondary-grid .leader-rank{width:22px;font-size:11px}
+.school-shell.student-shell .student-home .student-secondary-grid .leader-avatar{width:31px;height:31px;border-radius:9px;flex:none}
+.school-shell.student-shell .student-home .student-secondary-grid .leader-item>div>b{font-size:10px}
+.school-shell.student-shell .student-home .student-secondary-grid .leader-item>div>small{font-size:9px}
+.school-shell.student-shell .student-home .student-secondary-grid .leader-points{font-size:12px;white-space:nowrap}
+.school-shell.student-shell .student-home .student-secondary-grid .leader-points small{font-size:8px}
+.school-shell.student-shell .student-compact-empty{
+ display:flex;align-items:center;gap:12px;min-height:77px;padding:14px 4px;
+ color:#7690b3;
+}
+.school-shell.student-shell .student-compact-empty>svg{flex:none;color:#83a2d5}
+.school-shell.student-shell .student-compact-empty>div{min-width:0}
+.school-shell.student-shell .student-compact-empty b{display:block;color:#3b5d86;font-size:11px}
+.school-shell.student-shell .student-compact-empty p{
+ color:#8a9cb4;font-size:10px;line-height:1.6;margin:4px 0 0;
+}
+.school-shell.student-shell .student-compact-empty:not(:has(div)){font-size:11px}
+.school-shell.student-shell .student-text-link{
+ display:inline-flex;align-items:center;gap:6px;margin-top:13px;padding-top:11px;
+ border-top:1px solid #edf2f9;width:100%;color:#3268c5;font-size:10px;font-weight:800;
+}
+.school-shell.student-shell .student-text-link:hover{color:#1f4f9f}
+.school-shell.student-shell .student-dashboard-intro :is(h1,p),
+.school-shell.student-shell .student-featured-copy :is(h2,p){overflow-wrap:anywhere}
+
+@media(max-width:1150px){
+ .school-shell.student-shell .student-home-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .school-shell.student-shell .student-practice-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .school-shell.student-shell .student-featured-practice{grid-template-columns:minmax(0,1fr) 180px;gap:17px;padding:22px}
+}
+@media(max-width:760px){
+ .school-shell.student-shell .student-home{gap:21px}
+ .school-shell.student-shell .student-dashboard-intro{align-items:flex-start;flex-direction:column;gap:10px}
+ .school-shell.student-shell .student-home-date{font-size:10px;padding:8px 10px}
+ .school-shell.student-shell .student-featured-practice{grid-template-columns:minmax(0,1fr) 132px;padding:18px;gap:13px}
+ .school-shell.student-shell .student-featured-visual{min-height:155px;padding:12px 6px}
+ .school-shell.student-shell .student-featured-visual>strong{font-size:32px}
+ .school-shell.student-shell .student-featured-book{width:42px;height:42px;border-radius:12px}
+ .school-shell.student-shell .student-featured-book svg{width:30px;height:30px}
+ .school-shell.student-shell .student-featured-copy h2{font-size:21px}
+ .school-shell.student-shell .student-featured-meta{gap:8px 12px}
+ .school-shell.student-shell .student-featured-meta span{font-size:9px}
+ .school-shell.student-shell .student-muted-caption{max-width:130px;line-height:1.5}
+ .school-shell.student-shell .student-secondary-grid{grid-template-columns:1fr}
+}
+@media(max-width:540px){
+ .school-shell.student-shell .student-dashboard-greeting h1{font-size:27px}
+ .school-shell.student-shell .student-featured-practice{grid-template-columns:minmax(0,1fr);padding:19px}
+ .school-shell.student-shell .student-featured-visual{
+  min-height:96px;display:grid;grid-template-columns:42px auto auto;grid-template-rows:auto auto;
+  align-items:center;justify-content:start;column-gap:12px;row-gap:3px;padding:12px 14px;
+ }
+ .school-shell.student-shell .student-featured-book{grid-column:1;grid-row:1 / span 2;margin:0}
+ .school-shell.student-shell .student-featured-visual>strong{grid-column:2;grid-row:1 / span 2;font-size:33px}
+ .school-shell.student-shell .student-featured-visual>span{grid-column:3;grid-row:1;align-self:end;font-size:8px}
+ .school-shell.student-shell .student-featured-visual>small{grid-column:3;grid-row:2;justify-self:start;margin:0;font-size:9px}
+ .school-shell.student-shell .student-featured-copy h2{font-size:22px;margin-top:11px}
+ .school-shell.student-shell .student-featured-copy>p{font-size:11px}
+ .school-shell.student-shell .student-home-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .school-shell.student-shell .student-home-metrics .metric{min-height:94px;padding:12px 10px;grid-template-columns:30px minmax(0,1fr);column-gap:8px}
+ .school-shell.student-shell .student-home-metrics .metric-icon{width:30px;height:30px;border-radius:9px}
+ .school-shell.student-shell .student-home-metrics .metric-icon svg{width:16px;height:16px}
+ .school-shell.student-shell .student-home-metrics .metric>div small{font-size:9px}
+ .school-shell.student-shell .student-home-metrics .metric>div strong{font-size:22px}
+ .school-shell.student-shell .student-home-metrics .metric-foot{font-size:8px}
+ .school-shell.student-shell .student-practice-grid{grid-template-columns:1fr;gap:9px}
+ .school-shell.student-shell .student-topic-card{min-height:76px;padding:11px}
+ .school-shell.student-shell .student-topic-icon{width:40px;height:40px}
+ .school-shell.student-shell .student-subsection-heading h2{font-size:18px}
+ .school-shell.student-shell .student-muted-caption{display:none}
+ .school-shell.student-shell .student-home .student-secondary-grid .white-panel{padding:17px}
+}
+@media(prefers-reduced-motion:reduce){
+ .school-shell.student-shell .student-topic-card,.school-shell.student-shell .student-start-button{transition:none}
+}
