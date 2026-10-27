@@ -210,3 +210,28 @@
   .school-shell .admin-header-account{max-width:125px;}
   .school-shell .admin-header-identity strong{max-width:84px;}
 }
+
+
+/* Stable admin navigation: the sidebar belongs to the viewport, not to page content.
+   Content scrolls normally; popup notifications remain layered above the topbar. */
+.school-shell.admin-shell:not(.shell-embed) .sidebar{
+ position:sticky;
+ top:0;
+ align-self:flex-start;
+ height:100dvh;
+ min-height:0;
+ overflow-y:auto;
+ overscroll-behavior:contain;
+ z-index:51;
+}
+.school-shell.admin-shell .topbar{
+ position:sticky;
+ top:0;
+ z-index:50;
+ background:rgba(255,255,255,.97);
+ -webkit-backdrop-filter:blur(15px);
+ backdrop-filter:blur(15px);
+}
+@media(max-width:600px){
+ .school-shell.admin-shell:not(.shell-embed) .sidebar{display:none}
+}
