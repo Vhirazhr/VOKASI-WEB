@@ -331,3 +331,106 @@
 .admin-bank-create-modal .admin-bank-draft-top strong{font-size:12px;color:#2259a1}
 .admin-bank-create-modal .admin-bank-draft-top small{line-height:1.55}
 .admin-bank-create-modal .admin-bank-draft-top:has(input:checked){border-color:#9cc4fa;background:#e8f2ff}
+
+/* Wide question editor, not the small 470px detail modal.
+   Specificity intentionally overrides the shared .admin-modal-card rule. */
+.admin-bank-page .admin-modal-card.admin-bank-create-modal{
+  box-sizing:border-box;
+  width:min(1080px,calc(100vw - 48px));
+  max-width:none;
+  max-height:calc(100dvh - 40px);
+  padding:28px 34px;
+  display:grid;
+  align-content:start;
+  gap:17px;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  border-radius:24px;
+  scrollbar-gutter:stable;
+}
+.admin-bank-page .admin-bank-create-modal .admin-modal-top{
+  position:sticky;
+  top:-28px;
+  z-index:5;
+  margin:-28px -34px 0;
+  padding:27px 34px 18px;
+  background:#fff;
+  border-bottom:1px solid #e7eef9;
+}
+.admin-bank-page .admin-bank-create-modal .admin-modal-top h2{
+  font-size:25px;
+  margin-top:8px;
+}
+.admin-bank-page .admin-bank-create-modal>.admin-bank-edit-actions{
+  position:sticky;
+  z-index:5;
+  bottom:-28px;
+  margin:5px -34px -28px;
+  padding:16px 34px 23px;
+  border-top:1px solid #e4ecf8;
+  background:#fff;
+  box-shadow:0 -10px 24px #244c7a0a;
+}
+.admin-bank-page .admin-bank-create-modal>.admin-bank-edit-actions .btn{
+  min-height:43px;
+  padding:0 18px;
+  border-radius:10px;
+}
+.admin-bank-page .admin-bank-create-modal .admin-bank-edit-classification{
+  grid-template-columns:1.15fr 1.15fr .65fr;
+  gap:15px;
+}
+.admin-bank-page .admin-bank-create-modal .admin-bank-new-choice{gap:12px}
+.admin-bank-page .admin-bank-create-modal .admin-bank-new-choice>input{
+  flex:1 1 auto;
+  min-width:160px;
+  font-size:13px;
+}
+.admin-bank-page .admin-bank-create-modal .admin-bank-new-choice>label:first-child{
+  width:60px;
+}
+.admin-bank-page .admin-bank-create-modal .admin-bank-option-upload{
+  min-width:112px;
+  min-height:43px;
+}
+.admin-bank-page .admin-bank-create-modal .admin-bank-create-upload{
+  min-height:53px;
+}
+.admin-bank-page .admin-bank-create-modal textarea{
+  font-size:13px;
+  line-height:1.6;
+}
+@media(max-width:700px){
+  .admin-bank-page .admin-modal-card.admin-bank-create-modal{
+    width:calc(100vw - 24px);
+    max-height:calc(100dvh - 24px);
+    border-radius:18px;
+    padding:18px;
+    gap:14px;
+  }
+  .admin-bank-page .admin-bank-create-modal .admin-modal-top{
+    top:-18px;
+    margin:-18px -18px 0;
+    padding:20px 18px 15px;
+  }
+  .admin-bank-page .admin-bank-create-modal>.admin-bank-edit-actions{
+    bottom:-18px;
+    margin:5px -18px -18px;
+    padding:14px 18px 18px;
+  }
+  .admin-bank-page .admin-bank-create-modal .admin-bank-edit-classification{
+    grid-template-columns:1fr 1fr;
+    gap:11px;
+  }
+  .admin-bank-page .admin-bank-create-modal .admin-bank-edit-classification label:last-child{
+    grid-column:1/-1;
+  }
+  .admin-bank-page .admin-bank-create-modal .admin-bank-new-choice>label:first-child{width:47px}
+  .admin-bank-page .admin-bank-create-modal .admin-bank-new-choice>input{flex-basis:calc(100% - 67px)}
+  .admin-bank-page .admin-bank-create-modal .admin-bank-option-upload{margin-left:58px;min-width:110px}
+}
+@media(max-width:420px){
+  .admin-bank-page .admin-bank-create-modal .admin-bank-edit-classification{grid-template-columns:1fr}
+  .admin-bank-page .admin-bank-create-modal .admin-bank-edit-classification label:last-child{grid-column:auto}
+}
