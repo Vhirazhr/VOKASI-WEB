@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {CalendarDays,CheckCircle2,Clock3,LogOut,Mail,Plus,RefreshCw,Search,Send,ShieldCheck,ShieldOff,UserRound,Users,X} from 'lucide-react';
+import {CalendarDays,CheckCircle2,Clock3,LogOut,Mail,Plus,RefreshCw,Search,Send,ShieldCheck,ShieldOff,UserRound,Users,X,PenLine,Trash2,LockKeyhole,UserCheck,UserX,Crown} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {supabase} from '@/lib/supabase';
@@ -19,6 +19,7 @@ type Administrator={
  last_sign_in_at:string|null;
  email_verified:boolean;
  is_current:boolean;
+ access_role:'super_admin'|'admin';
 };
 
 const displayDate=(value:string|null,includeTime=false)=>{
@@ -48,6 +49,11 @@ export default function AdminSettingsPage(){
  const [inviting,setInviting]=useState(false);
  const [inviteIssue,setInviteIssue]=useState('');
  const [inviteSuccess,setInviteSuccess]=useState('');
+ const [editMember,setEditMember]=useState<Administrator|null>(null);
+ const [editName,setEditName]=useState('');
+ const [editIssue,setEditIssue]=useState('');
+ const [managing,setManaging]=useState(false);
+ const [manageNotice,setManageNotice]=useState('');
 
  useEffect(()=>{
   if(loading||error)return;
@@ -74,19 +80,19 @@ export default function AdminSettingsPage(){
  },[loading,error,refreshKey]);
 
  useEffect(()=>{
-  if(!createOpen)return;
+  if(!createOpen&&!editMember)return;
   const html=document.documentElement,body=document.body;
   const prevHtml=html.style.overflow,prevBody=body.style.overflow;
   html.style.overflow='hidden';body.style.overflow='hidden';
   const onKey=(event:KeyboardEvent)=>{
-   if(event.key==='Escape'&&!inviting)setCreateOpen(false);
+   if(event.key==='Escape'&&!inviting&&!managing){setCreateOpen(false);setEditMember(null);}
   };
   window.addEventListener('keydown',onKey);
   return()=>{
    html.style.overflow=prevHtml;body.style.overflow=prevBody;
    window.removeEventListener('keydown',onKey);
   };
- },[createOpen,inviting]);
+ },[createOpen,inviting,editMember,managing]);
 
  function openCreate(){
   setInviteName('');setInviteEmail('');setInviteIssue('');setCreateOpen(true);
@@ -117,6 +123,37 @@ export default function AdminSettingsPage(){
    setBusy(true);setRefreshKey(v=>v+1);
   }catch(e){setInviteIssue(e instanceof Error?e.message:'Gagal mengundang administrator.');}
   finally{setInviting(false);}
+ }
+
+ const currentAdmin=members.find(member=>member.user_id===accountId);
+ const isSuperAdmin=currentAdmin?.access_role==='super_admin'&&currentAdmin.is_active;
+
+ function openEdit(member:Administrator){
+  if(!isSuperAdmin||member.access_role==='super_admin'||managing)return;
+  setEditMember(member);setEditName(member.display_name);setEditIssue('');
+ }
+ async function changeAdmin(member:Administrator,action:'edit'|'activate'|'deactivate'|'remove',name?:string){
+  if(!isSuperAdmin||managing||member.access_role==='super_admin'||member.user_id===accountId)return;
+  if(action==='remove'&&!window.confirm('Hapus hak akses administrator '+member.email+'? Akun login dan riwayat tidak ikut dihapus.'))return;
+  if(action==='deactivate'&&!window.confirm('Nonaktifkan akses admin '+member.email+'?'))return;
+  setManaging(true);setEditIssue('');setManageNotice('');
+  try{
+   const {error:changeError}=await supabase().rpc('vokasi_super_admin_manage_account',{
+    p_target:member.user_id,p_action:action,p_display_name:action==='edit'?name||'':null
+   });
+   if(changeError)throw changeError;
+   setManageNotice(action==='remove'?'Akses administrator dicabut.':action==='edit'?'Profil administrator diperbarui.':action==='activate'?'Akun admin diaktifkan.':'Akun admin dinonaktifkan.');
+   setEditMember(null);
+   setBusy(true);setRefreshKey(value=>value+1);
+  }catch(e){
+   const message=e instanceof Error?e.message:'Gagal mengubah data administrator.';
+   if(editMember)setEditIssue(message);else setIssue(message);
+  }finally{setManaging(false);}
+ }
+ async function submitEdit(event:React.FormEvent){
+  event.preventDefault();
+  if(!editMember)return;
+  await changeAdmin(editMember,'edit',editName.trim());
  }
 
  const filtered=useMemo(()=>{
@@ -157,10 +194,11 @@ export default function AdminSettingsPage(){
      <div><span className="section-kicker">PENGELOLAAN AKSES</span><h2 id="admin-directory-title">Daftar administrator</h2><p>Administrator yang tercatat pada sistem sekolah, termasuk akun yang sedang digunakan.</p></div>
      <div className="admin-settings-heading-actions">
       <button type="button" className="admin-settings-refresh" onClick={refresh} disabled={busy}><RefreshCw size={16}/>{busy?'Memuat...':'Segarkan data'}</button>
-      <button type="button" className="admin-settings-add-button" onClick={openCreate}><Plus size={17}/> Buat Admin Baru</button>
+      {isSuperAdmin&&<button type="button" className="admin-settings-add-button" onClick={openCreate}><Plus size={17}/> Buat Admin Baru</button>}
      </div>
     </div>
     {inviteSuccess&&<div className="admin-settings-invite-success" role="status"><Send size={17}/>{inviteSuccess}</div>}
+    {manageNotice&&<div className="admin-settings-invite-success" role="status"><CheckCircle2 size={17}/>{manageNotice}</div>}
     <div className="admin-settings-directory-tools">
      <label className="admin-settings-search"><Search size={17}/><input value={query} onChange={event=>setQuery(event.target.value)} aria-label="Cari administrator" placeholder="Cari nama, email, atau status akun..."/></label>
      <span className="admin-settings-count">{busy?'—':filtered.length} admin</span>
@@ -173,7 +211,7 @@ export default function AdminSettingsPage(){
        <div className="admin-settings-admin-main">
         <span className="admin-settings-person-icon"><ShieldCheck size={21}/></span>
         <div className="admin-settings-admin-identity">
-         <div className="admin-settings-admin-name"><strong>{member.display_name||'Administrator'}</strong>{member.user_id===accountId&&<span className="admin-settings-self-tag">Anda</span>}</div>
+         <div className="admin-settings-admin-name"><strong>{member.display_name||'Administrator'}</strong>{member.user_id===accountId&&<span className="admin-settings-self-tag">Anda</span>}{member.access_role==='super_admin'&&<span className="admin-settings-role-tag"><Crown size={12}/> Super Admin</span>}</div>
          <span className="admin-settings-admin-email"><Mail size={13}/>{member.email||'Email tidak tersedia'}</span>
         </div>
         <span className={'admin-settings-access '+(member.access_status==='Aktif'?'enabled':'restricted')}>
@@ -182,17 +220,41 @@ export default function AdminSettingsPage(){
         </span>
        </div>
        <div className="admin-settings-admin-meta">
-        <div><small>Hak akses</small><strong>Administrator sekolah</strong></div>
+        <div><small>Hak akses</small><strong>{member.access_role==='super_admin'?'Seluruh fitur & kelola admin':'Operasional sekolah'}</strong></div>
         <div><small>Terdaftar sejak</small><strong><CalendarDays size={13}/>{displayDate(member.joined_at)}</strong></div>
         <div><small>Terakhir login</small><strong><Clock3 size={13}/>{displayDate(member.last_sign_in_at,true)}</strong></div>
        </div>
        {member.access_status==='Menunggu aktivasi'&&<p className="admin-settings-verify-note">Menunggu penerima undangan membuat kata sandi.</p>}
        {!member.email_verified&&member.access_status!=='Menunggu aktivasi'&&<p className="admin-settings-verify-note">Email akun belum terverifikasi.</p>}
+       {isSuperAdmin&&member.access_role==='admin'&&<div className="admin-settings-admin-actions">
+        <button type="button" disabled={managing} onClick={()=>openEdit(member)}><PenLine size={14}/> Edit</button>
+        <button type="button" disabled={managing} onClick={()=>void changeAdmin(member,member.is_active?'deactivate':'activate')} className={member.is_active?'admin-settings-stop':''}>{member.is_active?<UserX size={14}/>:<UserCheck size={14}/>} {member.is_active?'Nonaktifkan':'Aktifkan'}</button>
+        <button type="button" className="admin-settings-delete" disabled={managing} onClick={()=>void changeAdmin(member,'remove')}><Trash2 size={14}/> Hapus akses</button>
+       </div>}
       </article>)}
      </div>
     }
    </section>
+   <section className="admin-settings-panel admin-settings-permissions" aria-label="Hak akses administrator">
+    <div className="admin-settings-permission-heading"><LockKeyhole size={21}/><div><h2>Hak akses administrator</h2><p>Pembagian wewenang akun di VOKASI-WEB.</p></div></div>
+    <div className="admin-settings-permission-grid">
+     <div><Crown size={20}/><strong>Super Admin</strong><p>Akses seluruh fitur sekolah, termasuk membuat, mengedit, menonaktifkan, dan mencabut akses administrator.</p></div>
+     <div><ShieldCheck size={20}/><strong>Admin</strong><p>Mengelola kelas, siswa, bank soal, analitik, dan log sekolah. Tidak dapat mengatur akun administrator.</p></div>
+    </div>
+   </section>
 
+   {editMember&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!managing)setEditMember(null);}}>
+    <section role="dialog" aria-modal="true" aria-labelledby="edit-admin-title" className="admin-modal-card admin-settings-invite-modal" onMouseDown={event=>event.stopPropagation()}>
+     <header className="admin-modal-top admin-settings-invite-heading"><div><span className="section-kicker">MANAJEMEN ADMINISTRATOR</span><h2 id="edit-admin-title">Edit Administrator</h2><p>Perbarui nama dan lihat status hak akses.</p></div><button type="button" aria-label="Tutup editor admin" onClick={()=>setEditMember(null)} disabled={managing}><X size={19}/></button></header>
+     <form className="admin-settings-invite-form" onSubmit={event=>void submitEdit(event)}>
+      <label>Nama lengkap<input autoFocus required minLength={3} maxLength={100} value={editName} onChange={event=>setEditName(event.target.value)} disabled={managing}/></label>
+      <label>Email administrator<input value={editMember.email} readOnly/></label>
+      <div className="admin-settings-edit-role"><ShieldCheck size={17}/><span>Hak akses: <b>Admin</b> · {editMember.is_active?'Aktif':'Nonaktif'}</span></div>
+      {editIssue&&<div className="alert danger" role="alert">{editIssue}</div>}
+      <footer className="admin-settings-invite-actions"><button type="button" className="btn secondary small" disabled={managing} onClick={()=>setEditMember(null)}>Batal</button><button type="submit" className="btn primary small" disabled={managing}>{managing?'Menyimpan...':'Simpan perubahan'}</button></footer>
+     </form>
+    </section>
+   </div>}
    {createOpen&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!inviting)setCreateOpen(false);}}>
     <section role="dialog" aria-modal="true" aria-labelledby="invite-admin-title" className="admin-modal-card admin-settings-invite-modal" onMouseDown={event=>event.stopPropagation()}>
      <header className="admin-modal-top admin-settings-invite-heading">
