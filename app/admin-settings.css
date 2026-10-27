@@ -206,3 +206,26 @@
 .admin-activation-error{background:#fff0f1;color:#ae4559}
 .admin-activation-success{display:flex;align-items:center;gap:8px;background:#e8f6ee;color:#247a53}
 .admin-activation-note{background:#eef5ff;color:#5276a5}
+
+
+/* Super Admin: rights and safe CRUD controls in Pengaturan. */
+.admin-settings-role-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border:1px solid #c5d9ff;border-radius:99px;background:#e7f0ff;color:#2c63ba;font-size:9px;font-weight:800}
+.admin-settings-role-tag svg{color:#3870d4}
+.admin-settings-admin-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid #e7eef8}
+.admin-settings-admin-actions button{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #d6e4f8;border-radius:9px;background:#f1f6ff;color:#3266b5;min-height:35px;padding:0 11px;font-size:10px;font-weight:800;cursor:pointer}
+.admin-settings-admin-actions button:hover:not(:disabled){background:#e4efff}
+.admin-settings-admin-actions button:disabled{opacity:.5;cursor:not-allowed}
+.admin-settings-admin-actions button.admin-settings-stop{background:#fff8ed;border-color:#eedab5;color:#a77530}
+.admin-settings-admin-actions button.admin-settings-delete{margin-left:auto;background:#fff2f4;border-color:#f1cdd4;color:#b44d63}
+.admin-settings-admin-actions button.admin-settings-delete:hover{background:#ffe6eb}
+.admin-settings-permission-heading{display:flex;align-items:center;gap:11px;color:#3572ce;margin-bottom:16px}
+.admin-settings-permission-heading h2{margin:0 0 5px;color:#25507f;font-size:18px}
+.admin-settings-permission-heading p{margin:0;font-size:11px;color:#8397b2}
+.admin-settings-permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.admin-settings-permission-grid>div{display:grid;grid-template-columns:27px 1fr;column-gap:10px;row-gap:6px;align-content:start;padding:16px;border:1px solid #dce9f9;border-radius:12px;background:#f8fbff}
+.admin-settings-permission-grid svg{grid-row:span 2;color:#326fd1}
+.admin-settings-permission-grid strong{font-size:12px;color:#295581}
+.admin-settings-permission-grid p{grid-column:2;margin:0;font-size:11px;line-height:1.7;color:#7290ae}
+.admin-settings-edit-role{display:flex;align-items:center;gap:9px;padding:12px;border-radius:10px;background:#f2f7ff;color:#5176a9;font-size:11px}
+.admin-settings-edit-role svg{flex:none;color:#3671c8}
+@media(max-width:620px){.admin-settings-permission-grid{grid-template-columns:1fr}.admin-settings-admin-actions button.admin-settings-delete{margin-left:0}}
