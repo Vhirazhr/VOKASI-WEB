@@ -28,8 +28,8 @@ Deno.serve(async(req:Request)=>{
  if(identityError||!identity.user)return json(401,{error:'Sesi administrator tidak valid.'});
  const service=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
  const {data:admin,error:adminError}=await service.from('school_admins')
-  .select('user_id').eq('user_id',identity.user.id).eq('is_active',true).maybeSingle();
- if(adminError||!admin)return json(403,{error:'Hanya administrator aktif yang boleh menambah admin.'});
+  .select('user_id,access_role').eq('user_id',identity.user.id).eq('is_active',true).eq('access_role','super_admin').maybeSingle();
+ if(adminError||!admin)return json(403,{error:'Hanya Super Admin yang boleh membuat administrator baru.'});
 
  let incoming:unknown;
  try{incoming=await req.json();}catch{return json(400,{error:'Data formulir tidak valid.'});}
