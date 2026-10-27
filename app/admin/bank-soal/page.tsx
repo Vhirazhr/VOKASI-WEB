@@ -81,7 +81,7 @@ export default function AdminBankPage(){
         </div></td>
        </tr>)}</tbody>
       </table>
-     </div>
+     </div>}
     <div className="admin-workspace-footer"><span>{filtered.length} soal sesuai filter</span><div><button type="button" onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={activePage===0}>Sebelumnya</button><span>{activePage+1} / {pages}</span><button type="button" onClick={()=>setPage(p=>p+1)} disabled={activePage>=pages-1}>Berikutnya</button></div></div>
    </section>
    
