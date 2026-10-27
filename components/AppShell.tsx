@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Bell, BookOpen, BarChart3, ChartColumnIncreasing, GraduationCap, History, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2 } from 'lucide-react';
+import { Bell, BookOpen, BarChart3, GraduationCap, History, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2 } from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import type { ReactNode } from 'react';
 import '@/app/school-shell.css';
@@ -47,7 +47,6 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
     {href:'/admin/kelas',label:'Kelas & jurusan',icon:School2},
     {href:'/admin/bank-soal',label:'Bank soal',icon:BookOpen},
     {href:'/admin/analitik',label:'Analitik',icon:BarChart3},
-    {href:'/admin#hasil',label:'Nilai & laporan',icon:ChartColumnIncreasing},
     {href:'/admin/pengaturan',label:'Pengaturan',icon:Settings}
   ];
   const items=isAdmin?adminLinks:studentLinks;
