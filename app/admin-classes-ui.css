@@ -205,3 +205,34 @@
 @media(prefers-reduced-motion:reduce) {
   .admin-classes-page .admin-class-card {transition:none;transform:none!important;}
 }
+
+/* Class management: keep the directory open, move creation to a spacious popup. */
+.admin-classes-page .admin-classes-list-heading .admin-classes-heading-actions{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.admin-classes-page .admin-classes-list-heading .admin-classes-heading-actions>span{padding:8px 12px;border:1px solid #dce7f7;border-radius:99px;background:#f1f6ff;color:#3d6caa;font-size:10px;font-weight:800}
+.admin-classes-page .admin-class-manage-card{display:flex;flex-direction:column;align-items:stretch;text-align:left}
+.admin-classes-page .admin-class-manage-card .admin-class-icon{flex:none}
+.admin-classes-page .admin-class-manage-card .admin-class-major{flex:1}
+.admin-classes-page .admin-class-card-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;border-top:1px solid #e7eef9;margin-top:12px;padding-top:14px}
+.admin-classes-page .admin-class-card-actions button{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 10px;min-height:34px;border:1px solid #d9e6f9;border-radius:9px;background:#f3f7ff;color:#2f67b6;font-size:10px;font-weight:800}
+.admin-classes-page .admin-class-card-actions button:hover{background:#e5f0ff}
+.admin-classes-page .admin-class-card-actions button.danger{margin-left:auto;background:#fff6f6;border-color:#f2d9dd;color:#bd5a65}
+.admin-classes-page .admin-class-card-actions button:disabled{opacity:.38;cursor:not-allowed}
+.admin-classes-page .admin-modal-card.admin-class-form-modal{width:min(620px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 32px);overflow:auto;padding:30px 32px}
+.admin-classes-page .admin-class-form-modal .admin-modal-top{margin-bottom:21px}
+.admin-classes-page .admin-class-form-modal .admin-modal-top h2{margin:7px 0;font-size:23px}
+.admin-classes-page .admin-class-form-modal .admin-modal-top p{margin:0;font-size:11px;color:#7e93b3}
+.admin-classes-page .admin-class-modal-form{display:grid;gap:17px}
+.admin-classes-page .admin-class-modal-form>label:not(.admin-class-manual-toggle),.admin-classes-page .admin-class-form-row label{display:grid;gap:8px;min-width:0;color:#40638c;font-size:11px;font-weight:800}
+.admin-classes-page .admin-class-modal-form :is(select,input:not([type=checkbox])){display:block;width:100%;height:46px;border:1px solid #d4e2f4;border-radius:11px;background:#fbfdff;padding:0 13px;color:#294f7f;font-size:12px;font-weight:700;min-width:0}
+.admin-classes-page .admin-class-modal-form input[readonly]{background:#eff5ff;font-weight:800;color:#315f9f}
+.admin-classes-page .admin-class-form-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.admin-classes-page .admin-class-manual-toggle{display:flex;align-items:center;gap:9px;color:#4875ac;font-size:11px;font-weight:750}
+.admin-classes-page .admin-class-manual-toggle input{accent-color:#3268e5}
+.admin-classes-page .admin-class-guard-note{padding:12px;border-radius:10px;border:1px solid #d7e6fa;background:#f1f6ff;color:#5f80a5;font-size:11px;line-height:1.7;margin:0}
+.admin-classes-page .admin-class-modal-actions{display:flex;justify-content:flex-end;gap:9px;border-top:1px solid #e7eef8;padding-top:18px;margin-top:4px}
+.admin-classes-page .admin-class-modal-actions .btn{min-height:42px;padding:0 17px}
+.admin-classes-page .admin-modal-card.admin-class-delete-modal{width:min(470px,calc(100vw - 32px));max-width:none}
+.admin-classes-page .admin-class-delete-modal h2{margin:12px 0}
+.admin-classes-page .admin-class-delete-modal p{color:#6b86a9;font-size:12px;line-height:1.7}
+.admin-classes-page .admin-class-confirm-delete.btn.primary{background:#bd5364}
+@media(max-width:620px){.admin-classes-page .admin-classes-list-heading{align-items:flex-start}.admin-classes-page .admin-classes-list-heading .admin-classes-heading-actions{justify-content:flex-end}.admin-classes-page .admin-modal-card.admin-class-form-modal{padding:22px 19px}.admin-classes-page .admin-class-form-row{grid-template-columns:1fr}}
