@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {CalendarDays,CheckCircle2,Clock3,LogOut,Mail,RefreshCw,Search,ShieldCheck,ShieldOff,UserRound,Users} from 'lucide-react';
+import {CalendarDays,CheckCircle2,Clock3,LogOut,Mail,Plus,RefreshCw,Search,Send,ShieldCheck,ShieldOff,UserRound,Users,X} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {supabase} from '@/lib/supabase';
@@ -42,6 +42,12 @@ export default function AdminSettingsPage(){
  const [query,setQuery]=useState('');
  const [refreshKey,setRefreshKey]=useState(0);
  const [signingOut,setSigningOut]=useState(false);
+ const [createOpen,setCreateOpen]=useState(false);
+ const [inviteName,setInviteName]=useState('');
+ const [inviteEmail,setInviteEmail]=useState('');
+ const [inviting,setInviting]=useState(false);
+ const [inviteIssue,setInviteIssue]=useState('');
+ const [inviteSuccess,setInviteSuccess]=useState('');
 
  useEffect(()=>{
   if(loading||error)return;
@@ -66,6 +72,52 @@ export default function AdminSettingsPage(){
   void load();
   return()=>{active=false};
  },[loading,error,refreshKey]);
+
+ useEffect(()=>{
+  if(!createOpen)return;
+  const html=document.documentElement,body=document.body;
+  const prevHtml=html.style.overflow,prevBody=body.style.overflow;
+  html.style.overflow='hidden';body.style.overflow='hidden';
+  const onKey=(event:KeyboardEvent)=>{
+   if(event.key==='Escape'&&!inviting)setCreateOpen(false);
+  };
+  window.addEventListener('keydown',onKey);
+  return()=>{
+   html.style.overflow=prevHtml;body.style.overflow=prevBody;
+   window.removeEventListener('keydown',onKey);
+  };
+ },[createOpen,inviting]);
+
+ function openCreate(){
+  setInviteName('');setInviteEmail('');setInviteIssue('');setCreateOpen(true);
+ }
+ async function inviteAdmin(event:React.FormEvent<HTMLFormElement>){
+  event.preventDefault();
+  if(inviting)return;
+  const displayName=inviteName.trim().replace(/\\s+/g,' ');
+  const destination=inviteEmail.trim().toLowerCase();
+  if(displayName.length<3||displayName.length>100){setInviteIssue('Isi nama lengkap minimal 3 karakter.');return;}
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(destination)){setInviteIssue('Masukkan alamat email yang valid.');return;}
+  setInviting(true);setInviteIssue('');
+  try{
+   const {data,error:inviteError}=await supabase().functions.invoke('invite-school-admin',{
+    body:{displayName,email:destination}
+   });
+   if(inviteError){
+    let message=inviteError.message||'Tidak dapat mengirim undangan.';
+    if(inviteError.context instanceof Response){
+     const payload=await inviteError.context.clone().json().catch(()=>null);
+     if(payload&&typeof payload.error==='string')message=payload.error;
+    }
+    throw new Error(message);
+   }
+   if(!data?.ok)throw new Error('Undangan tidak berhasil dibuat. Silakan coba lagi.');
+   setInviteSuccess(data?.warning?destination+' · '+data.warning:'Undangan admin dikirim ke '+destination+'.');
+   setCreateOpen(false);
+   setBusy(true);setRefreshKey(v=>v+1);
+  }catch(e){setInviteIssue(e instanceof Error?e.message:'Gagal mengundang administrator.');}
+  finally{setInviting(false);}
+ }
 
  const filtered=useMemo(()=>{
   const text=query.trim().toLocaleLowerCase('id-ID');
@@ -103,8 +155,12 @@ export default function AdminSettingsPage(){
    <section className="admin-settings-panel admin-settings-directory" aria-labelledby="admin-directory-title">
     <div className="admin-settings-directory-heading">
      <div><span className="section-kicker">PENGELOLAAN AKSES</span><h2 id="admin-directory-title">Daftar administrator</h2><p>Administrator yang tercatat pada sistem sekolah, termasuk akun yang sedang digunakan.</p></div>
-     <button type="button" className="admin-settings-refresh" onClick={refresh} disabled={busy}><RefreshCw size={16}/>{busy?'Memuat...':'Segarkan data'}</button>
+     <div className="admin-settings-heading-actions">
+      <button type="button" className="admin-settings-refresh" onClick={refresh} disabled={busy}><RefreshCw size={16}/>{busy?'Memuat...':'Segarkan data'}</button>
+      <button type="button" className="admin-settings-add-button" onClick={openCreate}><Plus size={17}/> Buat Admin Baru</button>
+     </div>
     </div>
+    {inviteSuccess&&<div className="admin-settings-invite-success" role="status"><Send size={17}/>{inviteSuccess}</div>}
     <div className="admin-settings-directory-tools">
      <label className="admin-settings-search"><Search size={17}/><input value={query} onChange={event=>setQuery(event.target.value)} aria-label="Cari administrator" placeholder="Cari nama, email, atau status akun..."/></label>
      <span className="admin-settings-count">{busy?'—':filtered.length} admin</span>
@@ -130,13 +186,31 @@ export default function AdminSettingsPage(){
         <div><small>Terdaftar sejak</small><strong><CalendarDays size={13}/>{displayDate(member.joined_at)}</strong></div>
         <div><small>Terakhir login</small><strong><Clock3 size={13}/>{displayDate(member.last_sign_in_at,true)}</strong></div>
        </div>
-       {!member.email_verified&&<p className="admin-settings-verify-note">Email akun belum terverifikasi.</p>}
+       {member.access_status==='Menunggu aktivasi'&&<p className="admin-settings-verify-note">Menunggu penerima undangan membuat kata sandi.</p>}
+       {!member.email_verified&&member.access_status!=='Menunggu aktivasi'&&<p className="admin-settings-verify-note">Email akun belum terverifikasi.</p>}
       </article>)}
      </div>
     }
-    <p className="admin-settings-access-note">Status aktif berarti akun memiliki izin administrator, bukan berarti sedang online. Data administrator hanya dapat dilihat oleh admin sekolah aktif.</p>
    </section>
 
+   {createOpen&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!inviting)setCreateOpen(false);}}>
+    <section role="dialog" aria-modal="true" aria-labelledby="invite-admin-title" className="admin-modal-card admin-settings-invite-modal" onMouseDown={event=>event.stopPropagation()}>
+     <header className="admin-modal-top admin-settings-invite-heading">
+      <div><span className="section-kicker">MANAJEMEN ADMINISTRATOR</span><h2 id="invite-admin-title">Buat Admin Baru</h2><p>Kirim undangan agar administrator baru dapat mengaktifkan akunnya.</p></div>
+      <button type="button" onClick={()=>setCreateOpen(false)} disabled={inviting} aria-label="Tutup formulir"><X size={19}/></button>
+     </header>
+     <form className="admin-settings-invite-form" onSubmit={event=>void inviteAdmin(event)}>
+      <label>Nama lengkap administrator<input autoFocus required minLength={3} maxLength={100} autoComplete="name" placeholder="Contoh: Budi Santoso" value={inviteName} onChange={event=>setInviteName(event.target.value)} disabled={inviting}/></label>
+      <label>Email administrator<input required type="email" maxLength={254} autoComplete="email" placeholder="admin@sekolah.sch.id" value={inviteEmail} onChange={event=>setInviteEmail(event.target.value)} disabled={inviting}/></label>
+      <div className="admin-settings-invite-info"><Mail size={17}/><span>Undangan dikirim ke alamat email di atas. Penerima membuat kata sandi sendiri melalui tautan aktivasi.</span></div>
+      {inviteIssue&&<div className="alert danger" role="alert">{inviteIssue}</div>}
+      <footer className="admin-settings-invite-actions">
+       <button className="btn secondary small" type="button" onClick={()=>setCreateOpen(false)} disabled={inviting}>Batal</button>
+       <button className="btn primary small" type="submit" disabled={inviting}><Send size={15}/>{inviting?'Mengirim...':'Kirim Undangan'}</button>
+      </footer>
+     </form>
+    </section>
+   </div>}
    <section className="admin-settings-panel admin-settings-current" aria-labelledby="admin-settings-session-title">
     <div className="admin-settings-section-heading"><ShieldCheck size={21}/><div><h2 id="admin-settings-session-title">Akun yang sedang digunakan</h2><p>Informasi sesi administrator di perangkat ini.</p></div></div>
     <div className="admin-settings-account">
