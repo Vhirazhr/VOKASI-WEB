@@ -203,7 +203,7 @@
 .vkw-hero-bottom > p {
   text-transform: uppercase;
   position: absolute;
-  bottom: clamp(30px, 5svh, 58px);
+  bottom: clamp(48px, 8svh, 88px);
   left: 5%;
   width: 90%;
   font-size: clamp(12px, 1.1vw, 16px);
@@ -1313,6 +1313,9 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  -webkit-text-stroke: .55px #103b62;
+  filter: drop-shadow(0 3px 0 rgb(4 29 56 / 12%))
+    drop-shadow(0 10px 12px rgb(4 29 56 / 22%));
 }
 .vkw-hero-bottom > p {
   display: flex;
@@ -1326,10 +1329,11 @@
 }
 .vkw-hero-bottom > p::before, .vkw-hero-bottom > p::after {
   content: "";
-  width: clamp(24px, 4vw, 64px);
-  height: 1px;
+  width: clamp(30px, 5vw, 76px);
+  height: 2px;
   flex-shrink: 0;
-  background: #173c6266;
+  background: #173c62b3;
+  border-radius: 2px;
 }
 .vkw-brand {
   font-size: 22px;
@@ -1366,12 +1370,14 @@
   .vkw-nav nav a { padding-inline: 3px; }
   .vkw-page .vkw-nav-login { font-size: 12px; }
   .vkw-hero h1 { width: 94%; font-size: clamp(38px, 9vw, 58px); }
-  .vkw-hero-bottom > p { font-size: 11px; letter-spacing: .06em; gap: 10px; }
-  .vkw-hero-bottom > p::before, .vkw-hero-bottom > p::after { display: none; }
+  .vkw-hero-bottom > p { font-size: clamp(9px, 2.6vw, 11px); letter-spacing: .06em; gap: 8px; }
+  .vkw-hero-bottom > p::before, .vkw-hero-bottom > p::after { width: clamp(12px, 4vw, 24px); }
+  .vkw-hero h1 span { -webkit-text-stroke-width: .35px; }
 }
 @media (max-height: 550px) and (min-width: 701px) {
   .vkw-hero h1 { font-size: 58px; }
 }
 @media (forced-colors: active) {
-  .vkw-hero h1 span { background: none; color: CanvasText; }
+  .vkw-hero h1 span { background: none; color: CanvasText; -webkit-text-stroke: 0; filter: none; }
+  .vkw-hero-bottom > p::before, .vkw-hero-bottom > p::after { background: CanvasText; }
 }
