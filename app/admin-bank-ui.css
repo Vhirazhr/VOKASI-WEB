@@ -14,10 +14,6 @@
 @media(max-width:700px){.admin-bank-page .admin-data-title{align-items:flex-start;flex-direction:column}.admin-bank-page .admin-directory-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-bank-page .admin-directory-controls .admin-directory-search{grid-column:1/-1}.admin-bank-page .admin-bank-actions{width:100%}}
 @media(max-width:430px){.admin-bank-page .admin-directory-controls{grid-template-columns:1fr}.admin-bank-page .admin-directory-controls .admin-directory-search{grid-column:auto}.admin-bank-page .admin-bank-actions .btn{flex:1}}
 
-.admin-bank-row-actions{display:flex;align-items:center;gap:7px;white-space:nowrap}
-.admin-bank-edit-button{display:inline-flex;align-items:center;gap:5px;padding:9px 11px;border-radius:9px;border:1px solid #d4e3f7;background:white;color:#2d63c1;font-size:11px;font-weight:800;cursor:pointer}
-.admin-bank-edit-button:hover{background:#f0f6ff}
-.admin-bank-edit-button:disabled{opacity:.5}
 .admin-bank-edit-modal{width:min(100%,670px);display:grid;gap:13px}
 .admin-bank-edit-modal h2{margin:7px 0 0}
 .admin-bank-edit-modal>label{display:grid;gap:7px;color:#365d8a;font-size:12px;font-weight:800}
@@ -30,3 +26,104 @@
 .admin-bank-edit-option small{font-size:10px;color:#5679aa;white-space:nowrap}
 .admin-bank-edit-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:5px}
 @media(max-width:550px){.admin-bank-edit-option{flex-wrap:wrap}.admin-bank-edit-option small{width:100%}}
+
+/* Compact, balanced Bank Soal directory table, scoped to this page only. */
+.admin-bank-page .admin-workspace-table-wrap {
+  max-width:100%;
+  overflow-x:auto;
+  border:1px solid #e2eaf6;
+  border-radius:13px;
+  background:#fff;
+}
+.admin-bank-page .admin-workspace-table-wrap .admin-bank-table {
+  width:100%;
+  min-width:950px;
+  table-layout:fixed;
+  border-collapse:separate;
+  border-spacing:0;
+}
+.admin-bank-table .bank-width-id{width:75px}
+.admin-bank-table .bank-width-category{width:165px}
+.admin-bank-table .bank-width-code{width:185px}
+.admin-bank-table .bank-width-question{width:auto}
+.admin-bank-table .bank-width-time{width:105px}
+.admin-bank-table .bank-width-actions{width:190px}
+.admin-bank-page .admin-workspace-table-wrap .admin-bank-table th {
+  padding:14px 15px;
+  background:#f2f6fc;
+  border-bottom:1px solid #e2eaf6;
+  color:#617da2;
+  font-size:10px;
+  letter-spacing:.035em;
+  line-height:1.4;
+  font-weight:800;
+  text-align:left;
+  vertical-align:middle;
+}
+.admin-bank-page .admin-workspace-table-wrap .admin-bank-table td {
+  padding:12px 15px;
+  height:62px;
+  border-bottom:1px solid #eaf0f8;
+  color:#607c9f;
+  font-size:11px;
+  line-height:1.5;
+  vertical-align:middle;
+  text-align:left;
+}
+.admin-bank-page .admin-workspace-table-wrap .admin-bank-table tbody tr:last-child td{border-bottom:0}
+.admin-bank-page .admin-workspace-table-wrap .admin-bank-table tbody tr:hover td{background:#fafdff}
+.admin-bank-table .bank-cell-id b{font-weight:800;font-size:12px;color:#234872}
+.admin-bank-category {
+  display:inline-block;
+  max-width:100%;
+  padding:6px 9px;
+  border-radius:7px;
+  background:#f0f5ff;
+  color:#376eae;
+  font-size:10px;
+  font-weight:750;
+  line-height:1.3;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  vertical-align:middle;
+}
+.admin-bank-code{display:block;color:#6380a4;font-weight:650;font-size:10px;overflow-wrap:anywhere}
+.admin-bank-question {
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  overflow:hidden;
+  color:#385b86;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.55;
+  overflow-wrap:anywhere;
+}
+.admin-bank-table .bank-cell-time{white-space:nowrap;font-variant-numeric:tabular-nums}
+.admin-bank-row-actions{display:flex;align-items:center;gap:7px;flex-wrap:nowrap;white-space:nowrap}
+.admin-bank-page .admin-workspace-detail,
+.admin-bank-page .admin-bank-edit-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  flex:0 0 auto;
+  min-width:75px;
+  height:35px;
+  padding:0 11px;
+  border-radius:9px;
+  font-size:11px;
+  line-height:1;
+  font-weight:800;
+  cursor:pointer;
+}
+.admin-bank-page .admin-workspace-detail{border:1px solid transparent;background:#eaf2ff;color:#2d63c1}
+.admin-bank-page .admin-bank-edit-button{border:1px solid #cddff7;background:#fff;color:#2d63c1}
+.admin-bank-page .admin-workspace-detail:hover{background:#dceaff}
+.admin-bank-page .admin-bank-edit-button:hover{background:#f0f6ff}
+.admin-bank-page .admin-bank-edit-button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:640px){
+  .admin-bank-page .admin-workspace-table-wrap .admin-bank-table{min-width:930px}
+}
