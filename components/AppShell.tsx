@@ -59,7 +59,7 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
   return <div className={'shell school-shell '+(embedMode?'shell-embed ':'')+(isAdmin?'admin-shell ':'student-shell ')+(dashboardStyle?'admin-overview-shell':'')}>
     <aside className="sidebar" aria-label={isAdmin?'Menu admin':'Menu siswa'}>
       <Link onClick={askBeforeLeave} href="/" className="brand"><span className="brand-mark">V</span><span>VOKASI<span className="brand-dot">.</span></span></Link>
-      <div className="side-label">{isAdmin?'PANEL SEKOLAH':'AREA BELAJAR'}</div>
+      <div className="side-label">{isAdmin?'PANEL SEKOLAH':'RUANG BELAJAR'}</div>
       <nav className="side-menu" aria-label="Navigasi dashboard">
         {items.map(({href,label,icon:Icon})=><Link key={href} onClick={askBeforeLeave} href={linkTo(href)} aria-current={active(href)&&!href.includes('#')?'page':undefined} className={'side-link '+(active(href)&&!href.includes('#')?'selected':'')}>
           <Icon size={19}/><span>{label}</span>
@@ -83,7 +83,7 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
             </div>
           </div>:<div className="student-header-actions">
             <div className="student-header-account" aria-label="Akun siswa yang sedang masuk">
-              <span className="student-header-avatar"><GraduationCap size={19}/></span>
+              <span className="student-header-avatar" aria-label={displayName}>{displayName.trim().split(/\s+/).slice(0,2).map(part=>part[0]).join('').toUpperCase()||'V'}</span>
               <span className="student-header-identity"><strong>{displayName}</strong><small>Siswa · SMK Negeri 1 Singosari</small></span>
             </div>
             <button type="button" className="top-logout student-header-logout" title="Keluar akun" onClick={onLogout}><LogOut size={16}/><span>Keluar</span></button>
