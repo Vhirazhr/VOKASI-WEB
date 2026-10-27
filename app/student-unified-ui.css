@@ -1277,3 +1277,72 @@
   .school-shell.student-shell .student-reference-stats .student-home-metrics .metric>div{grid-column:2;grid-row:1}
   .school-shell.student-shell .student-reference-stats .student-home-metrics .metric-foot{grid-column:2;grid-row:2}
 }
+
+
+/* Student shell chrome: fixed, quiet navigation and a compact school header. */
+.school-shell.student-shell:not(.shell-embed) .sidebar{
+  position:sticky;top:0;align-self:flex-start;width:261px;min-width:261px;height:100dvh;
+  min-height:100dvh;overflow-y:auto;overscroll-behavior:contain;padding:31px 24px 22px;
+  border-right:1px solid #e0e9f6;background:#fff;
+}
+.school-shell.student-shell .sidebar .brand{margin:0 7px 54px;font-size:21px}
+.school-shell.student-shell .sidebar .brand-mark{
+  width:39px;height:39px;border-radius:10px;background:#2874d8;box-shadow:0 7px 17px rgba(40,116,216,.2);
+}
+.school-shell.student-shell .side-label{padding:0 11px;margin-bottom:15px;color:#8ea2bc;font-size:9px;letter-spacing:.16em}
+.school-shell.student-shell .side-menu{gap:7px}
+.school-shell.student-shell .side-menu .side-link{
+  min-height:48px;padding:13px 14px;border-radius:13px;gap:13px;font-size:12px;font-weight:750;
+}
+.school-shell.student-shell .side-menu .side-link.selected{
+  position:relative;background:#e8f1ff;color:#216bd0;
+}
+.school-shell.student-shell .side-menu .side-link.selected:before{
+  content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:0 4px 4px 0;background:#2879e8;
+}
+.school-shell.student-shell .side-menu .side-link svg{flex:none;stroke-width:1.8}
+.school-shell.student-shell .side-bottom{padding-top:24px}
+.school-shell.student-shell .side-user{padding:17px 0 12px;gap:10px}
+.school-shell.student-shell .side-user .user-badge{width:38px;height:38px;border-radius:50%;background:#2879e8;color:#fff}
+.school-shell.student-shell .side-user b{max-width:155px;color:#173d68;font-size:11px}
+.school-shell.student-shell .side-user small{font-size:9px;color:#8195ad}
+.school-shell.student-shell .side-link.signout{margin-top:3px;color:#7186a2}
+.school-shell.student-shell .topbar{
+  position:relative;z-index:20;height:88px;padding:0 32px;background:#fff;
+  border-bottom:1px solid #e1eaf6;
+}
+.school-shell.student-shell .topbar-title{
+  color:#3277d6;font-size:9px;font-weight:850;letter-spacing:.15em;text-transform:uppercase;
+}
+.school-shell.student-shell .topbar small{
+  margin-top:5px;color:#173b66;font-size:18px;font-weight:800;letter-spacing:-.035em;
+}
+.school-shell.student-shell .student-header-actions{display:flex;align-items:center;gap:10px}
+.school-shell.student-shell .student-header-account{display:flex;align-items:center;gap:0}
+.school-shell.student-shell .student-header-avatar{
+  display:grid;place-items:center;width:42px;height:42px;border:0;border-radius:50%;
+  background:#2879e8;color:#fff;font-size:12px;font-weight:850;letter-spacing:.01em;
+}
+.school-shell.student-shell .student-header-identity,
+.school-shell.student-shell .student-header-logout{display:none}
+@media(max-width:1100px){
+  .school-shell.student-shell:not(.shell-embed) .sidebar{width:225px;min-width:225px;padding:27px 17px 20px}
+  .school-shell.student-shell .topbar{padding:0 24px}
+}
+@media(max-width:860px){
+  .school-shell.student-shell:not(.shell-embed) .sidebar{width:80px;min-width:80px;padding:23px 12px}
+  .school-shell.student-shell:not(.shell-embed) .sidebar .brand{margin:0 auto 36px}
+  .school-shell.student-shell:not(.shell-embed) .sidebar .brand>span:last-child,
+  .school-shell.student-shell:not(.shell-embed) .sidebar .side-label,
+  .school-shell.student-shell:not(.shell-embed) .sidebar .side-menu .side-link span,
+  .school-shell.student-shell:not(.shell-embed) .sidebar .side-user>span:last-child,
+  .school-shell.student-shell:not(.shell-embed) .sidebar .side-link.signout span{display:none}
+  .school-shell.student-shell:not(.shell-embed) .sidebar .side-menu .side-link{justify-content:center;padding:12px 9px}
+  .school-shell.student-shell:not(.shell-embed) .sidebar .side-user{justify-content:center}
+  .school-shell.student-shell:not(.shell-embed) .sidebar .side-link.signout{justify-content:center}
+}
+@media(max-width:600px){
+  .school-shell.student-shell .topbar{height:68px;padding:0 17px}
+  .school-shell.student-shell .topbar small{font-size:14px}
+  .school-shell.student-shell .student-header-avatar{width:36px;height:36px;font-size:10px}
+}
