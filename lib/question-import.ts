@@ -48,7 +48,8 @@ function textQuestions(text:string,category:string,group:QuestionGroup):Imported
  let currentOption=-1;
  const finish=()=>{
    if(!current)return;
-   current.options=Array.from({length:current.options.length},(_,i)=>current.options[i]||{text:'',image_path:null});
+   const options=current.options;
+   current.options=Array.from({length:options.length},(_,i)=>options[i]||{text:'',image_path:null});
    if(current.question.trim()||current.options.length)out.push(current);
  };
  for(const line of lines){
