@@ -144,10 +144,10 @@ export default function UnifiedQuestionImport(){
    {notice&&<div className="unified-import-feedback" role="status">{notice}</div>}
    <section className="unified-import-panel" aria-label="Unggah soal">
      <div className="unified-import-title"><div><span className="section-kicker">LANGKAH 01</span><h2>Unggah sumber soal</h2></div><Link href="/admin/bank-soal/impor/zip" className="unified-import-minilink">Impor ZIP bergambar lama</Link></div>
-     <label className="unified-import-drop"><FileUp size={25}/><strong>{reading?'Sedang membaca file...':fileName||'Pilih file atau seret berkas di sini'}</strong><span>Excel (.xlsx), Word (.docx), PDF, TXT, atau gambar PNG/JPG/WEBP · maksimal 25 MB</span>
-      <input type="file" accept=".xlsx,.docx,.pdf,.txt,.png,.jpg,.jpeg,.webp" disabled={saving||reading} onChange={e=>{void handleFile(e.target.files?.[0]);e.target.value='';}}/>
+     <label className="unified-import-drop"><FileUp size={25}/><strong>{reading?'Sedang membaca file...':fileName||'Pilih file atau seret berkas di sini'}</strong><span>Excel (.xlsx), Word (.docx), PDF, atau TXT · maksimal 25 MB</span>
+      <input type="file" accept=".xlsx,.docx,.pdf,.txt" disabled={saving||reading} onChange={e=>{void handleFile(e.target.files?.[0]);e.target.value='';}}/>
      </label>
-     <p className="unified-import-hint">Untuk dokumen teks: gunakan format <b>1. Pertanyaan</b>, lalu <b>A. Pilihan</b>, <b>B. Pilihan</b>, dan <b>Kunci: A</b>. PDF hasil scan perlu diubah ke teks. Gambar sendiri dapat menjadi soal visual setelah diisi pilihan dan kuncinya.</p>
+     <p className="unified-import-hint">Untuk dokumen teks: gunakan format <b>1. Pertanyaan</b>, lalu <b>A. Pilihan</b>, <b>B. Pilihan</b>, dan <b>Kunci: A</b>. PDF hasil scan perlu diubah ke teks. File gambar tidak dapat diimpor sendirian; lampirkan lewat editor pertanyaan.</p>
      {warnings.length>0&&<div className="unified-import-warnings">{warnings.map((w,i)=><p key={i}><ShieldAlert size={15}/>{w}</p>)}</div>}
    </section>
    <section className="unified-import-panel" aria-label="Mode impor">
