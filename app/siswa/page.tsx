@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Atom, Bell, BookOpen, Brain, Calculator, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Divide, GraduationCap, History, Image as ImageIcon, Lightbulb, Medal, Megaphone, Play, RefreshCw, Search, Shapes, ShieldCheck, Sigma, Star, Target, TrendingUp, Trophy, UserRound, Users } from 'lucide-react';
+import { ArrowRight, Atom, BookOpen, Brain, Calculator, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Divide, GraduationCap, History, Image as ImageIcon, Lightbulb, Medal, Megaphone, Play, RefreshCw, Search, Shapes, ShieldCheck, Sigma, Star, Target, TrendingUp, Trophy, UserRound, Users } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import QuizView from '@/components/QuizView';
 import ReviewHistory from '@/components/ReviewHistory';
@@ -185,7 +185,10 @@ export default function StudentPage(){
     {category!==undefined?<QuizView profile={profile} category={category} history={attempts} onQuit={()=>setCategory(undefined)} onDone={()=>{setCategory(undefined);void refresh();}}/>:
     <>
       {warning&&<div className="alert danger">{warning} <button type="button" className="link-action" onClick={()=>void refresh()}>Coba lagi</button></div>}
-      {view==='history'?<HistoryView attempts={attempts} busy={busy}/>:        <main className="student-home student-home-dashboard">
+      {view==='history'?<HistoryView attempts={attempts} busy={busy}/>:
+       view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed}/>:
+       view==='profile'?<ProfileView profile={profile} attempts={attempts} busy={busy}/>:
+        <main className="student-home student-home-dashboard">
           <div className="student-dashboard-grid">
             <div className="student-dashboard-main">
               <section className="student-featured-practice" aria-labelledby="mandatory-practice-title">
@@ -263,11 +266,8 @@ export default function StudentPage(){
               </section>
             </aside>
           </div>
-        </main>             <Link className="student-text-link" href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'}>Lihat klasemen <ArrowRight size={15}/></Link>
-            </section>
-          </div>
         </main>
-       </>}
+      }
     </>}
   </AppShell>;
 }
