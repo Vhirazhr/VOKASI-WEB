@@ -24,6 +24,15 @@ const GROUP_LABELS:Record<string,string>={
  LOGIKA:'Logika & Penalaran',
  POLA_GAMBAR:'Pola Gambar'
 };
+const MATERIAL_GROUPS:Record<string,string[]>={
+ Perkalian:['HITUNG_DASAR','HITUNG_MENENGAH','HITUNG_LANJUT'],
+ Pembagian:['HITUNG_DASAR','HITUNG_MENENGAH','HITUNG_LANJUT'],
+ 'Numerasi Campuran':['NUMERASI_CAMPURAN'],
+ 'Fisika Dasar':['FISIKA_DASAR'],
+ 'Logika dan Penalaran':['LOGIKA'],
+ 'Pola Gambar':['POLA_GAMBAR']
+};
+const EDIT_MATERIALS=Object.keys(MATERIAL_GROUPS);
 const groupLabel=(key:string)=>GROUP_LABELS[key]||key.replaceAll('_',' ').toLocaleLowerCase('id-ID').replace(/^./,c=>c.toLocaleUpperCase('id-ID'));
 
 type EditRow={source_number:number;category:string;difficulty_code:string;question:string;question_image_path:string|null;options:{text:string;image_path:string|null}[];correct_index:number;time_limit_seconds:number;explanation:string};
@@ -39,15 +48,34 @@ export default function AdminBankPage(){
   const row=data as EditRow;
   setOriginal(row);setEdit(structuredClone(row));setEditBusy(false);
  }
+ function changeEditMaterial(next:string){
+  if(!edit)return;
+  const valid=MATERIAL_GROUPS[next]||[];
+  const group=valid.includes(edit.difficulty_code)?edit.difficulty_code:valid[0];
+  if(!group||!approvedGroup(group))return;
+  setEdit({...edit,category:next,difficulty_code:group,time_limit_seconds:APPROVED_BLUEPRINT.groups[group].seconds});
+  setEditIssue('');
+ }
+ function changeEditGroup(next:string){
+  if(!edit||!approvedGroup(next)||!MATERIAL_GROUPS[edit.category]?.includes(next))return;
+  setEdit({...edit,difficulty_code:next,time_limit_seconds:APPROVED_BLUEPRINT.groups[next].seconds});
+  setEditIssue('');
+ }
  async function saveEdit(){
   if(!edit||!original)return;
   if(!edit.question.trim()&&!edit.question_image_path){setEditIssue('Isi pertanyaan atau gambar soal.');return;}
   if(edit.options.some(o=>!o.text.trim()&&!o.image_path)){setEditIssue('Setiap pilihan harus berisi teks atau gambar.');return;}
+  if(!MATERIAL_GROUPS[edit.category]?.includes(edit.difficulty_code)||!approvedGroup(edit.difficulty_code)){
+   setEditIssue('Materi dan kelompok ujian tidak sesuai.');return;
+  }
+  if(edit.difficulty_code==='POLA_GAMBAR'&&!edit.question_image_path){
+   setEditIssue('Kelompok Pola Gambar memerlukan gambar utama.');return;
+  }
   if(edit.correct_index<0||edit.correct_index>=edit.options.length){setEditIssue('Pilih kunci yang valid.');return;}
   setEditBusy(true);setEditIssue('');
   const {error:err}=await supabase().rpc('vokasi_admin_edit_published_question',{
    p_source_number:edit.source_number,p_expected:original,
-   p_change:{question:edit.question,question_image_path:edit.question_image_path,
+   p_change:{category:edit.category,difficulty_code:edit.difficulty_code,question:edit.question,question_image_path:edit.question_image_path,
     options:edit.options,correct_index:edit.correct_index,explanation:edit.explanation}
   });
   if(err){setEditIssue(err.message);setEditBusy(false);return;}
@@ -117,7 +145,22 @@ export default function AdminBankPage(){
    
    {edit&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!editBusy){setEdit(null);setOriginal(null);}}}><section className="admin-modal-card admin-bank-edit-modal" role="dialog" aria-modal="true" aria-label={'Edit soal '+edit.source_number} onMouseDown={e=>e.stopPropagation()}>
     <div className="admin-modal-top"><div><span className="section-kicker">EDIT SOAL #{edit.source_number}</span><h2>Sunting pertanyaan</h2></div><button type="button" aria-label="Tutup editor" disabled={editBusy} onClick={()=>{setEdit(null);setOriginal(null);}}>×</button></div>
-    <p className="admin-bank-edit-note">{edit.category} · {groupLabel(edit.difficulty_code)} · {edit.time_limit_seconds} detik. Kategori dan waktu tetap untuk menjaga blueprint ujian.</p>
+    <div className="admin-bank-edit-classification">
+     <label>Materi
+      <select value={edit.category} disabled={editBusy} onChange={e=>changeEditMaterial(e.target.value)}>
+       {EDIT_MATERIALS.map(name=><option key={name} value={name}>{name}</option>)}
+      </select>
+     </label>
+     <label>Kelompok ujian
+      <select value={edit.difficulty_code} disabled={editBusy} onChange={e=>changeEditGroup(e.target.value)}>
+       {(MATERIAL_GROUPS[edit.category]||[]).map(key=><option key={key} value={key}>{groupLabel(key)}</option>)}
+      </select>
+     </label>
+     <label>Waktu per soal
+      <div className="admin-bank-edit-duration">{edit.time_limit_seconds} detik <Clock3 size={15}/></div>
+     </label>
+    </div>
+    <p className="admin-bank-edit-note">Durasi otomatis mengikuti kelompok ujian. Perubahan diperiksa agar kuota ujian wajib dan latihan tetap aman.</p>
     {editIssue&&<div role="alert" className="alert danger">{editIssue}</div>}
     <label>Pertanyaan<textarea rows={3} value={edit.question} onChange={e=>setEdit({...edit,question:e.target.value})}/></label>
     {edit.question_image_path&&<p className="admin-bank-edit-note">Gambar soal yang sudah tersimpan tetap dipertahankan.</p>}
