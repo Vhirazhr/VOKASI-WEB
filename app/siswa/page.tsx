@@ -197,7 +197,7 @@ export default function StudentPage(){
               <p className="student-hero-description">{BANK_IS_PUBLISHED?'Kerjakan latihan wajib dan lihat perkembangan hasil belajarmu.':'Latihan wajib belum tersedia. Admin sekolah perlu mengaktifkan bank soal terlebih dahulu.'}</p>
               <div className="student-hero-actions">
                 <button type="button" className="student-start-button" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}>
-                  <span className="student-play-icon"><Play size={17}/></span>{BANK_IS_PUBLISHED?'Mulai latihan wajib':'Latihan belum tersedia'}<ArrowRight size={17}/>
+                  <span className="student-play-icon"><Play size={17}/></span>{BANK_IS_PUBLISHED?'Jawab soal sekarang':'Latihan belum tersedia'}<ArrowRight size={17}/>
                 </button>
                 <span className="student-hero-duration"><CalendarDays size={15}/> 100 soal <span aria-hidden="true">·</span> 30 menit</span>
               </div>
