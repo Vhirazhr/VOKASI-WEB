@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Clock3, GraduationCap, History, Medal, Play, RefreshCw, Search, ShieldCheck, Star, TrendingUp, Trophy, UserRound, Users } from 'lucide-react';
+import { ArrowRight, Atom, Bell, BookOpen, Brain, Calculator, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Divide, GraduationCap, History, Image as ImageIcon, Lightbulb, Medal, Megaphone, Play, RefreshCw, Search, Shapes, ShieldCheck, Sigma, Star, Target, TrendingUp, Trophy, UserRound, Users } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import QuizView from '@/components/QuizView';
 import ReviewHistory from '@/components/ReviewHistory';
@@ -112,6 +112,32 @@ function ProfileView({profile,attempts,busy}:{profile:StudentProfile;attempts:At
   </div>;
 }
 
+function getWibCalendarParts(){
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Jakarta',year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date());
+  return {year:Number(parts.find(p=>p.type==='year')?.value||2026),month:Number(parts.find(p=>p.type==='month')?.value||1),day:Number(parts.find(p=>p.type==='day')?.value||1)};
+}
+
+function StudentCalendar(){
+  const [cursor,setCursor]=useState(()=>{const now=getWibCalendarParts();return new Date(Date.UTC(now.year,now.month-1,1));});
+  const today=getWibCalendarParts();
+  const year=cursor.getUTCFullYear();
+  const month=cursor.getUTCMonth();
+  const firstDay=new Date(Date.UTC(year,month,1)).getUTCDay();
+  const dayCount=new Date(Date.UTC(year,month+1,0)).getUTCDate();
+  const cellCount=Math.ceil((firstDay+dayCount)/7)*7;
+  const days=Array.from({length:cellCount},(_,index)=>{const day=index-firstDay+1;return day>0&&day<=dayCount?day:null;});
+  const monthLabel=new Intl.DateTimeFormat('id-ID',{month:'long',year:'numeric',timeZone:'UTC'}).format(cursor);
+  const todayLabel=new Intl.DateTimeFormat('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Jakarta'}).format(new Date());
+  return <section className="student-aside-card student-calendar-card" aria-label="Kalender">
+    <div className="student-calendar-today"><CalendarDays size={16}/><strong>{todayLabel}</strong></div>
+    <div className="student-calendar-heading"><b>{monthLabel}</b><div><button type="button" aria-label="Bulan sebelumnya" onClick={()=>setCursor(new Date(Date.UTC(year,month-1,1)))}><ChevronLeft size={16}/></button><button type="button" aria-label="Bulan berikutnya" onClick={()=>setCursor(new Date(Date.UTC(year,month+1,1)))}><ChevronRight size={16}/></button></div></div>
+    <div className="student-calendar-grid student-calendar-weekdays">{['Min','Sen','Sel','Rab','Kam','Jum','Sab'].map(day=><span key={day}>{day}</span>)}</div>
+    <div className="student-calendar-grid student-calendar-days">{days.map((day,index)=><span key={index} className={day&&year===today.year&&month===today.month-1&&day===today.day?'is-today':''}>{day||''}</span>)}</div>
+  </section>;
+}
+
+function ClipboardListIcon(){return <div className="student-clipboard-illustration"><div className="student-clipboard-clip"/><CheckCircle2 size={17}/><CheckCircle2 size={17}/><CheckCircle2 size={17}/></div>}
+
 export default function StudentPage(){
   const pathname=usePathname();
   const view:PageView=pathname.endsWith('/riwayat')?'history':pathname.endsWith('/peringkat')?'ranking':pathname.endsWith('/profil')?'profile':'home';
@@ -159,78 +185,85 @@ export default function StudentPage(){
     {category!==undefined?<QuizView profile={profile} category={category} history={attempts} onQuit={()=>setCategory(undefined)} onDone={()=>{setCategory(undefined);void refresh();}}/>:
     <>
       {warning&&<div className="alert danger">{warning} <button type="button" className="link-action" onClick={()=>void refresh()}>Coba lagi</button></div>}
-      {view==='history'?<HistoryView attempts={attempts} busy={busy}/>:
-       view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed}/>:
-       view==='profile'?<ProfileView profile={profile} attempts={attempts} busy={busy}/>:
-       <>
-        <main className="student-home">
-          <header className="student-dashboard-intro">
-            <div className="student-dashboard-greeting">
-              <span className="section-kicker">RUANG BELAJAR</span>
-              <h1>Halo, {profile.fullName.split(' ')[0]} <span aria-hidden="true">👋</span></h1>
-              <p><GraduationCap size={16}/>{profile.className} <span aria-hidden="true">·</span> {profile.majorName}</p>
-            </div>
-            <div className="student-home-date"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID',{dateStyle:'full',timeZone:'Asia/Jakarta'}).format(new Date())}</div>
-          </header>
+      {view==='history'?<HistoryView attempts={attempts} busy={busy}/>:        <main className="student-home student-home-dashboard">
+          <div className="student-dashboard-grid">
+            <div className="student-dashboard-main">
+              <section className="student-featured-practice" aria-labelledby="mandatory-practice-title">
+                <div className="student-featured-copy">
+                  <span className="student-featured-eyebrow">RUANG BELAJAR</span>
+                  <h1>Halo, {profile.fullName.split(' ')[0]} <span aria-hidden="true">👋</span></h1>
+                  <p className="student-hero-class">{profile.className} <span aria-hidden="true">·</span> {profile.majorName}</p>
+                  <p className="student-hero-description">{BANK_IS_PUBLISHED?'Ayo lanjutkan latihanmu hari ini. Sedikit demi sedikit, kemampuanmu akan semakin baik.':bankChecking?'Memeriksa ketersediaan bank soal...':'Latihan wajib belum tersedia. Tunggu sampai admin mengaktifkan bank soal.'}</p>
+                  <button type="button" className="student-start-button" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}>
+                    <Play size={17}/>{BANK_IS_PUBLISHED?'Mulai latihan sekarang':'Latihan belum tersedia'}<ArrowRight size={17}/>
+                  </button>
+                </div>
+                <div className="student-hero-illustration" aria-hidden="true">
+                  <div className="student-illustration-float student-illustration-chart"><TrendingUp size={23}/></div>
+                  <div className="student-illustration-float student-illustration-pie"><Shapes size={22}/></div>
+                  <div className="student-illustration-books">
+                    <div className="student-book book-purple"></div>
+                    <div className="student-book book-yellow"></div>
+                    <div className="student-book book-blue"></div>
+                    <div className="student-book-pages"></div>
+                    <div className="student-graduation-cap"><GraduationCap size={52}/></div>
+                  </div>
+                  <div className="student-illustration-spark"><Star size={18}/></div>
+                </div>
+              </section>
 
-          <section className="student-featured-practice" aria-labelledby="mandatory-practice-title">
-            <div className="student-featured-copy">
-              <span className="student-featured-eyebrow"><Star size={14}/> LATIHAN UTAMA</span>
-              <h2 id="mandatory-practice-title">Latihan wajib numerasi</h2>
-              <p>{BANK_IS_PUBLISHED?'Uji pemahamanmu lewat soal numerasi bergambar. Selesaikan latihan dan lihat hasil belajarmu.':bankChecking?'Sedang memeriksa ketersediaan soal latihan...':'Latihan wajib belum tersedia. Tunggu sampai admin mengaktifkan bank soal terbaru.'}</p>
-              <div className="student-featured-meta">
-                <span><BookOpen size={16}/>100 soal</span>
-                <span><Clock3 size={16}/>30 menit</span>
-                <span><CheckCircle2 size={16}/>Nilai otomatis</span>
+              <section className="student-progress-section" aria-label="Ringkasan progres belajar">
+                <div className="student-subsection-heading"><div><h2>Ringkasanmu</h2></div><span className="student-muted-caption">Progres belajar pribadi</span></div>
+                <div className="student-home-metrics">
+                  <div className="metric"><span className="metric-icon blue"><CheckCircle2 size={19}/></span><div><small>Selesai latihan wajib</small><strong>{busy?'—':compulsory.length}</strong></div><span className="metric-foot">Total sesi tercatat</span></div>
+                  <div className="metric"><span className="metric-icon green"><TrendingUp size={19}/></span><div><small>Rata-rata nilai</small><strong>{busy?'—':average??'—'}</strong></div><span className="metric-foot">Dari latihan wajib</span></div>
+                  <div className="metric"><span className="metric-icon purple"><Trophy size={19}/></span><div><small>Total XP</small><strong>{busy?'—':attempts.reduce((sum,attempt)=>sum+attempt.earned_xp,0)}</strong></div><span className="metric-foot">Poin pengalaman</span></div>
+                  <div className="metric"><span className="metric-icon pink"><Medal size={19}/></span><div><small>Nilai terakhir</small><strong>{busy?'—':latest?.score??'—'}</strong></div><span className="metric-foot">{today?'Sudah latihan hari ini':'Belum latihan hari ini'}</span></div>
+                </div>
+              </section>
+
+              <section className="student-practice-section" aria-labelledby="practice-topics-title">
+                <div className="student-subsection-heading"><div><h2 id="practice-topics-title">Latihan mandiri</h2><p>Pilih materi yang ingin kamu latih.</p></div><span className="student-muted-caption">6 materi</span></div>
+                <div className="student-practice-grid">{categories.map((cat,i)=>{const TopicIcon=[Calculator,Divide,Sigma,Atom,Brain,ImageIcon][i%6];return <button type="button" className="student-topic-card" key={cat} disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(cat)}>
+                  <span className={'student-topic-icon c'+i}><TopicIcon size={21}/></span>
+                  <span className="student-topic-copy"><b>{cat}</b><small>{BANK_IS_PUBLISHED?'Latihan numerasi mandiri':'Menunggu bank soal aktif'}</small></span>
+                  <span className="student-topic-arrow"><ArrowRight size={17}/></span>
+                </button>;})}</div>
+              </section>
+
+              <div className="student-dashboard-feature-cards">
+                <section className="student-aside-card student-dashboard-history">
+                  <div className="student-dashboard-card-heading"><div><span className="student-card-eyebrow">LANJUTKAN BELAJAR</span><h2>Riwayat latihan</h2></div><span className="student-dashboard-card-icon blue"><History size={19}/></span></div>
+                  {busy?<div className="student-dashboard-empty">Memuat riwayat latihan...</div>:latest?<div className="student-latest-attempt"><div className="student-latest-illustration"><ClipboardListIcon/></div><div className="student-latest-detail"><b>Latihan wajib numerasi</b><span>{toDay(latest.completed_at_ms)} · {latest.question_count} soal</span><strong>Nilai {latest.score}/100</strong></div></div>:<div className="student-dashboard-empty"><BookOpen size={25}/><b>Belum ada riwayat latihan</b><span>Hasil latihanmu akan muncul di sini.</span></div>}
+                  <Link className="student-dashboard-card-link" href={embed?'/siswa/riwayat?embed=1':'/siswa/riwayat'}>Lihat riwayat <ArrowRight size={15}/></Link>
+                </section>
+
+                <section className="student-aside-card student-dashboard-rank">
+                  <div className="student-dashboard-card-heading"><div><span className="student-card-eyebrow">PRESTASI BELAJAR</span><h2>Peringkat sekolah</h2></div><span className="student-dashboard-card-icon gold"><Trophy size={20}/></span></div>
+                  {busy?<div className="student-dashboard-empty">Memuat peringkat...</div>:rankFailed?<div className="student-dashboard-empty"><Trophy size={25}/><b>Peringkat belum tersedia</b><span>Data belum dapat dimuat.</span></div>:(()=>{const rankIndex=leaders.findIndex(row=>row.username.trim().toLocaleLowerCase('id-ID')===profile.username.trim().toLocaleLowerCase('id-ID'));const rank=rankIndex>=0?rankIndex+1:null;const topPercent=rank&&leaders.length?Math.max(1,Math.ceil(rank/leaders.length*100)):null;return <div className="student-rank-content"><div className="student-rank-trophy" aria-hidden="true"><Trophy size={34}/><span>★</span></div><div className="student-rank-number">{rank?'#'+rank:'—'}</div><b>{rank?'Dari '+leaders.length+' siswa':'Belum masuk peringkat'}</b>{topPercent!==null&&<span className="student-rank-percent">Top {topPercent}% sekolah</span>}{!rank&&<p>Selesaikan latihan wajib untuk mulai masuk klasemen.</p>}</div>;})()}
+                  <Link className="student-dashboard-card-link" href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'}>Lihat klasemen <ArrowRight size={15}/></Link>
+                </section>
               </div>
-              <button type="button" className="student-start-button" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}>
-                <Play size={17}/>{BANK_IS_PUBLISHED?'Mulai latihan wajib':'Latihan belum tersedia'}<ArrowRight size={17}/>
-              </button>
             </div>
-            <div className="student-featured-visual" aria-hidden="true">
-              <div className="student-featured-orbit student-featured-orbit-one"/>
-              <div className="student-featured-orbit student-featured-orbit-two"/>
-              <div className="student-featured-book"><BookOpen size={39}/></div>
-              <strong>100</strong><span>SOAL NUMERASI</span>
-              <small><Clock3 size={14}/> 30 menit</small>
-            </div>
-          </section>
 
-          <section className="student-progress-section" aria-label="Ringkasan progres belajar">
-            <div className="student-subsection-heading">
-              <div><span className="section-kicker">PROGRES BELAJAR</span><h2>Ringkasanmu</h2></div>
-              <span className="student-muted-caption">Berdasarkan latihan yang tercatat</span>
-            </div>
-            <div className="student-home-metrics">
-              <div className="metric"><span className="metric-icon blue"><BookOpen size={19}/></span><div><small>Sesi latihan wajib</small><strong>{busy?'—':compulsory.length}</strong></div><span className="metric-foot">Total sesi selesai</span></div>
-              <div className="metric"><span className="metric-icon green"><TrendingUp size={19}/></span><div><small>Rata-rata nilai</small><strong>{busy?'—':average??'—'}</strong></div><span className="metric-foot">Dari latihan wajib</span></div>
-              <div className="metric"><span className="metric-icon purple"><Star size={19}/></span><div><small>Total XP</small><strong>{busy?'—':attempts.reduce((sum,attempt)=>sum+attempt.earned_xp,0)}</strong></div><span className="metric-foot">Poin pengalaman</span></div>
-              <div className="metric"><span className="metric-icon orange"><Medal size={19}/></span><div><small>Nilai terakhir</small><strong>{busy?'—':latest?.score??'—'}</strong></div><span className="metric-foot">{today?'Sudah latihan hari ini':'Belum latihan hari ini'}</span></div>
-            </div>
-          </section>
-
-          <section className="student-practice-section" aria-labelledby="practice-topics-title">
-            <div className="student-subsection-heading">
-              <div><span className="section-kicker">PILIH MATERI</span><h2 id="practice-topics-title">Latihan mandiri</h2><p>Pilih topik yang ingin kamu pelajari dan latih.</p></div>
-            </div>
-            <div className="student-practice-grid">{categories.map((cat,i)=><button type="button" className="student-topic-card" key={cat} disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(cat)}>
-              <span className={'student-topic-icon c'+i}>{['×','÷','∑','⚙','◇','▣'][i]}</span>
-              <span className="student-topic-copy"><b>{cat}</b><small>{BANK_IS_PUBLISHED?'10 soal latihan':'Menunggu bank soal aktif'}</small></span>
-              <span className="student-topic-arrow"><ArrowRight size={17}/></span>
-            </button>)}</div>
-          </section>
-
-          <div className="student-secondary-grid">
-            <section className="white-panel student-recent-panel">
-              <div className="panel-heading"><div><span className="section-kicker">AKTIVITAS TERBARU</span><h2>Riwayat latihan</h2></div><Link aria-label="Lihat semua riwayat" className="icon-action" href={embed?'/siswa/riwayat?embed=1':'/siswa/riwayat'}><ArrowRight size={17}/></Link></div>
-              {busy?<div className="student-compact-empty">Memuat riwayat latihan...</div>:compulsory.length===0?<div className="student-compact-empty"><History size={23}/><div><b>Belum ada hasil latihan</b><p>Nilai dan progresmu akan tampil setelah menyelesaikan latihan.</p></div></div>:<div className="history-list">{compulsory.slice(0,4).map(a=><div key={a.session_key} className="history-row"><span className="history-dot"/><div><b>{toDay(a.completed_at_ms)}</b><small>{a.correct}/{a.question_count} jawaban benar</small></div><span className={'score-chip '+(a.score>=75?'positive':'')}>{a.score}/100</span></div>)}</div>}
-              <Link className="student-text-link" href={embed?'/siswa/riwayat?embed=1':'/siswa/riwayat'}>Buka semua riwayat <ArrowRight size={15}/></Link>
-            </section>
-
-            <section className="white-panel leaderboard student-home-leaderboard">
-              <div className="panel-heading"><div><span className="section-kicker">SEMANGAT BERSAMA</span><h2>Peringkat sekolah</h2></div><Link href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'} className="icon-action" aria-label="Lihat semua peringkat"><ArrowRight size={17}/></Link></div>
-              {rankFailed?<div className="student-compact-empty"><Trophy size={22}/><div><b>Peringkat belum tersedia</b><p>Data belum dapat dimuat. Coba lagi nanti.</p></div></div>:leaders.length?<div className="leader-list">{leaders.slice(0,5).map((row,i)=><div key={row.username+'-'+i} className="leader-item"><b className="leader-rank">#{i+1}</b><span className="leader-avatar">{row.display_name.slice(0,1)}</span><div><b>{row.display_name}</b><small>{row.classroom} · {row.major}</small></div><span className="leader-points">{row.mandatory_average??'—'}<small>rata-rata</small></span></div>)}</div>:<div className="student-compact-empty"><Trophy size={22}/><div><b>Belum ada peringkat</b><p>Peringkat muncul setelah ada nilai latihan wajib.</p></div></div>}
-              <Link className="student-text-link" href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'}>Lihat klasemen <ArrowRight size={15}/></Link>
+            <aside className="student-dashboard-aside" aria-label="Informasi belajar">
+              <StudentCalendar/>
+              <section className="student-aside-card student-target-card">
+                <div className="student-aside-title"><h2>Target harian</h2><Target size={18}/></div>
+                <div className="student-target-content"><div className={'student-target-ring '+(today?'is-complete':'')}><span>{today?'100%':'0%'}</span></div><div className="student-target-copy"><b>{today?'1 dari 1 latihan':'0 dari 1 latihan'}</b><span>{today?'Target latihan wajib hari ini tercapai.':'Selesaikan 1 latihan wajib hari ini.'}</span></div></div>
+                <button type="button" className="student-aside-action" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}>{today?'Latihan lagi':'Mulai latihan'} <ArrowRight size={14}/></button>
+              </section>
+              <section className="student-aside-card student-tip-card">
+                <div className="student-aside-title"><span className="student-aside-icon yellow"><Lightbulb size={18}/></span><h2>Tips hari ini</h2></div>
+                <p>Baca soal sampai selesai, perhatikan informasi penting, lalu periksa kembali jawabanmu sebelum mengirim.</p>
+              </section>
+              <section className="student-aside-card student-announcement-card">
+                <div className="student-aside-title"><span className="student-aside-icon rose"><Megaphone size={18}/></span><h2>Pengumuman</h2></div>
+                <p>Belum ada pengumuman terbaru. Informasi resmi dari sekolah akan ditampilkan di sini jika tersedia.</p>
+              </section>
+            </aside>
+          </div>
+        </main>             <Link className="student-text-link" href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'}>Lihat klasemen <ArrowRight size={15}/></Link>
             </section>
           </div>
         </main>
