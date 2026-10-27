@@ -54,7 +54,7 @@ export default function AdminBankPage(){
  const [newQuestion,setNewQuestion]=useState(''),[newOptions,setNewOptions]=useState(blankOptions);
  const [newCorrect,setNewCorrect]=useState(0),[newExplanation,setNewExplanation]=useState('');
  const [newImage,setNewImage]=useState<File|null>(null),[newImagePath,setNewImagePath]=useState<string|null>(null);
- const [newChoiceFiles,setNewChoiceFiles]=useState<Record<number,File>>({}),[publishNew,setPublishNew]=useState(false);
+ const [newChoiceFiles,setNewChoiceFiles]=useState<Record<number,File>>({}),[saveAsDraft,setSaveAsDraft]=useState(true);
  
  function openNew(d?:DraftRow){
   setDraftEditing(d?.id||null);setNewCategory(d?.category||'Perkalian');
@@ -62,7 +62,7 @@ export default function AdminBankPage(){
   setNewQuestion(d?.question||'');setNewOptions(d?.options.map(o=>({...o}))||blankOptions());
   setNewCorrect(d?.correct_index||0);setNewExplanation(d?.explanation||'');
   setNewImage(null);setNewImagePath(d?.question_image_path||null);
-  setNewChoiceFiles({});setPublishNew(false);setCreateNotice('');setCreateOpen(true);
+  setNewChoiceFiles({});setSaveAsDraft(true);setCreateNotice('');setCreateOpen(true);
  }
  function changeNewCategory(category:string){
   const options=MATERIAL_GROUPS[category]||[];
@@ -75,8 +75,8 @@ export default function AdminBankPage(){
   if(newCorrect<0||newCorrect>=newOptions.length){setCreateNotice('Pilih kunci jawaban.');return;}
   if(newGroup==='POLA_GAMBAR'&&!newImage&&!newImagePath){setCreateNotice('Pola Gambar wajib memiliki gambar utama.');return;}
   if(!MATERIAL_GROUPS[newCategory]?.includes(newGroup)||!approvedGroup(newGroup)){setCreateNotice('Materi dan kelompok tidak sesuai.');return;}
-  if(publishNew&&draftEditing){setCreateNotice('Simpan perubahan draft terlebih dahulu. Terbitkan soal baru lewat Tambah Soal.');return;}
-  if(publishNew&&!window.confirm('Terbitkan soal langsung ke bank aktif? Soal lama tidak diganti.'))return;
+  if(!saveAsDraft&&draftEditing){setCreateNotice('Simpan perubahan draft dahulu. Untuk menerbitkannya, gunakan alur impor.');return;}
+  if(!saveAsDraft&&!window.confirm('Tambahkan soal ini ke bank aktif agar tersedia bagi siswa? Soal lama tidak akan diganti.'))return;
   setCreateSaving(true);
   const uploaded:string[]=[];
   try{
@@ -95,7 +95,7 @@ export default function AdminBankPage(){
    for(let i=0;i<newOptions.length;i++)answers.push({text:newOptions[i].text.trim(),image_path:newChoiceFiles[i]?await upload(newChoiceFiles[i]):newOptions[i].image_path});
    const values={category:newCategory,difficulty_code:newGroup,time_limit_seconds:APPROVED_BLUEPRINT.groups[newGroup as keyof typeof APPROVED_BLUEPRINT.groups].seconds,
     question:newQuestion.trim(),question_image_path:imagePath,options:answers,correct_index:newCorrect,explanation:newExplanation.trim()};
-   if(publishNew){
+   if(!saveAsDraft){
     const {error:publishError}=await supabase().rpc('vokasi_admin_import_questions',{p_questions:[values],p_mode:'append'});
     if(publishError)throw publishError;
    }else if(draftEditing){
@@ -105,7 +105,7 @@ export default function AdminBankPage(){
     const {error:saveError}=await supabase().from('vokasi_question_drafts').insert({...values,source_number:null,created_by:user.id});
     if(saveError)throw saveError;
    }
-   setCreateOpen(false);setTab(publishNew?'published':'drafts');setBusy(true);setRefreshKey(v=>v+1);
+   setCreateOpen(false);setTab(saveAsDraft?'drafts':'published');setBusy(true);setRefreshKey(v=>v+1);
   }catch(e){
    if(uploaded.length)await supabase().storage.from('vokasi-question-figures').remove(uploaded);
    setCreateNotice(e instanceof Error?e.message:'Gagal menyimpan soal.');
@@ -295,6 +295,10 @@ export default function AdminBankPage(){
    {createOpen&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!createSaving)setCreateOpen(false);}}>
     <section role="dialog" aria-modal="true" aria-label={draftEditing?'Lanjutkan draft':'Tambah soal'} className="admin-modal-card admin-bank-create-modal" onMouseDown={e=>e.stopPropagation()}>
      <div className="admin-modal-top"><div><span className="section-kicker">BANK SOAL</span><h2>{draftEditing?'Lanjutkan draft':'Tambah soal'}</h2></div><button aria-label="Tutup" type="button" disabled={createSaving} onClick={()=>setCreateOpen(false)}>×</button></div>
+     <label className="admin-bank-publish-check admin-bank-draft-top">
+      <input type="checkbox" checked={saveAsDraft} disabled={createSaving||!!draftEditing} onChange={e=>setSaveAsDraft(e.target.checked)}/>
+      <span><strong>Simpan draft</strong><small>{draftEditing?'Perubahan draft disimpan tanpa menerbitkan soal.':'Centang untuk menyimpan tanpa menerbitkan. Hilangkan centang untuk langsung menambahkan soal ke bank aktif.'}</small></span>
+     </label>
      {createNotice&&<div role="alert" className="alert danger">{createNotice}</div>}
      <div className="admin-bank-edit-classification"><label>Materi<select value={newCategory} onChange={e=>changeNewCategory(e.target.value)}>{EDIT_MATERIALS.map(x=><option key={x}>{x}</option>)}</select></label>
       <label>Kelompok ujian<select value={newGroup} onChange={e=>setNewGroup(e.target.value)}>{(MATERIAL_GROUPS[newCategory]||[]).map(x=><option key={x} value={x}>{groupLabel(x)}</option>)}</select></label>
@@ -310,8 +314,7 @@ export default function AdminBankPage(){
      </div>)}
       {newOptions.length<6&&<button type="button" className="admin-bank-add-choice" onClick={()=>setNewOptions(v=>[...v,{text:'',image_path:null}])}><Plus size={14}/> Tambah pilihan</button>}</fieldset>
      <label>Pembahasan (opsional)<textarea rows={2} value={newExplanation} onChange={e=>setNewExplanation(e.target.value)}/></label>
-     {!draftEditing&&<label className="admin-bank-publish-check"><input type="checkbox" checked={publishNew} onChange={e=>setPublishNew(e.target.checked)}/><span><strong>Langsung terbitkan ke bank aktif</strong><small>Jika tidak dicentang, soal disimpan sebagai draft.</small></span></label>}
-     <div className="admin-bank-edit-actions"><button type="button" className="btn secondary small" disabled={createSaving} onClick={()=>setCreateOpen(false)}>Batal</button><button type="button" className="btn primary small" disabled={createSaving} onClick={()=>void saveNew()}>{createSaving?'Menyimpan...':publishNew?'Terbitkan soal':'Simpan draft'}</button></div>
+     <div className="admin-bank-edit-actions"><button type="button" className="btn secondary small" disabled={createSaving} onClick={()=>setCreateOpen(false)}>Batal</button><button type="button" className="btn primary small" disabled={createSaving} onClick={()=>void saveNew()}>{createSaving?'Menyimpan...':saveAsDraft?'Simpan draft':'Tambah soal'}</button></div>
     </section></div>}
    {edit&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!editBusy){setEdit(null);setOriginal(null);}}}><section className="admin-modal-card admin-bank-edit-modal" role="dialog" aria-modal="true" aria-label={'Edit soal '+edit.source_number} onMouseDown={e=>e.stopPropagation()}>
     <div className="admin-modal-top"><div><span className="section-kicker">EDIT SOAL #{edit.source_number}</span><h2>Sunting pertanyaan</h2></div><button type="button" aria-label="Tutup editor" disabled={editBusy} onClick={()=>{setEdit(null);setOriginal(null);}}>×</button></div>
