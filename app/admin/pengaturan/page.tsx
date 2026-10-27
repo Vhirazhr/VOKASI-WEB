@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {CalendarDays,CheckCircle2,Clock3,LogOut,Mail,RefreshCw,Search,Settings,ShieldCheck,ShieldOff,UserRound,Users} from 'lucide-react';
+import {CalendarDays,CheckCircle2,Clock3,LogOut,Mail,RefreshCw,Search,ShieldCheck,ShieldOff,UserRound,Users} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {supabase} from '@/lib/supabase';
@@ -53,10 +53,10 @@ export default function AdminSettingsPage(){
      supabase().rpc('vokasi_admin_list_administrators')
     ]);
     if(session.error)throw session.error;
-    if(result.error)throw result.error;
     if(!active)return;
     setAccountId(session.data.user?.id||'');
     setEmail(session.data.user?.email||'');
+    if(result.error)throw result.error;
     setMembers((result.data||[]) as Administrator[]);
     setIssue('');
    }catch(e){
