@@ -40,7 +40,7 @@ type ImportDraft={id:string;file_name:string;mode:string;payload:unknown[];creat
 type ReviewItem={number:number;reasons:string[]};
 type DraftIssue={id:string;reasons:string[]};
 type BankTab='published'|'review'|'drafts';
-const blankOptions=()=>[{text:'',image_path:null},{text:'',image_path:null},{text:'',image_path:null}];
+const blankOptions=():{text:string;image_path:string|null}[]=>[{text:'',image_path:null},{text:'',image_path:null},{text:'',image_path:null}];
 type EditRow={source_number:number;category:string;difficulty_code:string;question:string;question_image_path:string|null;options:{text:string;image_path:string|null}[];correct_index:number;time_limit_seconds:number;explanation:string};
 export default function AdminBankPage(){
  const {loading,error,logout}=useSchoolAuth('admin');
@@ -55,14 +55,14 @@ export default function AdminBankPage(){
  const [newCorrect,setNewCorrect]=useState(0),[newExplanation,setNewExplanation]=useState('');
  const [newImage,setNewImage]=useState<File|null>(null),[newImagePath,setNewImagePath]=useState<string|null>(null);
  const [newChoiceFiles,setNewChoiceFiles]=useState<Record<number,File>>({}),[publishNew,setPublishNew]=useState(false);
- const [newFilesIssue,setNewFilesIssue]=useState('');
+ 
  function openNew(d?:DraftRow){
   setDraftEditing(d?.id||null);setNewCategory(d?.category||'Perkalian');
   setNewGroup(d?.difficulty_code||'HITUNG_DASAR');
   setNewQuestion(d?.question||'');setNewOptions(d?.options.map(o=>({...o}))||blankOptions());
   setNewCorrect(d?.correct_index||0);setNewExplanation(d?.explanation||'');
   setNewImage(null);setNewImagePath(d?.question_image_path||null);
-  setNewChoiceFiles({});setPublishNew(false);setCreateNotice('');setNewFilesIssue('');setCreateOpen(true);
+  setNewChoiceFiles({});setPublishNew(false);setCreateNotice('');setCreateOpen(true);
  }
  function changeNewCategory(category:string){
   const options=MATERIAL_GROUPS[category]||[];
@@ -287,7 +287,6 @@ export default function AdminBankPage(){
       {newOptions.length<6&&<button type="button" className="admin-bank-add-choice" onClick={()=>setNewOptions(v=>[...v,{text:'',image_path:null}])}><Plus size={14}/> Tambah pilihan</button>}</fieldset>
      <label>Pembahasan (opsional)<textarea rows={2} value={newExplanation} onChange={e=>setNewExplanation(e.target.value)}/></label>
      {!draftEditing&&<label className="admin-bank-publish-check"><input type="checkbox" checked={publishNew} onChange={e=>setPublishNew(e.target.checked)}/><span><strong>Langsung terbitkan ke bank aktif</strong><small>Jika tidak dicentang, soal disimpan sebagai draft.</small></span></label>}
-     {newFilesIssue&&<p role="alert">{newFilesIssue}</p>}
      <div className="admin-bank-edit-actions"><button type="button" className="btn secondary small" disabled={createSaving} onClick={()=>setCreateOpen(false)}>Batal</button><button type="button" className="btn primary small" disabled={createSaving} onClick={()=>void saveNew()}>{createSaving?'Menyimpan...':publishNew?'Terbitkan soal':'Simpan draft'}</button></div>
     </section></div>}
    {edit&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!editBusy){setEdit(null);setOriginal(null);}}}><section className="admin-modal-card admin-bank-edit-modal" role="dialog" aria-modal="true" aria-label={'Edit soal '+edit.source_number} onMouseDown={e=>e.stopPropagation()}>
