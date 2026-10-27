@@ -1,0 +1,20 @@
+/* Bank Soal follows the approved Kelas & Jurusan visual template. */
+.admin-bank-page{max-width:1370px}
+.admin-bank-page .admin-students-hero{margin-bottom:20px}
+.admin-bank-page .admin-data-card{padding:26px clamp(19px,2vw,29px)}
+.admin-bank-page .admin-data-title{align-items:center;gap:18px}
+.admin-bank-page .admin-data-title h2{font-size:19px;font-weight:800;color:#23466f}
+.admin-bank-page .admin-bank-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.admin-bank-page .admin-bank-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 15px;border-radius:10px;font-size:11px;font-weight:800;white-space:nowrap}
+.admin-bank-page .admin-directory-controls{grid-template-columns:minmax(170px,2fr) minmax(120px,1fr) minmax(120px,1fr);gap:12px;margin-bottom:13px}
+.admin-bank-page .admin-directory-controls .admin-directory-search{grid-column:auto;border-color:#d6e4f5;background:#fafcff}
+.admin-bank-page .admin-directory-controls select{border-color:#d6e4f5;background:#fafcff}
+.admin-bank-tabs{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 20px}
+.admin-bank-tabs button{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:7px 11px;border:1px solid #deebfa;border-radius:9px;background:#f5f8ff;color:#48709f;font-weight:800;font-size:10px;cursor:pointer}
+.admin-bank-tabs button:hover{border-color:#a8c8f5;background:#eaf2ff}
+.admin-bank-tabs button.active{background:#2f66e6;border-color:#2f66e6;color:#fff}
+.admin-bank-tabs button span{font-size:9px;font-weight:700;opacity:.8}
+.admin-bank-page .admin-workspace-table-wrap th{background:#f2f6fc}
+@media(max-width:1050px){.admin-bank-page .admin-students-hero{grid-template-columns:1fr}}
+@media(max-width:700px){.admin-bank-page .admin-data-title{align-items:flex-start;flex-direction:column}.admin-bank-page .admin-directory-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-bank-page .admin-directory-controls .admin-directory-search{grid-column:1/-1}.admin-bank-page .admin-bank-actions{width:100%}}
+@media(max-width:430px){.admin-bank-page .admin-directory-controls{grid-template-columns:1fr}.admin-bank-page .admin-directory-controls .admin-directory-search{grid-column:auto}.admin-bank-page .admin-bank-actions .btn{flex:1}}
