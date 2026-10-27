@@ -34,8 +34,8 @@ export async function fetchBank():Promise<BankQuestion[]>{
     throw new Error('Bank soal baru masih menunggu aktivasi admin. Latihan belum tersedia.');
  const collected:PublishedRow[]=[];
  // Supabase PostgREST commonly caps one response at 1,000 rows.
- // Page explicitly to avoid silently hiding appended questions in admin.
- for(let offset=0;offset<2500;offset+=500){
+ // Page until exhausted to avoid silently hiding appended questions in admin.
+ for(let offset=0;;offset+=500){
    const {data,error}=await supabase().from('vokasi_web_published_questions')
      .select('source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation')
      .order('source_number',{ascending:true}).range(offset,offset+499);
@@ -53,13 +53,17 @@ export async function fetchBank():Promise<BankQuestion[]>{
  ]))];
  const signed=new Map<string,string>();
  if(filePaths.length){
-   const {data:urls,error:signError}=await supabase().storage.from('vokasi-question-figures')
-     .createSignedUrls(filePaths,7200);
-   if(signError||!urls)throw new Error('Gambar soal tidak dapat diakses: '+(signError?.message||'Storage tidak tersedia.'));
-   urls.forEach((item,i)=>{
-     if(item.error||!item.signedUrl)throw new Error('Gambar soal tidak dapat dibuka: '+filePaths[i]);
-     signed.set(filePaths[i],item.signedUrl);
-   });
+   // Batch signing to avoid oversized Storage requests as the bank grows.
+   for(let offset=0;offset<filePaths.length;offset+=100){
+     const paths=filePaths.slice(offset,offset+100);
+     const {data:urls,error:signError}=await supabase().storage.from('vokasi-question-figures')
+       .createSignedUrls(paths,7200);
+     if(signError||!urls)throw new Error('Gambar soal tidak dapat diakses: '+(signError?.message||'Storage tidak tersedia.'));
+     urls.forEach((item,i)=>{
+       if(item.error||!item.signedUrl)throw new Error('Gambar soal tidak dapat dibuka: '+paths[i]);
+       signed.set(paths[i],item.signedUrl);
+     });
+   }
  }
  const bank:BankQuestion[]=rows.map(r=>{
    if(!Array.isArray(r.options)||r.options.length<2||r.options.length>6
