@@ -154,8 +154,8 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
   if(e)setNotice('Gagal menghapus draft: '+e.message);
   else{setNotice('Draft dihapus. Bank aktif tidak berubah.');await refresh();}
  }
- if(loading)return <main className="page-loader">Memverifikasi akses administrator...</main>;
- if(error)return <main className="page-loader">{error}</main>;
+ if(loading)return embedded?<div className="unified-import-inline-loading">Memeriksa akses admin...</div>:<main className="page-loader">Memverifikasi akses administrator...</main>;
+ if(error)return embedded?<div className="unified-import-inline-loading" role="alert">{error}</div>:<main className="page-loader">{error}</main>;
  const totalPages=Math.max(1,Math.ceil(rows.length/LIMIT));
  const content=<main className={'unified-import'+(embedded?' unified-import-embedded':'')}>
    {!embedded&&<Link className="unified-import-back" href="/admin/bank-soal"><ArrowLeft size={17}/> Kembali ke Bank Soal</Link>}
@@ -227,10 +227,10 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
       </div>
     </>}
    </section>
-   <section className="unified-import-panel" aria-label="Draft impor">
+   {!embedded&&<section className="unified-import-panel" aria-label="Draft impor">
     <div className="unified-import-title"><div><span className="section-kicker">BELUM DITERBITKAN</span><h2>Draft tersimpan</h2></div><button type="button" className="unified-import-reload" onClick={()=>void refresh()}><RefreshCw size={15}/> Segarkan</button></div>
     {saved.length===0?<p className="unified-import-hint">Belum ada draft impor tersimpan.</p>:<div className="unified-import-saved">{saved.map(d=><div key={d.id}><div><strong>{d.file_name}</strong><small>{d.payload.length} soal · {d.mode==='replace'?'Rencana ganti bank':'Rencana tambah soal'} · {new Date(d.created_at).toLocaleDateString('id-ID')}</small></div><button type="button" onClick={()=>restore(d)}>Buka</button><button type="button" aria-label={'Hapus draft '+d.file_name} onClick={()=>void discard(d)}><Trash2 size={15}/></button></div>)}</div>}
-   </section>
+   </section>}
    {confirm&&<div className="unified-import-modal-backdrop" role="presentation" onMouseDown={()=>setConfirm(false)}><section className="unified-import-modal" role="alertdialog" aria-modal="true" aria-labelledby="unified-import-modal-title" aria-describedby="unified-import-modal-description" onMouseDown={e=>e.stopPropagation()}>
     <div className="unified-import-modal-icon"><ShieldAlert size={27}/></div>
     <h2 id="unified-import-modal-title">{mode==='replace'?'Yakin ganti seluruh bank soal?':'Terbitkan soal baru sekarang?'}</h2>
