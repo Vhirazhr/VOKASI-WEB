@@ -48,7 +48,8 @@ function textQuestions(text:string,category:string,group:QuestionGroup):Imported
  let currentOption=-1;
  const finish=()=>{
    if(!current)return;
-   current.options=current.options.filter(o=>o.text.trim()||o.image_path);
+   const options=current.options;
+   current.options=Array.from({length:options.length},(_,i)=>options[i]||{text:'',image_path:null});
    if(current.question.trim()||current.options.length)out.push(current);
  };
  for(const line of lines){
@@ -71,7 +72,7 @@ function textQuestions(text:string,category:string,group:QuestionGroup):Imported
   else current.question+=' '+line;
  }
  finish();
- return out.map(q=>({...q,options:q.options.filter(Boolean)}));
+ return out;
 }
 function stringCell(value:unknown):string{
  if(value==null)return '';
@@ -96,7 +97,8 @@ async function excelQuestions(file:File,category:string,group:QuestionGroup){
   const row=sheet.getRow(n);
   const question=field(row,['soal','pertanyaan','question','text']);
   if(!question)continue;
-  const opts=['a','b','c','d','e','f'].map(s=>field(row,[s,'opsi'+s,'pilihan'+s,'jawaban'+s])).filter(Boolean);
+  const opts=['a','b','c','d','e','f'].map(s=>field(row,[s,'opsi'+s,'pilihan'+s,'jawaban'+s]));
+  while(opts.length && !opts[opts.length-1])opts.pop();
   const subject=field(row,['kategori','materi','category'])||category;
   const key=field(row,['kunci','kuncijawaban','jawabanbenar','answer','correct','correctanswer']);
   const code=field(row,['kelompok','kode','blueprint','difficultycode'])||group;
@@ -164,7 +166,7 @@ export function inspectQuestionRows(rows:ImportedQuestion[]):string[]{
  const issues:string[]=[];
  rows.forEach((q,i)=>{
   if(!q.question.trim()&&!q.question_image_path)issues.push('No. '+(i+1)+': pertanyaan/gambar kosong');
-  if(q.options.length<2||q.options.length>6||q.options.some(o=>!o.text.trim()&&!o.image_path))issues.push('No. '+(i+1)+': pilihan jawaban belum lengkap (2–6)');
+  if(q.options.length<2||q.options.length>6||q.options.some(o=>!o||(!o.text.trim()&&!o.image_path)))issues.push('No. '+(i+1)+': pilihan jawaban belum lengkap (2–6)');
   if(q.correct_index===null||q.correct_index<0||q.correct_index>=q.options.length)issues.push('No. '+(i+1)+': kunci jawaban belum dipilih');
   if(q.difficulty_code==='POLA_GAMBAR'&&!q.question_image_path)issues.push('No. '+(i+1)+': unggah gambar untuk soal pola gambar');
  });
