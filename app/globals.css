@@ -19,3 +19,22 @@
 .top-actions{display:flex;align-items:center;gap:12px}.top-logout{border:none;background:transparent;color:#7c8fa7;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:8px}.top-logout:hover{color:#3566c5}@media(max-width:600px){.top-logout{font-size:0;gap:0}.top-logout svg{width:19px;height:19px}.topbar-tag{font-size:10px;padding:7px 10px}}
 
 .shell-embed .sidebar{display:none}.shell-embed .shell-body{padding-top:18px}.shell-embed .topbar{height:65px}
+
+
+/* Global scrollbar policy for VOKASI.
+   Hide visible rails on every page and scroll container while preserving
+   wheel, trackpad, touch, keyboard and programmatic scrolling.
+   Do not set overflow:hidden here; modal-specific scroll locks still work. */
+html,
+body,
+body * {
+  scrollbar-width: none !important; /* Firefox and modern Chromium */
+  -ms-overflow-style: none; /* legacy Edge/IE */
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+body *::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Edge */
+  width: 0 !important;
+  height: 0 !important;
+}
