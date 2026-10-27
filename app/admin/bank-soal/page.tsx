@@ -181,6 +181,21 @@ export default function AdminBankPage(){
   }finally{setEditBusy(false);}
  }
  const [search,setSearch]=useState(''),[category,setCategory]=useState(''),[code,setCode]=useState(''),[page,setPage]=useState(0),[selected,setSelected]=useState<BankQuestion|null>(null);
+ // Prevent the background page's scrollbar from appearing beside a question modal.
+ // The modal itself remains scrollable (wheel, keyboard, and touch).
+ useEffect(()=>{
+  if(!createOpen&&!edit&&!selected)return;
+  const html=document.documentElement;
+  const body=document.body;
+  const previousHtmlOverflow=html.style.overflow;
+  const previousBodyOverflow=body.style.overflow;
+  html.style.overflow='hidden';
+  body.style.overflow='hidden';
+  return ()=>{
+   html.style.overflow=previousHtmlOverflow;
+   body.style.overflow=previousBodyOverflow;
+  };
+ },[createOpen,edit,selected]);
  useEffect(()=>{if(loading||error)return;let active=true;
   async function load(){try{
     const [bankResult,qualityResult,draftResult,importResult]=await Promise.allSettled([
