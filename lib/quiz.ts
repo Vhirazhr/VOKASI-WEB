@@ -34,10 +34,10 @@ export async function fetchBank():Promise<BankQuestion[]>{
     throw new Error('Bank soal baru masih menunggu aktivasi admin. Latihan belum tersedia.');
  const {data,error}=await supabase().from('vokasi_web_published_questions')
    .select('source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation')
-   .order('source_number',{ascending:true}).limit(550);
+   .order('source_number',{ascending:true}).limit(2500);
  if(error)throw new Error('Gagal mengambil soal baru dari Supabase: '+error.message);
- if(!Array.isArray(data)||data.length!==APPROVED_BLUEPRINT.bankCount)
-   throw new Error('Bank soal baru belum lengkap 500 nomor. Hubungi admin sekolah.');
+ if(!Array.isArray(data)||data.length<APPROVED_BLUEPRINT.bankCount)
+   throw new Error('Bank soal resmi harus memiliki setidaknya 500 soal untuk blueprint. Hubungi admin sekolah.');
  const rows=data as PublishedRow[];
  const filePaths=[...new Set(rows.flatMap(r=>[
     ...(r.question_image_path?[r.question_image_path]:[]),

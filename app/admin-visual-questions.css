@@ -58,3 +58,28 @@
 .vqe-publish-table{width:100%;border-collapse:collapse;margin:18px 0}
 .vqe-publish-table td,.vqe-publish-table th{padding:11px;text-align:left;border-bottom:1px solid #e1eaf6;font-size:11px;color:#537097}
 .vqe-publish-table th{color:#295782;background:#edf4ff}
+
+
+/* One-click optional publication from the visual question editor. */
+.vqe .vqe-publish-inline {
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  border:1px solid #cfe1f8;
+  border-radius:12px;
+  background:#f0f6ff;
+  color:#2d5c99;
+  padding:15px 17px;
+  margin:21px 0 2px;
+  cursor:pointer;
+}
+.vqe .vqe-publish-inline input {
+  flex:none;
+  width:18px;
+  height:18px;
+  margin:2px 0 0;
+  accent-color:#346bd0;
+}
+.vqe .vqe-publish-inline span {display:grid;gap:5px;min-width:0;}
+.vqe .vqe-publish-inline b {font-size:12px;color:#2c5c99;}
+.vqe .vqe-publish-inline small {font-size:11px;color:#7893b5;line-height:1.65;font-weight:500;}

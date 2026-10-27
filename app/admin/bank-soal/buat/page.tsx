@@ -50,6 +50,7 @@ export default function CreatePictureQuestion(){
  const [correct,setCorrect]=useState(0),[group,setGroup]=useState<ApprovedGroup>('POLA_GAMBAR'),[explanation,setExplanation]=useState('');
  const seconds=APPROVED_BLUEPRINT.groups[group].seconds;
  const [showPreview,setShowPreview]=useState(false);
+ const [publishNow,setPublishNow]=useState(false);
  async function refresh(){
    setBusy(true);
    const {data,error:dbError}=await supabase().from('vokasi_question_drafts')
@@ -62,7 +63,7 @@ export default function CreatePictureQuestion(){
  const setOption=(i:number,patch:Partial<Answer>)=>setOptions(a=>a.map((v,j)=>j===i?{...v,...patch}:v));
  function clear(){
    setEditing(null);setSourceNo('');setCategory('Pola Gambar');setQuestion('');setImage(null);setImagePath(null);
-   setOptions([blank(),blank(),blank()]);setCorrect(0);setGroup('POLA_GAMBAR');setExplanation('');setShowPreview(false);
+   setOptions([blank(),blank(),blank()]);setCorrect(0);setGroup('POLA_GAMBAR');setExplanation('');setShowPreview(false);setPublishNow(false);
  }
  function edit(d:Draft){
    setEditing(d.id);setSourceNo(d.source_number?.toString()||'');setCategory(d.category);setQuestion(d.question);
@@ -88,6 +89,7 @@ export default function CreatePictureQuestion(){
    if(!Number.isInteger(seconds)||seconds<5||seconds>180){setNotice('Waktu soal harus 5–180 detik.');return;}
    const no=sourceNo.trim()?Number(sourceNo):null;
    if(no!==null&&(!Number.isInteger(no)||no<1||no>100000)){setNotice('Nomor soal dokumen tidak valid.');return;}
+   if(publishNow&&!editing&&!window.confirm('Terbitkan soal ini langsung ke bank aktif untuk seluruh siswa VOKASI-WEB? Bank lama tetap tersimpan.'))return;
    setSaving(true);
    const uploaded:string[]=[];
    try{
@@ -103,11 +105,20 @@ export default function CreatePictureQuestion(){
      }
      const values={source_number:no,category:category.trim(),question:question.trim(),question_image_path:imageLocation,
        options:saved,difficulty_code:group,correct_index:correct,time_limit_seconds:seconds,explanation:explanation.trim()};
-     const request=editing?
-       await supabase().from('vokasi_question_drafts').update(values).eq('id',editing):
-       await supabase().from('vokasi_question_drafts').insert({...values,created_by:user.id});
-     if(request.error)throw request.error;
-     clear();await refresh();setNotice('Berhasil! Draft soal tersimpan. Belum muncul dalam latihan siswa.');
+     if(publishNow&&!editing){
+       const {error:publishError}=await supabase().rpc('vokasi_admin_import_questions',{
+         p_questions:[values],p_mode:'append'
+       });
+       if(publishError)throw publishError;
+       clear();await refresh();
+       setNotice('Berhasil! Soal ditambahkan ke bank aktif dan dapat dipilih untuk latihan siswa.');
+     }else{
+       const request=editing?
+         await supabase().from('vokasi_question_drafts').update(values).eq('id',editing):
+         await supabase().from('vokasi_question_drafts').insert({...values,created_by:user.id});
+       if(request.error)throw request.error;
+       clear();await refresh();setNotice('Draft soal tersimpan. Bank aktif tidak berubah.');
+     }
    }catch(e){
      if(uploaded.length)await supabase().storage.from(BUCKET).remove(uploaded);
      setNotice('Gagal menyimpan: '+(e instanceof Error?e.message:String(e)));
@@ -161,8 +172,12 @@ export default function CreatePictureQuestion(){
     </div>)}
     {options.length<6&&<button className="vqe-add" type="button" onClick={()=>setOptions(v=>[...v,blank()])}><Plus size={17}/> Tambah pilihan</button>}
     <label className="vqe-label">Pembahasan (opsional)<textarea rows={2} value={explanation} onChange={e=>setExplanation(e.target.value)}/></label>
+    {!editing&&<label className="vqe-publish-inline">
+       <input type="checkbox" checked={publishNow} onChange={e=>setPublishNow(e.target.checked)}/>
+       <span><b>Langsung terbitkan ke bank aktif</b><small>Nonaktif = simpan draft. Aktif = tampilkan soal baru untuk latihan, tanpa menghapus soal lama. Konfirmasi diperlukan.</small></span>
+    </label>}
     <div className="vqe-actions"><button type="button" className="btn secondary" onClick={()=>setShowPreview(v=>!v)}><ImagePlus size={16}/>{showPreview?'Tutup pratinjau':'Pratinjau soal'}</button>
-      <button type="submit" className="btn primary" disabled={saving||busy||!!issue}><Save size={16}/>{saving?'Menyimpan...':'Simpan draft'}</button></div>
+      <button type="submit" className="btn primary" disabled={saving||busy||!!issue}><Save size={16}/>{saving?'Menyimpan...':publishNow&&!editing?'Terbitkan soal':'Simpan draft'}</button></div>
    </form>
    {showPreview&&<section className="vqe-card vqe-preview"><span className="section-kicker">PRATINJAU</span><h2>{question||'Pertanyaan dengan gambar'}</h2>
      <UploadField title="Pratinjau gambar soal" file={image} path={imagePath} setImage={setImage} remove={()=>{setImage(null);setImagePath(null);}}/>
