@@ -1,0 +1,93 @@
+/* VOKASI monitoring & notification surfaces: blue/white school workspace. */
+.school-shell .admin-monitor-bell{position:relative}
+.school-shell .admin-monitor-bell .admin-header-bell{position:relative}
+.school-shell .admin-monitor-badge{
+ position:absolute;top:-7px;right:-8px;min-width:19px;height:19px;
+ padding:0 5px;display:grid;place-items:center;border:2px solid white;border-radius:30px;
+ background:#df5a62;color:#fff;font-size:9px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums;
+}
+.school-shell .admin-notice-popover.admin-monitor-popover{
+ box-sizing:border-box;width:min(405px,calc(100vw - 24px));padding:0;
+ border:1px solid #d8e6f8;border-radius:16px;background:#fff;
+ box-shadow:0 22px 52px rgba(18,52,103,.21);
+ overflow:hidden;
+}
+.school-shell .admin-monitor-popover-heading{
+ display:flex;justify-content:space-between;align-items:center;gap:12px;
+ padding:18px 19px;border-bottom:1px solid #e7eef9;background:#f9fbff;
+}
+.school-shell .admin-monitor-popover-heading b{font-size:14px;color:#214878;font-weight:800}
+.school-shell .admin-monitor-popover-heading small{display:block;color:#7e96b5;font-size:10px;margin-top:5px}
+.school-shell .admin-monitor-popover-heading button{display:grid;place-items:center;width:31px;height:31px;border:1px solid #d8e6f8;border-radius:9px;background:#fff;color:#3672c8;cursor:pointer}
+.school-shell .admin-monitor-items{max-height:min(430px,55dvh);overflow-y:auto;overscroll-behavior:contain}
+.school-shell .admin-monitor-item{
+ display:flex;align-items:flex-start;gap:11px;padding:13px 16px;
+ border-bottom:1px solid #eaf0f9;background:#fff;
+}
+.school-shell .admin-monitor-item.unread{background:#f0f6ff}
+.school-shell .admin-monitor-item-dot{flex:none;width:8px;height:8px;margin-top:5px;border-radius:50%;background:#cbd9ec}
+.school-shell .admin-monitor-item.unread .admin-monitor-item-dot{background:#3474e8}
+.school-shell .admin-monitor-item>div{flex:1;min-width:0}
+.school-shell .admin-monitor-item strong{display:block;color:#2c5181;font-size:11px;line-height:1.5;font-weight:800;overflow-wrap:anywhere}
+.school-shell .admin-monitor-item p{color:#6280a4;font-size:10px;line-height:1.6;margin:4px 0 6px}
+.school-shell .admin-monitor-item small{display:inline-flex;align-items:center;gap:5px;color:#8ba2bd;font-size:9px}
+.school-shell .admin-monitor-ack{flex:none;display:grid;place-items:center;width:29px;height:29px;border:1px solid #d6e5f8;border-radius:9px;background:#fff;color:#2e6acd;cursor:pointer}
+.school-shell .admin-monitor-ack:hover:not(:disabled){background:#dceaff}
+.school-shell .admin-monitor-popover-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;border-top:1px solid #e8effa}
+.school-shell .admin-monitor-popover-footer button{display:inline-flex;align-items:center;gap:5px;min-height:33px;border:1px solid #d9e6f7;border-radius:9px;background:#f3f7ff;color:#326cbf;font-size:10px;font-weight:800;padding:0 9px;cursor:pointer}
+.school-shell .admin-monitor-popover-footer button:disabled{opacity:.45;cursor:not-allowed}
+.school-shell .admin-monitor-popover-footer a{font-size:10px;color:#2866bf;font-weight:800;text-decoration:none}
+.school-shell .admin-monitor-popover-footer a:hover{text-decoration:underline}
+.school-shell .admin-monitor-empty{padding:25px 20px!important;margin:0!important;text-align:center;color:#8299b6!important;font-size:11px!important}
+.school-shell .admin-monitor-alert{padding:10px 15px;margin:0!important;background:#fff2f0;color:#b34c55!important;font-size:10px!important}
+.admin-logs-page{max-width:1370px;width:100%}
+.admin-logs-page .admin-logs-hero{margin-bottom:20px}
+.admin-logs-page .admin-mini-stats strong small{font-size:11px;color:#deebff;letter-spacing:0}
+.admin-logs-page .admin-logs-panel{padding:26px clamp(19px,2vw,29px);border-color:#dce7f6;border-radius:19px}
+.admin-logs-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px}
+.admin-logs-heading .section-kicker{font-size:10px;letter-spacing:.12em;color:#3473d2;font-weight:800}
+.admin-logs-heading h2{color:#244a75;font-size:20px;margin:7px 0}
+.admin-logs-heading p{font-size:11px;color:#7c92af;line-height:1.65;margin:0}
+.admin-logs-refresh{flex:none;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid #d2e3f8;border-radius:10px;background:#edf5ff;color:#2c65ba;font-size:11px;font-weight:800;cursor:pointer}
+.admin-logs-refresh:disabled{opacity:.5}
+.admin-logs-controls{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:19px}
+.admin-logs-filter-tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.admin-logs-filter-tabs button{min-height:37px;padding:0 12px;border:1px solid #dce7f7;border-radius:9px;background:#f5f8ff;color:#5a79a3;font-size:11px;font-weight:800;cursor:pointer}
+.admin-logs-filter-tabs button.active{background:#326be7;border-color:#326be7;color:#fff}
+.admin-logs-other-filters{display:flex;align-items:flex-end;gap:10px;min-width:0}
+.admin-logs-other-filters>label:first-child{display:grid;gap:5px;color:#5a759a;font-weight:800;font-size:10px}
+.admin-logs-other-filters select{min-height:39px;padding:0 12px;border:1px solid #d4e2f6;border-radius:9px;background:#fafcff;color:#2e5888;font-size:11px;font-weight:750}
+.admin-logs-search{display:flex;align-items:center;gap:9px;height:39px;padding:0 11px;border:1px solid #d4e2f6;border-radius:9px;background:#fafcff;color:#668cb9}
+.admin-logs-search input{min-width:0;width:200px;border:0;outline:0;background:transparent;font-size:11px;color:#2e5888}
+.admin-logs-list{border:1px solid #e2ebf8;border-radius:13px;overflow:hidden}
+.admin-logs-item{display:flex;align-items:flex-start;gap:14px;padding:17px 18px;border-bottom:1px solid #e9f0f9;background:#fff}
+.admin-logs-item:nth-child(even){background:#fcfdff}
+.admin-logs-item:last-child{border-bottom:0}
+.admin-logs-event-icon{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:11px}
+.admin-logs-event-icon.mandatory{background:#e9f7ef;color:#279b73}
+.admin-logs-event-icon.practice{background:#e8f1ff;color:#3175d4}
+.admin-logs-event-icon.admin{background:#f0edff;color:#7c6ccc}
+.admin-logs-item-main{flex:1;min-width:0}
+.admin-logs-item-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.admin-logs-item-top strong{font-size:12px;color:#244977;font-weight:800}
+.admin-logs-tag{border-radius:7px;padding:4px 8px;font-size:9px;font-weight:800}
+.admin-logs-tag.mandatory{background:#e9f7ef;color:#268b68}
+.admin-logs-tag.practice{background:#e8f1ff;color:#3972bd}
+.admin-logs-tag.admin{background:#f0edff;color:#7767be}
+.admin-logs-item-main p{font-size:11px;color:#718bab;margin:6px 0;line-height:1.5}
+.admin-logs-item-main p b{font-weight:800;color:#466c9c}
+.admin-logs-details{font-size:10px;color:#839bb8}
+.admin-logs-time{display:inline-flex;align-items:center;gap:6px;flex:none;color:#7992b2;font-size:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.admin-logs-empty{display:flex;align-items:center;justify-content:center;gap:10px;padding:44px 15px;color:#7794b6;font-size:12px;border:1px dashed #d9e6f7;border-radius:12px}
+.admin-logs-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:19px}
+.admin-logs-pagination>span{color:#748eac;font-size:10px}
+.admin-logs-pagination>div{display:flex;align-items:center;gap:10px}
+.admin-logs-pagination>div>span{font-size:11px;color:#416795;font-weight:800}
+.admin-logs-pagination button{display:inline-flex;align-items:center;gap:4px;padding:9px;border:1px solid #d9e6f7;border-radius:9px;background:#f5f9ff;color:#326bbb;font-size:10px;font-weight:800}
+.admin-logs-pagination button:disabled{opacity:.42}
+.admin-logs-retry{font-size:11px;color:#235eaf;text-decoration:underline}
+.admin-logs-disclaimer{border:1px solid #dce8f8;border-radius:11px;padding:14px 16px;background:#f0f6ff;color:#6b87a9;font-size:10px;line-height:1.8}
+@media(max-width:1180px){.admin-logs-page .admin-logs-hero{grid-template-columns:1fr}}
+@media(max-width:850px){.admin-logs-controls{align-items:stretch}.admin-logs-other-filters{width:100%}.admin-logs-search{flex:1}.admin-logs-search input{width:100%}}
+@media(max-width:650px){.admin-logs-heading{flex-direction:column;align-items:flex-start}.admin-logs-item{gap:10px;padding:13px}.admin-logs-time{margin-left:0;white-space:normal;max-width:120px}.admin-logs-pagination{align-items:flex-start;flex-direction:column}.admin-logs-panel{padding:18px!important}}
+@media(max-width:430px){.admin-logs-item{flex-wrap:wrap}.admin-logs-item-main{flex-basis:calc(100% - 54px)}.admin-logs-time{margin-left:52px;max-width:none}.admin-logs-filter-tabs button{font-size:10px;min-height:34px;padding:0 8px}.school-shell .admin-notice-popover.admin-monitor-popover{right:-84px}}
