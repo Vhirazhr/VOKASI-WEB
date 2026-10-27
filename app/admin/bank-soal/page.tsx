@@ -39,10 +39,6 @@ export default function AdminBankPage(){
      <label>Kategori<select value={category} onChange={e=>{setCategory(e.target.value);setCode('');setPage(0);}}><option value="">Semua materi</option>{categories.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
      <label>Kode<select value={code} onChange={e=>{setCode(e.target.value);setPage(0);}}><option value="">Semua kode</option>{codes.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
     </div>
-    <nav className="admin-bank-tabs" aria-label="Filter cepat kategori soal">
-     <button type="button" aria-pressed={!category} className={!category?'active':''} onClick={()=>{setCategory('');setCode('');setPage(0);}}>Semua <span>{bank.length}</span></button>
-     {categories.map(name=><button key={name} type="button" aria-pressed={category===name} className={category===name?'active':''} onClick={()=>{setCategory(name);setCode('');setPage(0);}}>{name} <span>{bank.filter(q=>q.category===name).length}</span></button>)}
-    </nav>
     {busy?<div className="admin-workspace-empty">Mengambil bank soal aktif...</div>:filtered.length===0?<div className="admin-workspace-empty">Tidak ada soal yang sesuai.</div>:
      <div className="admin-workspace-table-wrap"><table><thead><tr><th>ID</th><th>Kategori</th><th>Kode</th><th>Soal</th><th>Waktu</th><th>Detail</th></tr></thead><tbody>{filtered.slice(activePage*30,(activePage+1)*30).map(q=><tr key={q.id}><td><b>#{q.id}</b></td><td>{q.category}</td><td>{q.difficultyCode}</td><td>{q.question}</td><td>{q.timeLimitSeconds} detik</td><td><button type="button" className="admin-workspace-detail" onClick={()=>setSelected(q)}>Lihat</button></td></tr>)}</tbody></table></div>}
     <div className="admin-workspace-footer"><span>{filtered.length} soal sesuai filter</span><div><button type="button" onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={activePage===0}>Sebelumnya</button><span>{activePage+1} / {pages}</span><button type="button" onClick={()=>setPage(p=>p+1)} disabled={activePage>=pages-1}>Berikutnya</button></div></div>
