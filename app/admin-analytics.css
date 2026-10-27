@@ -51,3 +51,209 @@
 .admin-analytics input:focus-visible,.admin-analytics select:focus-visible,.admin-analytics button:focus-visible{outline:2px solid #467fe5;outline-offset:2px}
 @media(max-width:1130px){.analytics-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.analytics-main-grid{grid-template-columns:1fr}.analytics-filter-card{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.analytics-heading{flex-direction:column}.analytics-heading h1{font-size:24px}.analytics-filter-card{padding:15px;gap:11px}.analytics-filter-card label{font-size:10px}.analytics-stats-grid{gap:10px}.analytics-stats-grid article{padding:16px;min-height:145px}.analytics-stats-grid strong{font-size:25px}.analytics-panel{padding:16px}.analytics-bar-chart{gap:3px}.analytics-bar-day{font-size:7px;rotate:-35deg;height:22px}.analytics-bar-track{height:165px}.analytics-bar-column{gap:4px}.analytics-panel-head h2{font-size:16px}}
+
+
+/* 2026 Analytics redesign: aligned with the approved blue school workspace. */
+.admin-analytics.admin-students-page{width:100%;max-width:1370px;margin:0 auto;padding-bottom:28px}
+.admin-analytics.admin-students-page .admin-analytics-hero{
+ grid-template-columns:minmax(215px,.95fr) minmax(0,1.5fr);
+ gap:clamp(20px,2.4vw,34px);
+ min-height:235px;
+ padding:30px clamp(24px,2.65vw,37px);
+ margin-bottom:19px;
+}
+.admin-analytics .analytics-hero-heading h1{font-size:clamp(27px,2.8vw,37px);line-height:1.15}
+.admin-analytics .analytics-hero-heading p{max-width:400px;line-height:1.75}
+.admin-analytics .analytics-hero-refresh{
+ display:inline-flex;align-items:center;justify-content:center;gap:9px;
+ min-height:39px;margin-top:19px;padding:0 14px;
+ border:1px solid rgba(234,246,255,.38);border-radius:10px;
+ background:rgba(255,255,255,.16);color:#fff;
+ font-size:11px;font-weight:800;
+ transition:background .15s ease;
+}
+.admin-analytics .analytics-hero-refresh:hover:not(:disabled){background:rgba(255,255,255,.27)}
+.admin-analytics.admin-students-page .analytics-hero-stats{
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:11px;
+}
+.admin-analytics.admin-students-page .analytics-hero-stats>div{
+ min-height:90px;
+ padding:14px clamp(11px,1.4vw,18px);
+}
+.admin-analytics.admin-students-page .analytics-hero-stats strong{font-size:clamp(21px,2.1vw,29px)}
+.admin-analytics.admin-students-page .analytics-hero-stats strong small{
+ font-size:11px;color:#d8eaff;font-weight:700;letter-spacing:0;
+}
+/* Filters: one clear, compact panel rather than four floating selects. */
+.admin-analytics .analytics-filter-card{
+ display:block;
+ position:relative;
+ z-index:20;
+ padding:22px 27px 25px;
+ margin-bottom:16px;
+ border:1px solid #dce7f6;
+ border-radius:19px;
+ background:rgba(255,255,255,.98);
+ box-shadow:0 12px 35px rgba(30,76,136,.055);
+}
+.admin-analytics .analytics-filter-heading{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:15px;margin-bottom:18px;
+}
+.admin-analytics .analytics-filter-heading .section-kicker{
+ display:block;margin-bottom:6px;color:#3476da;letter-spacing:.12em;font-size:9px;
+}
+.admin-analytics .analytics-filter-heading h2{
+ margin:0 0 5px;color:#23466f;font-size:19px;font-weight:800;letter-spacing:-.035em;
+}
+.admin-analytics .analytics-filter-heading p{margin:0;font-size:10px;line-height:1.6;color:#8197b4}
+.admin-analytics .analytics-reset{
+ flex:none;
+ padding:10px 13px;border:1px solid #d8e6f8;border-radius:10px;
+ color:#306bbd;background:#eef5ff;font-size:11px;font-weight:800;
+}
+.admin-analytics .analytics-reset:hover{background:#dfedff}
+.admin-analytics .analytics-filter-grid{
+ display:grid;grid-template-columns:minmax(175px,1fr) minmax(225px,1.18fr) minmax(170px,1.1fr) minmax(165px,1fr);
+ align-items:end;gap:13px;
+}
+.admin-analytics .analytics-date-field,
+.admin-analytics .analytics-period-field,
+.admin-analytics .bank-filter-dropdown{
+ display:flex;flex-direction:column;gap:8px;min-width:0;
+ color:#4b6d98;font-size:11px;font-weight:800;line-height:1.4;
+}
+.admin-analytics .analytics-date-field input{
+ height:45px;border:1px solid #d5e3f6;border-radius:11px;
+ background:#fafcff;color:#2b527f;font-size:12px;font-weight:750;padding-left:36px;
+}
+.admin-analytics .analytics-input-wrap{width:100%;min-width:0}
+.admin-analytics .analytics-input-wrap svg{z-index:1}
+.admin-analytics .analytics-date-field input:hover{border-color:#a5c3ec}
+.admin-analytics .analytics-period-field{
+ border:0;padding:0;margin:0;min-inline-size:0;
+}
+.admin-analytics .analytics-period-field legend{
+ margin-bottom:8px;padding:0;color:#4b6d98;font-size:11px;font-weight:800;
+}
+.admin-analytics .analytics-period-options{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;
+ padding:4px;min-height:45px;border:1px solid #d5e3f6;border-radius:11px;background:#f2f6fd;
+}
+.admin-analytics .analytics-period-options button{
+ min-width:0;padding:6px 4px;border:1px solid transparent;border-radius:8px;
+ background:transparent;color:#6280a5;font-size:10px;font-weight:800;
+}
+.admin-analytics .analytics-period-options button:hover:not(.active){background:#e7effb}
+.admin-analytics .analytics-period-options button.active{
+ border-color:#2f67dd;background:#326be2;color:#fff;
+ box-shadow:0 3px 8px rgba(40,89,184,.13);
+}
+/* Reusable styled dropdown component from Bank Soal, scoped here. */
+.admin-analytics .bank-filter-dropdown{position:relative}
+.admin-analytics .bank-filter-dropdown.is-open{z-index:50}
+.admin-analytics .bank-filter-label{font-size:11px;font-weight:800;color:#4b6d98}
+.admin-analytics .bank-filter-trigger{
+ display:flex;align-items:center;justify-content:space-between;gap:9px;
+ width:100%;min-width:0;height:45px;padding:0 13px;
+ border:1px solid #d5e3f6;border-radius:11px;
+ background:#fafcff;color:#2b527f;text-align:left;font-size:11px;font-weight:800;
+}
+.admin-analytics .bank-filter-trigger:hover{border-color:#a5c3ec}
+.admin-analytics .bank-filter-trigger svg{flex:none;color:#3875ca;transition:transform .15s ease}
+.admin-analytics .bank-filter-dropdown.is-open .bank-filter-trigger{
+ outline:2px solid #3676df;outline-offset:1px;background:#fff;
+}
+.admin-analytics .bank-filter-dropdown.is-open .bank-filter-trigger svg{transform:rotate(180deg)}
+.admin-analytics .bank-filter-selected{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.admin-analytics .bank-filter-options{
+ position:absolute;top:calc(100% + 6px);left:0;
+ width:max(100%,245px);max-width:min(360px,calc(100vw - 24px));
+ max-height:280px;overflow-y:auto;overscroll-behavior:contain;
+ display:grid;gap:3px;padding:6px;
+ border:1px solid #d7e5fa;border-radius:13px;background:#fff;
+ box-shadow:0 14px 32px rgba(24,61,111,.18);
+ z-index:55;
+}
+.admin-analytics .bank-filter-dropdown:last-child .bank-filter-options{right:0;left:auto}
+.admin-analytics .bank-filter-option{
+ display:flex;align-items:center;gap:9px;
+ width:100%;min-height:41px;padding:9px;
+ border:1px solid transparent;border-radius:9px;
+ background:#fff;color:#2b527f;text-align:left;
+}
+.admin-analytics .bank-filter-option:hover,.admin-analytics .bank-filter-option:focus-visible{
+ outline:none;border-color:#e0ebfa;background:#f0f6ff;
+}
+.admin-analytics .bank-filter-option.selected{background:#eaf2ff;color:#2363bd}
+.admin-analytics .bank-filter-option-main{
+ flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;
+}
+.admin-analytics .bank-filter-option-label{font-size:11px;font-weight:800;line-height:1.5}
+.admin-analytics .bank-filter-option small{font-size:10px;color:#869db9}
+.admin-analytics .bank-filter-check{flex:none;color:#2f6dd1}
+.admin-analytics .bank-filter-count{font-size:10px;color:#7693b7}
+/* Participation summary + chart and table polish. */
+.admin-analytics .analytics-context{
+ display:flex;align-items:center;justify-content:space-between;gap:16px;
+ margin:0 0 17px;padding:13px 17px;
+ border:1px solid #d9e7fa;border-radius:12px;background:#eef5ff;
+ color:#4e719f;font-size:11px;line-height:1.55;
+}
+.admin-analytics .analytics-context>div{display:flex;align-items:center;gap:9px}
+.admin-analytics .analytics-context svg{color:#2c6ad2;flex:none}
+.admin-analytics .analytics-context strong{color:#255cab}
+.admin-analytics .analytics-context p{margin:0;font-size:10px;color:#7690b1}
+.admin-analytics .analytics-main-grid{gap:16px;margin-bottom:17px}
+.admin-analytics .analytics-panel{
+ border-color:#dce7f6;border-radius:19px;padding:25px 27px;
+ box-shadow:0 12px 35px rgba(30,76,136,.055);
+}
+.admin-analytics .analytics-panel-head{margin-bottom:23px}
+.admin-analytics .analytics-panel-head h2{color:#23466f;font-size:18px;letter-spacing:-.04em}
+.admin-analytics .analytics-panel-head>svg{color:#356fd0}
+.admin-analytics .analytics-bar-track{background:#edf3fc;border-radius:9px 9px 3px 3px}
+.admin-analytics .analytics-bar-track>div{background:linear-gradient(0deg,#2760c5,#5a95ed)}
+.admin-analytics .analytics-empty-note{
+ display:flex;align-items:center;justify-content:center;
+ padding:14px;margin:6px 0 13px;
+ border:1px dashed #cbdffa;border-radius:11px;background:#f8fbff;
+ color:#6e8bab;font-size:11px;text-align:center;line-height:1.6;
+}
+.admin-analytics .analytics-table-wrap{
+ border:1px solid #e1eaf7;border-radius:12px;overflow:auto;
+}
+.admin-analytics .analytics-table-wrap th{
+ padding:16px 14px;background:#f2f6fc;color:#587ba5;white-space:nowrap;
+}
+.admin-analytics .analytics-table-wrap td{padding:15px 14px}
+.admin-analytics .analytics-table-wrap tr:hover td{background:#fbfdff}
+.admin-analytics .analytics-disclaimer{
+ background:#f1f6ff;color:#6280a3;border-color:#dbe8fa;
+}
+/* Responsive page hierarchy. */
+@media(max-width:1180px){
+ .admin-analytics.admin-students-page .admin-analytics-hero{grid-template-columns:1fr}
+ .admin-analytics .analytics-hero-heading p{max-width:620px}
+ .admin-analytics .analytics-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ .admin-analytics.admin-students-page .admin-analytics-hero{padding:23px 19px}
+ .admin-analytics .analytics-filter-card{padding:19px}
+ .admin-analytics .analytics-filter-heading{align-items:flex-start}
+ .admin-analytics .analytics-filter-grid{gap:12px}
+ .admin-analytics .analytics-context{flex-direction:column;align-items:flex-start;gap:4px}
+ .admin-analytics .analytics-panel{padding:19px}
+}
+@media(max-width:500px){
+ .admin-analytics.admin-students-page .analytics-hero-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .admin-analytics.admin-students-page .analytics-hero-stats>div{
+  display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:110px;padding:12px;
+ }
+ .admin-analytics.admin-students-page .analytics-hero-stats svg{width:30px;height:30px}
+ .admin-analytics.admin-students-page .analytics-hero-stats strong{font-size:23px}
+ .admin-analytics .analytics-filter-grid{grid-template-columns:1fr}
+ .admin-analytics .bank-filter-options{left:0!important;right:auto!important;width:100%;max-width:100%}
+ .admin-analytics .analytics-filter-heading h2{font-size:18px}
+}
