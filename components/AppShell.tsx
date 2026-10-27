@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Bell, BookOpen, BarChart3, GraduationCap, History, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2 } from 'lucide-react';
+import { BookOpen, BarChart3, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2 } from 'lucide-react';
 import {supabase} from '@/lib/supabase';
+import AdminNotificationBell from '@/components/AdminNotificationBell';
 import type { ReactNode } from 'react';
 import '@/app/school-shell.css';
 
@@ -23,7 +24,6 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
   const pathname=usePathname();
   const [urlEmbed,setUrlEmbed]=useState(false);
   const [adminEmail,setAdminEmail]=useState('');
-  const [notificationsOpen,setNotificationsOpen]=useState(false);
   useEffect(()=>{queueMicrotask(()=>setUrlEmbed(new URLSearchParams(window.location.search).get('embed')==='1'));},[pathname]);
   useEffect(()=>{
     if(!isAdmin)return;
@@ -47,6 +47,7 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
     {href:'/admin/kelas',label:'Kelas & jurusan',icon:School2},
     {href:'/admin/bank-soal',label:'Bank soal',icon:BookOpen},
     {href:'/admin/analitik',label:'Analitik',icon:BarChart3},
+    {href:'/admin/logs',label:'Log aktivitas',icon:ScrollText},
     {href:'/admin/pengaturan',label:'Pengaturan',icon:Settings}
   ];
   const items=isAdmin?adminLinks:studentLinks;
@@ -72,13 +73,10 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
     <div className="shell-main">
       {embedMode&&!navigationBlocked&&<nav className="embed-shortcuts" aria-label="Menu VOKASI dalam website sekolah">{items.map(({href,label})=><Link key={href} href={linkTo(href)} className={active(href)?'active':''}>{label}</Link>)}</nav>}
       <header className="topbar">
-        <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
+        <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':pathname==='/admin/logs'?'Log Aktivitas':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
         <div className="top-actions">
           {isAdmin?<div className="admin-header-actions">
-            <div className="admin-notice-area">
-              <button type="button" className="admin-header-bell" aria-label="Notifikasi admin" aria-expanded={notificationsOpen} aria-controls="admin-notice-panel" title="Notifikasi" onClick={()=>setNotificationsOpen(v=>!v)}><Bell size={19}/></button>
-              {notificationsOpen&&<div className="admin-notice-popover" id="admin-notice-panel" role="status"><b>Notifikasi</b><p>Fitur notifikasi belum terhubung. Periksa dashboard untuk informasi terbaru.</p></div>}
-            </div>
+            <AdminNotificationBell/>
             <div className="admin-header-account" aria-label="Akun admin yang sedang masuk">
               <span className="admin-header-avatar"><ShieldCheck size={19}/></span>
               <span className="admin-header-identity"><strong>{adminEmail||displayName}</strong><small>Administrator · Aktif</small></span>
