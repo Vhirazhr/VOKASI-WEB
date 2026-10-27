@@ -220,24 +220,44 @@ export default function AdminBankPage(){
     <div className="admin-mini-stats"><div><BookOpen size={20}/><span>Jumlah soal</span><strong>{busy?'—':bank.length.toLocaleString('id-ID')}</strong></div><div><FileQuestion size={20}/><span>Kategori</span><strong>{busy?'—':categories.length}</strong></div><div><Clock3 size={20}/><span>Blueprint wajib</span><strong>100 soal</strong></div></div>
    </section>
    <section className="admin-data-card">
-    <div className="admin-data-title"><div><h2>Daftar pertanyaan</h2><p>Cari berdasarkan materi atau kelompok ujian. Keduanya berbeda: materi adalah topik, kelompok menentukan pembagian soal dan waktu ujian.</p></div><div className="admin-bank-actions"><Link href="/admin/bank-soal/impor" className="btn secondary small"><FileUp size={16}/> Impor soal</Link><Link href="/admin/bank-soal/buat" className="btn primary small"><Plus size={17}/> Tambah soal</Link></div></div>
+    <div className="admin-data-title"><div><h2>Daftar pertanyaan</h2><p>Cari berdasarkan materi atau kelompok ujian. Keduanya berbeda: materi adalah topik, kelompok menentukan pembagian soal dan waktu ujian.</p></div><div className="admin-bank-actions"><Link href="/admin/bank-soal/impor" className="btn secondary small"><FileUp size={16}/> Impor soal</Link><button type="button" className="btn primary small" onClick={()=>openNew()}><Plus size={17}/> Tambah soal</button></div></div>
     {issue&&<div className="alert danger" role="alert">{issue}</div>}
-    <div className="admin-directory-controls admin-directory-controls-simple">
+    <div className="admin-bank-workspace-tabs" role="tablist" aria-label="Status bank soal">
+      <button role="tab" type="button" aria-selected={tab==='published'} className={tab==='published'?'active':''} onClick={()=>{setTab('published');setPage(0);}}><BookOpen size={15}/> Semua soal <span>{bank.length}</span></button>
+      <button role="tab" type="button" aria-selected={tab==='review'} className={tab==='review'?'active':''} onClick={()=>{setTab('review');setPage(0);}}><AlertCircle size={15}/> Perlu ditinjau <span>{review.length}</span></button>
+      <button role="tab" type="button" aria-selected={tab==='drafts'} className={tab==='drafts'?'active':''} onClick={()=>{setTab('drafts');setPage(0);}}><FileText size={15}/> Draft <span>{drafts.length+importDrafts.length}</span></button>
+    </div>
+    {tab!=='drafts'&&<div className="admin-directory-controls admin-directory-controls-simple">
      <label className="admin-directory-search"><Search size={17}/><input value={search} aria-label="Cari soal" placeholder="Cari ID atau teks soal..." onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label>
      <BankFilterDropdown label="Materi" value={category} items={materialItems} onChange={next=>{setCategory(next);setCode('');setPage(0);}}/>
      <BankFilterDropdown label="Kelompok ujian" value={code} items={groupItems} onChange={next=>{setCode(next);setPage(0);}}/>
-    </div>
-    {busy?<div className="admin-workspace-empty">Mengambil bank soal aktif...</div>:filtered.length===0?<div className="admin-workspace-empty">Tidak ada soal yang sesuai.</div>:
+    </div>}
+    {tab==='drafts'?<div className="admin-bank-draft-list" role="tabpanel">
+     {drafts.length===0&&importDrafts.length===0?<div className="admin-workspace-empty">Belum ada draft yang belum diterbitkan.</div>:<>
+      {drafts.map(d=>{const problems=draftProblems.find(x=>x.id===d.id)?.reasons||[];return <article key={d.id} className="admin-bank-draft-card">
+       <div className="admin-bank-draft-info"><span className="admin-bank-draft-tag">Draft soal</span>
+        <strong>{d.question||'Soal bergambar'}</strong><p>{d.category} · {groupLabel(d.difficulty_code||'')} · {d.time_limit_seconds} detik</p>
+        {problems.length>0?<span className="admin-bank-quality needs"><AlertCircle size={13}/> Perlu dilengkapi: {problems.join(', ')}</span>:<span className="admin-bank-quality draft"><FileText size={13}/> Belum diterbitkan</span>}
+       </div><div className="admin-bank-row-actions"><button className="admin-workspace-detail" type="button" onClick={()=>openNew(d)}>Lanjutkan</button><button type="button" className="admin-bank-edit-button" onClick={()=>void deleteDraft(d)}><Trash2 size={13}/> Hapus draft</button></div>
+      </article>})}
+      {importDrafts.map(d=><article key={d.id} className="admin-bank-draft-card">
+       <div className="admin-bank-draft-info"><span className="admin-bank-draft-tag">Draft impor</span><strong>{d.file_name}</strong>
+        <p>{d.payload.length} soal · {d.mode==='replace'?'Ganti bank':'Tambahkan soal'}</p><span className="admin-bank-quality draft"><FileText size={13}/> Perlu ditinjau sebelum terbit</span></div>
+       <Link className="admin-workspace-detail" href="/admin/bank-soal/impor">Buka impor</Link>
+      </article>)}
+     </>}
+    </div>:busy?<div className="admin-workspace-empty">Mengambil bank soal aktif...</div>:filtered.filter(q=>tab==='published'||review.some(r=>r.number===q.id)).length===0?<div className="admin-workspace-empty">{tab==='review'?'Tidak ada soal aktif yang perlu ditinjau.':'Tidak ada soal yang sesuai.'}</div>:
      <div className="admin-workspace-table-wrap">
       <table className="admin-bank-table">
-       <colgroup><col className="bank-width-id"/><col className="bank-width-category"/><col className="bank-width-code"/><col className="bank-width-question"/><col className="bank-width-time"/><col className="bank-width-actions"/></colgroup>
-       <thead><tr><th scope="col">ID</th><th scope="col">Materi</th><th scope="col">Kelompok ujian</th><th scope="col">Soal</th><th scope="col">Waktu</th><th scope="col">Aksi</th></tr></thead>
-       <tbody>{filtered.slice(activePage*30,(activePage+1)*30).map(q=><tr key={q.id}>
+       <colgroup><col className="bank-width-id"/><col className="bank-width-category"/><col className="bank-width-code"/><col className="bank-width-question"/><col className="bank-width-time"/><col className="bank-width-status"/><col className="bank-width-actions"/></colgroup>
+       <thead><tr><th scope="col">ID</th><th scope="col">Materi</th><th scope="col">Kelompok ujian</th><th scope="col">Soal</th><th scope="col">Waktu</th><th scope="col">Status</th><th scope="col">Aksi</th></tr></thead>
+       <tbody>{filtered.filter(q=>tab==='published'||review.some(r=>r.number===q.id)).slice(activePage*30,(activePage+1)*30).map(q=><tr key={q.id}>
         <td className="bank-cell-id"><b>#{q.id}</b></td>
         <td><span className="admin-bank-category">{q.category}</span></td>
         <td><span className="admin-bank-code" title={q.difficultyCode}>{groupLabel(q.difficultyCode)}</span></td>
         <td><span className="admin-bank-question" title={q.question||'Soal bergambar'}>{q.question||'Soal bergambar'}</span></td>
         <td className="bank-cell-time">{q.timeLimitSeconds} detik</td>
+        <td>{review.some(x=>x.number===q.id)?<button type="button" className="admin-bank-quality needs" title={review.find(x=>x.number===q.id)?.reasons.join('; ')} onClick={()=>setSelected(q)}><AlertCircle size={13}/> Perlu ditinjau</button>:<span className="admin-bank-quality ok"><CheckCircle2 size={13}/> Lengkap</span>}</td>
         <td><div className="admin-bank-row-actions">
          <button type="button" className="admin-workspace-detail" onClick={()=>setSelected(q)}>Detail</button>
          <button type="button" className="admin-bank-edit-button" disabled={editBusy} onClick={()=>void startEdit(q.id)}><PenLine size={13}/> Edit</button>
@@ -245,9 +265,31 @@ export default function AdminBankPage(){
        </tr>)}</tbody>
       </table>
      </div>}
-    <div className="admin-workspace-footer"><span>{filtered.length} soal sesuai filter</span><div><button type="button" onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={activePage===0}>Sebelumnya</button><span>{activePage+1} / {pages}</span><button type="button" onClick={()=>setPage(p=>p+1)} disabled={activePage>=pages-1}>Berikutnya</button></div></div>
+    {tab!=='drafts'&&<div className="admin-workspace-footer"><span>{tab==='review'?filtered.filter(q=>review.some(r=>r.number===q.id)).length:filtered.length} soal sesuai filter</span><div><button type="button" onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={activePage===0}>Sebelumnya</button><span>{activePage+1} / {tab==='review'?Math.max(1,Math.ceil(filtered.filter(q=>review.some(r=>r.number===q.id)).length/30)):pages}</span><button type="button" onClick={()=>setPage(p=>p+1)} disabled={activePage>=(tab==='review'?Math.max(1,Math.ceil(filtered.filter(q=>review.some(r=>r.number===q.id)).length/30)):pages)-1}>Berikutnya</button></div></div>}
    </section>
    
+   {createOpen&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!createSaving)setCreateOpen(false);}}>
+    <section role="dialog" aria-modal="true" aria-label={draftEditing?'Lanjutkan draft':'Tambah soal'} className="admin-modal-card admin-bank-create-modal" onMouseDown={e=>e.stopPropagation()}>
+     <div className="admin-modal-top"><div><span className="section-kicker">BANK SOAL</span><h2>{draftEditing?'Lanjutkan draft':'Tambah soal'}</h2></div><button aria-label="Tutup" type="button" disabled={createSaving} onClick={()=>setCreateOpen(false)}>×</button></div>
+     {createNotice&&<div role="alert" className="alert danger">{createNotice}</div>}
+     <div className="admin-bank-edit-classification"><label>Materi<select value={newCategory} onChange={e=>changeNewCategory(e.target.value)}>{EDIT_MATERIALS.map(x=><option key={x}>{x}</option>)}</select></label>
+      <label>Kelompok ujian<select value={newGroup} onChange={e=>setNewGroup(e.target.value)}>{(MATERIAL_GROUPS[newCategory]||[]).map(x=><option key={x} value={x}>{groupLabel(x)}</option>)}</select></label>
+      <label>Waktu<div className="admin-bank-edit-duration">{approvedGroup(newGroup)?APPROVED_BLUEPRINT.groups[newGroup].seconds:5} detik</div></label></div>
+     <label>Pertanyaan<textarea rows={3} value={newQuestion} onChange={e=>setNewQuestion(e.target.value)} placeholder="Tulis pertanyaan..."/></label>
+     <label className="admin-bank-create-upload"><UploadCloud size={17}/> {newImage?.name|| (newImagePath?'Gambar tersimpan · klik untuk mengganti':'Lampirkan gambar soal (PNG/JPG/WEBP)')}
+      <input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>setNewImage(e.target.files?.[0]||null)}/></label>
+     {(newImage||newImagePath)&&<button type="button" className="admin-bank-file-remove" onClick={()=>{setNewImage(null);setNewImagePath(null);}}>Hapus gambar utama</button>}
+     <fieldset><legend>Pilihan jawaban · tandai kunci yang benar</legend>{newOptions.map((o,i)=><div key={i} className="admin-bank-new-choice"><label><input type="radio" name="new-correct" checked={newCorrect===i} onChange={()=>setNewCorrect(i)}/>{String.fromCharCode(65+i)}</label>
+      <input aria-label={'Pilihan '+String.fromCharCode(65+i)} placeholder="Teks jawaban atau lampirkan gambar" value={o.text} onChange={e=>setNewOptions(prev=>prev.map((v,j)=>j===i?{...v,text:e.target.value}:v))}/>
+      <label className="admin-bank-option-upload"><UploadCloud size={15}/>{newChoiceFiles[i]?'Terpilih':o.image_path?'Tersimpan':'Gambar'}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>{const file=e.target.files?.[0];if(file)setNewChoiceFiles(p=>({...p,[i]:file}));}}/></label>
+      {newOptions.length>2&&<button type="button" className="admin-bank-mini-remove" aria-label={'Hapus pilihan '+String.fromCharCode(65+i)} onClick={()=>{setNewOptions(p=>p.filter((_,j)=>j!==i));setNewCorrect(p=>p===i?0:p>i?p-1:p);setNewChoiceFiles({});}}><Trash2 size={14}/></button>}
+     </div>)}
+      {newOptions.length<6&&<button type="button" className="admin-bank-add-choice" onClick={()=>setNewOptions(v=>[...v,{text:'',image_path:null}])}><Plus size={14}/> Tambah pilihan</button>}</fieldset>
+     <label>Pembahasan (opsional)<textarea rows={2} value={newExplanation} onChange={e=>setNewExplanation(e.target.value)}/></label>
+     {!draftEditing&&<label className="admin-bank-publish-check"><input type="checkbox" checked={publishNew} onChange={e=>setPublishNew(e.target.checked)}/><span><strong>Langsung terbitkan ke bank aktif</strong><small>Jika tidak dicentang, soal disimpan sebagai draft.</small></span></label>}
+     {newFilesIssue&&<p role="alert">{newFilesIssue}</p>}
+     <div className="admin-bank-edit-actions"><button type="button" className="btn secondary small" disabled={createSaving} onClick={()=>setCreateOpen(false)}>Batal</button><button type="button" className="btn primary small" disabled={createSaving} onClick={()=>void saveNew()}>{createSaving?'Menyimpan...':publishNew?'Terbitkan soal':'Simpan draft'}</button></div>
+    </section></div>}
    {edit&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>{if(!editBusy){setEdit(null);setOriginal(null);}}}><section className="admin-modal-card admin-bank-edit-modal" role="dialog" aria-modal="true" aria-label={'Edit soal '+edit.source_number} onMouseDown={e=>e.stopPropagation()}>
     <div className="admin-modal-top"><div><span className="section-kicker">EDIT SOAL #{edit.source_number}</span><h2>Sunting pertanyaan</h2></div><button type="button" aria-label="Tutup editor" disabled={editBusy} onClick={()=>{setEdit(null);setOriginal(null);}}>×</button></div>
     <div className="admin-bank-edit-classification">
