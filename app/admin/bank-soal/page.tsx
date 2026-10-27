@@ -2,12 +2,14 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {BookOpen,Clock3,FileQuestion,ImagePlus,Search,FileUp} from 'lucide-react';
+import {BookOpen,Clock3,FileQuestion,Plus,Search,FileUp} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {fetchBank} from '@/lib/quiz';
 import type {BankQuestion} from '@/lib/types';
 import '@/app/admin-workspace.css';
+import '@/app/admin-students-ui.css';
+import '@/app/admin-bank-ui.css';
 
 export default function AdminBankPage(){
  const {loading,error,logout}=useSchoolAuth('admin');
@@ -24,17 +26,23 @@ export default function AdminBankPage(){
  if(loading)return <main className="page-loader">Memverifikasi hak akses admin...</main>;
  if(error)return <main className="page-loader">{error}</main>;
  return <AppShell role="admin" displayName="Admin Sekolah" onLogout={()=>void logout()}>
-  <div className="admin-workspace">
-   <header className="admin-workspace-header"><div><span className="section-kicker">KONTEN LATIHAN</span><h1>Bank Soal</h1><p>Cari dan kelola bank soal. Impor soal langsung, tinjau dulu, atau simpan sebagai draft.</p></div><div className="panel-actions"><Link href="/admin/bank-soal/impor" className="btn secondary small"><FileUp size={17}/> Impor soal</Link><Link href="/admin/bank-soal/buat" className="btn primary small"><ImagePlus size={17}/> Buat soal</Link></div></header>
-   <div className="admin-mini-stats"><div><BookOpen size={20}/><span>Jumlah soal</span><strong>{busy?'—':bank.length}</strong></div><div><FileQuestion size={20}/><span>Kategori</span><strong>{busy?'—':categories.length}</strong></div><div><Clock3 size={20}/><span>Blueprint wajib</span><strong>100 soal</strong></div></div>
+  <div className="admin-workspace admin-students-page admin-bank-page">
+   <section className="admin-students-hero" aria-label="Ringkasan bank soal">
+    <header className="admin-workspace-header"><span className="section-kicker">KONTEN LATIHAN</span><h1>Bank Soal</h1><p>Cari dan kelola bank soal, impor, atau simpan draft.</p></header>
+    <div className="admin-mini-stats"><div><BookOpen size={20}/><span>Jumlah soal</span><strong>{busy?'—':bank.length.toLocaleString('id-ID')}</strong></div><div><FileQuestion size={20}/><span>Kategori</span><strong>{busy?'—':categories.length}</strong></div><div><Clock3 size={20}/><span>Blueprint wajib</span><strong>100 soal</strong></div></div>
+   </section>
    <section className="admin-data-card">
-    <div className="admin-data-title"><div><h2>Daftar pertanyaan</h2><p>Filter materi, kode kesulitan, atau cari pertanyaan.</p></div><span className="admin-workspace-pill">Bank soal resmi web</span></div>
+    <div className="admin-data-title"><div><h2>Daftar pertanyaan</h2><p>Filter materi, kode kesulitan, atau cari pertanyaan.</p></div><div className="admin-bank-actions"><Link href="/admin/bank-soal/impor" className="btn secondary small"><FileUp size={16}/> Impor soal</Link><Link href="/admin/bank-soal/buat" className="btn primary small"><Plus size={17}/> Tambah soal</Link></div></div>
     {issue&&<div className="alert danger" role="alert">{issue}</div>}
     <div className="admin-directory-controls admin-directory-controls-simple">
      <label className="admin-directory-search"><Search size={17}/><input value={search} aria-label="Cari soal" placeholder="Cari ID atau teks soal..." onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label>
      <label>Kategori<select value={category} onChange={e=>{setCategory(e.target.value);setCode('');setPage(0);}}><option value="">Semua materi</option>{categories.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
      <label>Kode<select value={code} onChange={e=>{setCode(e.target.value);setPage(0);}}><option value="">Semua kode</option>{codes.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
     </div>
+    <nav className="admin-bank-tabs" aria-label="Filter cepat kategori soal">
+     <button type="button" aria-pressed={!category} className={!category?'active':''} onClick={()=>{setCategory('');setCode('');setPage(0);}}>Semua <span>{bank.length}</span></button>
+     {categories.map(name=><button key={name} type="button" aria-pressed={category===name} className={category===name?'active':''} onClick={()=>{setCategory(name);setCode('');setPage(0);}}>{name} <span>{bank.filter(q=>q.category===name).length}</span></button>)}
+    </nav>
     {busy?<div className="admin-workspace-empty">Mengambil bank soal aktif...</div>:filtered.length===0?<div className="admin-workspace-empty">Tidak ada soal yang sesuai.</div>:
      <div className="admin-workspace-table-wrap"><table><thead><tr><th>ID</th><th>Kategori</th><th>Kode</th><th>Soal</th><th>Waktu</th><th>Detail</th></tr></thead><tbody>{filtered.slice(activePage*30,(activePage+1)*30).map(q=><tr key={q.id}><td><b>#{q.id}</b></td><td>{q.category}</td><td>{q.difficultyCode}</td><td>{q.question}</td><td>{q.timeLimitSeconds} detik</td><td><button type="button" className="admin-workspace-detail" onClick={()=>setSelected(q)}>Lihat</button></td></tr>)}</tbody></table></div>}
     <div className="admin-workspace-footer"><span>{filtered.length} soal sesuai filter</span><div><button type="button" onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={activePage===0}>Sebelumnya</button><span>{activePage+1} / {pages}</span><button type="button" onClick={()=>setPage(p=>p+1)} disabled={activePage>=pages-1}>Berikutnya</button></div></div>
