@@ -164,31 +164,75 @@ export default function StudentPage(){
        view==='profile'?<ProfileView profile={profile} attempts={attempts} busy={busy}/>:
        <>
         <main className="student-home">
-         <section className="student-home-hero" aria-label="Ringkasan belajar">
-          <div className="student-home-hero-main">
-           <div className="student-home-greeting">
-            <span className="section-kicker">DASHBOARD SISWA</span>
-            <h1>Halo, {profile.fullName.split(' ')[0]} <span aria-hidden="true">👋</span></h1>
-            <p><GraduationCap size={15}/>{profile.className} · {profile.majorName}</p>
-           </div>
-           <div className="student-home-invitation">
-            <span className="welcome-eyebrow">TERUS MELANGKAH MAJU</span>
-            <h2>Setiap latihan membawa kamu lebih dekat ke tujuan.</h2>
-            <p>{BANK_IS_PUBLISHED?'Bank soal baru bergambar telah aktif. Siap menjawab 100 soal dengan total waktu 30 menit.':bankChecking?'Memeriksa status bank soal baru...':'Bank lama telah dicabut. Latihan baru akan tersedia setelah admin mengaktifkan 500 soal bergambar.'}</p>
-            <button className="btn white" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}><Play size={16}/> {BANK_IS_PUBLISHED?'Mulai latihan wajib':'Latihan sementara ditutup'}</button>
-           </div>
-           <span className="student-home-date"><CalendarDays size={15}/>{new Intl.DateTimeFormat('id-ID',{dateStyle:'full',timeZone:'Asia/Jakarta'}).format(new Date())}</span>
+          <header className="student-dashboard-intro">
+            <div className="student-dashboard-greeting">
+              <span className="section-kicker">RUANG BELAJAR</span>
+              <h1>Halo, {profile.fullName.split(' ')[0]} <span aria-hidden="true">👋</span></h1>
+              <p><GraduationCap size={16}/>{profile.className} <span aria-hidden="true">·</span> {profile.majorName}</p>
+            </div>
+            <div className="student-home-date"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID',{dateStyle:'full',timeZone:'Asia/Jakarta'}).format(new Date())}</div>
+          </header>
+
+          <section className="student-featured-practice" aria-labelledby="mandatory-practice-title">
+            <div className="student-featured-copy">
+              <span className="student-featured-eyebrow"><Star size={14}/> LATIHAN UTAMA</span>
+              <h2 id="mandatory-practice-title">Latihan wajib numerasi</h2>
+              <p>{BANK_IS_PUBLISHED?'Uji pemahamanmu lewat soal numerasi bergambar. Selesaikan latihan dan lihat hasil belajarmu.':bankChecking?'Sedang memeriksa ketersediaan soal latihan...':'Latihan wajib belum tersedia. Tunggu sampai admin mengaktifkan bank soal terbaru.'}</p>
+              <div className="student-featured-meta">
+                <span><BookOpen size={16}/>100 soal</span>
+                <span><Clock3 size={16}/>30 menit</span>
+                <span><CheckCircle2 size={16}/>Nilai otomatis</span>
+              </div>
+              <button type="button" className="student-start-button" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}>
+                <Play size={17}/>{BANK_IS_PUBLISHED?'Mulai latihan wajib':'Latihan belum tersedia'}<ArrowRight size={17}/>
+              </button>
+            </div>
+            <div className="student-featured-visual" aria-hidden="true">
+              <div className="student-featured-orbit student-featured-orbit-one"/>
+              <div className="student-featured-orbit student-featured-orbit-two"/>
+              <div className="student-featured-book"><BookOpen size={39}/></div>
+              <strong>100</strong><span>SOAL NUMERASI</span>
+              <small><Clock3 size={14}/> 30 menit</small>
+            </div>
+          </section>
+
+          <section className="student-progress-section" aria-label="Ringkasan progres belajar">
+            <div className="student-subsection-heading">
+              <div><span className="section-kicker">PROGRES BELAJAR</span><h2>Ringkasanmu</h2></div>
+              <span className="student-muted-caption">Berdasarkan latihan yang tercatat</span>
+            </div>
+            <div className="student-home-metrics">
+              <div className="metric"><span className="metric-icon blue"><BookOpen size={19}/></span><div><small>Sesi latihan wajib</small><strong>{busy?'—':compulsory.length}</strong></div><span className="metric-foot">Total sesi selesai</span></div>
+              <div className="metric"><span className="metric-icon green"><TrendingUp size={19}/></span><div><small>Rata-rata nilai</small><strong>{busy?'—':average??'—'}</strong></div><span className="metric-foot">Dari latihan wajib</span></div>
+              <div className="metric"><span className="metric-icon purple"><Star size={19}/></span><div><small>Total XP</small><strong>{busy?'—':attempts.reduce((sum,attempt)=>sum+attempt.earned_xp,0)}</strong></div><span className="metric-foot">Poin pengalaman</span></div>
+              <div className="metric"><span className="metric-icon orange"><Medal size={19}/></span><div><small>Nilai terakhir</small><strong>{busy?'—':latest?.score??'—'}</strong></div><span className="metric-foot">{today?'Sudah latihan hari ini':'Belum latihan hari ini'}</span></div>
+            </div>
+          </section>
+
+          <section className="student-practice-section" aria-labelledby="practice-topics-title">
+            <div className="student-subsection-heading">
+              <div><span className="section-kicker">PILIH MATERI</span><h2 id="practice-topics-title">Latihan mandiri</h2><p>Pilih topik yang ingin kamu pelajari dan latih.</p></div>
+            </div>
+            <div className="student-practice-grid">{categories.map((cat,i)=><button type="button" className="student-topic-card" key={cat} disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(cat)}>
+              <span className={'student-topic-icon c'+i}>{['×','÷','∑','⚙','◇','▣'][i]}</span>
+              <span className="student-topic-copy"><b>{cat}</b><small>{BANK_IS_PUBLISHED?'10 soal latihan':'Menunggu bank soal aktif'}</small></span>
+              <span className="student-topic-arrow"><ArrowRight size={17}/></span>
+            </button>)}</div>
+          </section>
+
+          <div className="student-secondary-grid">
+            <section className="white-panel student-recent-panel">
+              <div className="panel-heading"><div><span className="section-kicker">AKTIVITAS TERBARU</span><h2>Riwayat latihan</h2></div><Link aria-label="Lihat semua riwayat" className="icon-action" href={embed?'/siswa/riwayat?embed=1':'/siswa/riwayat'}><ArrowRight size={17}/></Link></div>
+              {busy?<div className="student-compact-empty">Memuat riwayat latihan...</div>:compulsory.length===0?<div className="student-compact-empty"><History size={23}/><div><b>Belum ada hasil latihan</b><p>Nilai dan progresmu akan tampil setelah menyelesaikan latihan.</p></div></div>:<div className="history-list">{compulsory.slice(0,4).map(a=><div key={a.session_key} className="history-row"><span className="history-dot"/><div><b>{toDay(a.completed_at_ms)}</b><small>{a.correct}/{a.question_count} jawaban benar</small></div><span className={'score-chip '+(a.score>=75?'positive':'')}>{a.score}/100</span></div>)}</div>}
+              <Link className="student-text-link" href={embed?'/siswa/riwayat?embed=1':'/siswa/riwayat'}>Buka semua riwayat <ArrowRight size={15}/></Link>
+            </section>
+
+            <section className="white-panel leaderboard student-home-leaderboard">
+              <div className="panel-heading"><div><span className="section-kicker">SEMANGAT BERSAMA</span><h2>Peringkat sekolah</h2></div><Link href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'} className="icon-action" aria-label="Lihat semua peringkat"><ArrowRight size={17}/></Link></div>
+              {rankFailed?<div className="student-compact-empty"><Trophy size={22}/><div><b>Peringkat belum tersedia</b><p>Data belum dapat dimuat. Coba lagi nanti.</p></div></div>:leaders.length?<div className="leader-list">{leaders.slice(0,5).map((row,i)=><div key={row.username+'-'+i} className="leader-item"><b className="leader-rank">#{i+1}</b><span className="leader-avatar">{row.display_name.slice(0,1)}</span><div><b>{row.display_name}</b><small>{row.classroom} · {row.major}</small></div><span className="leader-points">{row.mandatory_average??'—'}<small>rata-rata</small></span></div>)}</div>:<div className="student-compact-empty"><Trophy size={22}/><div><b>Belum ada peringkat</b><p>Peringkat muncul setelah ada nilai latihan wajib.</p></div></div>}
+              <Link className="student-text-link" href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'}>Lihat klasemen <ArrowRight size={15}/></Link>
+            </section>
           </div>
-          <div className="student-home-metrics">
-           <div className="metric"><span className="metric-icon blue"><BookOpen size={20}/></span><small>Latihan wajib</small><strong>{busy?'—':compulsory.length}</strong><span className="metric-foot">Total sesi tercatat</span></div>
-           <div className="metric"><span className="metric-icon green"><TrendingUp size={20}/></span><small>Rata-rata nilai</small><strong>{busy?'—':average??'—'}</strong><span className="metric-foot">Dari latihan wajib</span></div>
-           <div className="metric"><span className="metric-icon purple"><Star size={20}/></span><small>XP dari riwayat</small><strong>{busy?'—':attempts.reduce((sum,attempt)=>sum+attempt.earned_xp,0)}</strong><span className="metric-foot">Dari sesi tercatat</span></div>
-           <div className="metric"><span className="metric-icon orange"><Medal size={20}/></span><small>Nilai terakhir</small><strong>{busy?'—':latest?.score??'—'}</strong><span className="metric-foot">{today?'Sudah latihan hari ini':'Belum latihan hari ini'}</span></div>
-          </div>
-         </section>
-        <div className="dashboard-columns"><section className="white-panel"><div className="panel-heading"><div><span className="section-kicker">PILIH MATERI</span><h2>Latihan numerasi</h2></div><button className="link-action" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(null)}>Wajib <ArrowRight size={16}/></button></div><div className="practice-list">{categories.map((cat,i)=><button className="practice-item" key={cat} disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(cat)}><span className={'practice-ico c'+i}>{['×','÷','∑','⚙','◇','▣'][i]}</span><span><b>{cat}</b><small>{BANK_IS_PUBLISHED?'10 soal latihan mandiri':'Menunggu bank baru aktif'}</small></span><ArrowRight size={18}/></button>)}</div></section>
-        <section className="white-panel"><div className="panel-heading"><div><span className="section-kicker">HASILMU</span><h2>Riwayat latihan</h2></div><Link aria-label="Lihat semua riwayat" className="icon-action" href={embed?'/siswa/riwayat?embed=1':'/siswa/riwayat'}><ArrowRight size={17}/></Link></div>{busy?<div className="empty-state">Memuat riwayat...</div>:compulsory.length===0?<div className="empty-state"><GraduationCap size={35}/><b>Belum ada riwayat latihan</b><p>Kerjakan latihan wajib pertamamu untuk mulai mencatat nilai.</p></div>:<div className="history-list">{compulsory.slice(0,6).map(a=><div key={a.session_key} className="history-row"><span className="history-dot"/><div><b>{toDay(a.completed_at_ms)}</b><small>{a.correct}/{a.question_count} jawaban benar</small></div><span className={'score-chip '+(a.score>=75?'positive':'')}>{a.score}/100</span></div>)}</div>}</section></div>
-        <section className="white-panel leaderboard"><div className="panel-heading"><div><span className="section-kicker">KOMUNITAS BELAJAR</span><h2>Peringkat sekolah</h2></div><Link href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'} className="link-action"><Users size={16}/> Semua peringkat <ArrowRight size={16}/></Link></div>{rankFailed?<div className="empty-state"><p>Peringkat belum dapat dimuat dari Supabase.</p></div>:leaders.length?<div className="leader-list">{leaders.slice(0,8).map((row,i)=><div key={row.username+'-'+i} className="leader-item"><b className="leader-rank">#{i+1}</b><span className="leader-avatar">{row.display_name.slice(0,1)}</span><div><b>{row.display_name}</b><small>{row.classroom} • {row.major}</small></div><span className="leader-points">{row.mandatory_average??'—'} <small>rata-rata nilai</small></span></div>)}</div>:<div className="empty-state"><p>Belum ada peringkat latihan wajib yang tercatat.</p></div>}</section>
         </main>
        </>}
     </>}
