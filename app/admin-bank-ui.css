@@ -308,3 +308,11 @@
 .admin-bank-publish-check>span{display:grid;gap:4px}
 .admin-bank-publish-check small{color:#7893b3;font-size:10px}
 @media(max-width:650px){.admin-bank-draft-card{flex-direction:column;align-items:start}.admin-bank-new-choice{flex-wrap:wrap}.admin-bank-new-choice>input{flex-basis:calc(100% - 55px)}.admin-bank-option-upload{margin-left:55px}}
+
+.admin-bank-detail-issues{display:flex;align-items:flex-start;gap:9px;margin:12px 0;padding:12px;border:1px solid #f2dba8;border-radius:10px;background:#fff7e8;color:#93682a;font-size:11px;line-height:1.6;font-weight:700}
+.admin-bank-detail-issues svg{flex:none}
+.admin-bank-edit-modal .admin-bank-create-upload{display:flex;position:relative;min-height:43px}
+.admin-bank-edit-modal .admin-bank-option-upload{position:relative;display:flex;min-width:75px}
+.admin-bank-edit-modal .admin-bank-edit-option>input{flex:1}
+.admin-bank-edit-modal .admin-bank-mini-remove{flex:none}
+@media(max-width:570px){.admin-bank-edit-modal .admin-bank-edit-option{flex-wrap:wrap}.admin-bank-edit-modal .admin-bank-option-upload{margin-left:55px}}
