@@ -99,6 +99,7 @@
   display: none;
 }
 .vkw-nav {
+  text-transform: uppercase;
   position: absolute;
   top: 16px;
   left: 50%;
@@ -200,6 +201,7 @@
   color: #061421;
 }
 .vkw-hero-bottom > p {
+  text-transform: uppercase;
   position: absolute;
   bottom: clamp(30px, 5svh, 58px);
   left: 5%;
