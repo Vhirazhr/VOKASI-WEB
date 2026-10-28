@@ -171,3 +171,12 @@ Blueprint: 30×5 detik hitung dasar, 20×10 menengah, 10×15 lanjut, 10×30 nume
 - Enam diagram visual 479–484 tetap dikecualikan sampai diperoleh file sumber lengkap. Jangan menyusun ulang gambar yang hilang dengan tebakan.
 - Security Advisor Supabase masih memperingatkan penggunaan SECURITY DEFINER pada RPC yang memang secara sengaja diekspos kepada pengguna berotorisasi. Semua RPC penting harus mempertahankan validasi \`auth.uid()\`/role dan pembatasan ownership. Peringatan ini tidak otomatis berarti eksploit.
 - **Pengaturan akun manual yang belum otomatis:** buka Supabase Dashboard → Authentication → Settings → Password Security, lalu aktifkan **Leaked Password Protection** jika tersedia untuk paket project. Konektor SQL tidak menyediakan perubahan konfigurasi Auth ini. Setelah diaktifkan, ulangi Security Advisor.
+
+## Monitoring aktivitas ujian (web)
+
+Setelah migrasi sebelumnya diterapkan, jalankan supabase/migrations/202610280001_vokasi_exam_activity_monitoring.sql pada **project Supabase yang sama** dengan website. Admin dapat membuka **Aktivitas ujian** di /admin/aktivitas-ujian untuk melihat ringkasan per siswa dan kronologi kejadian.
+
+Yang dicatat selama sesi web aktif: halaman menjadi tidak terlihat/kembali aktif, jendela kehilangan/mendapatkan fokus, event copy/paste (tanpa isi clipboard), menu konteks, keluar dari fullscreen, klik tombol/opsi jawaban, dan tautan eksternal yang diklik (domain tujuan saja). Catatan ini bersifat indikatif; interaksi normal seperti memilih jawaban juga ikut dicatat.
+
+**Batasan privasi browser:** website tidak bisa mengetahui nama aplikasi lain yang dibuka, membaca isi clipboard, isi pencarian, atau URL tab lain. Jangan gunakan catatan ini sebagai bukti otomatis kecurangan atau dasar hukuman otomatis. Jika backend nanti dipindahkan dari Supabase ke MySQL cPanel, migrasi tabel dan RPC monitoring ini juga harus dipindahkan ke backend baru.
+
