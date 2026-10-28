@@ -96,6 +96,7 @@ export default function LandingRanking({ children }: { children: ReactNode }) {
             Number.isFinite(row.mandatory_average),
         );
       setRows(normalized);
+      setExpanded(normalized.length > 1);
     } catch {
       if (currentRequest === requestId.current) {
         setError(
@@ -241,7 +242,7 @@ export default function LandingRanking({ children }: { children: ReactNode }) {
                     aria-expanded={expanded}
                     aria-controls="vkw-ranking-details"
                   >
-                    {expanded ? "Tutup detail" : "Lihat detail"}
+                    {expanded ? "Sembunyikan daftar" : "Lihat semua peringkat"}
                   </button>
                 </article>
                 <div className="vkw-ranking-podium-base" aria-hidden="true">
