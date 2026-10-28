@@ -1,5 +1,6 @@
 'use client';
 
+import { nativeRpc } from '@/lib/native-rpc';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle,Grid2X2,ShieldCheck,ZoomIn,X,LogOut} from 'lucide-react';
 import {supabase} from '@/lib/supabase';
@@ -27,7 +28,7 @@ const key=(id:string)=>'vokasi-secure-quiz-'+id;
 const textClock=(seconds:number)=>String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
 const errText=(e:unknown)=>e instanceof Error?e.message:String(e);
 async function rpc<T>(functionName:string,params:Record<string,unknown>):Promise<T>{
- const {data,error}=await supabase().rpc(functionName,params);
+ const {data,error}=await nativeRpc(functionName,params);
  if(error)throw new Error(error.message);
  return data as T;
 }
