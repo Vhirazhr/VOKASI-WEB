@@ -1,0 +1,131 @@
+/* Missing Android student features: real per-topic coaching and PDF reports.
+   Matches the web blue/white visual system; red means observed weak accuracy. */
+.school-shell.student-shell .vokasi-study-recommendation{
+ display:grid;gap:11px;min-width:0;margin:3px 0 17px;padding:15px 16px;
+ border:1px solid #d6e5fa;border-radius:15px;
+ background:linear-gradient(125deg,#f4f9ff,#ffffff);
+}
+.school-shell.student-shell .vokasi-study-recommendation-title{
+ display:flex;align-items:center;flex-wrap:wrap;gap:7px;
+ color:#3b75c2;font-size:10px;font-weight:850;letter-spacing:.04em;
+}
+.school-shell.student-shell .vokasi-study-recommendation-title svg{color:#367fe5}
+.school-shell.student-shell .vokasi-study-recommendation-title>span{
+ margin-left:auto;color:#8ca4bc;font-size:9px;font-weight:650;letter-spacing:0;
+}
+.school-shell.student-shell .vokasi-study-recommendation>p{
+ margin:0;color:#7893b0;font-size:11px;line-height:1.6;
+}
+.school-shell.student-shell .vokasi-study-recommendation-body{
+ display:flex;align-items:center;justify-content:space-between;gap:14px;
+ min-width:0;padding:13px 14px;border:1px solid #efd2a0;
+ border-left:4px solid #e5a33c;border-radius:11px;background:#fff9ed;
+}
+.school-shell.student-shell .vokasi-study-recommendation-body.is-weak{
+ border-color:#fac9d2;border-left:4px solid #e5556e;
+ background:linear-gradient(115deg,#fff2f4,#fffafd);
+}
+.school-shell.student-shell .vokasi-study-recommendation-body>div{
+ display:grid;gap:5px;min-width:0;
+}
+.school-shell.student-shell .vokasi-study-recommendation-body b{
+ color:#a93a50;font-size:14px;font-weight:900;line-height:1.35;
+}
+.school-shell.student-shell .vokasi-study-recommendation-body.is-improve b{color:#9b6621}
+.school-shell.student-shell .vokasi-study-recommendation-body span{
+ color:#b04c61;font-size:10px;font-weight:850;line-height:1.4;
+}
+.school-shell.student-shell .vokasi-study-recommendation-body.is-improve span{color:#a77a3a}
+.school-shell.student-shell .vokasi-study-recommendation-body small{
+ color:#7e94ad;font-size:10px;line-height:1.5;
+}
+.school-shell.student-shell .vokasi-study-recommendation-body>button{
+ display:inline-flex;justify-content:center;align-items:center;gap:6px;
+ flex:none;min-height:40px;padding:9px 11px;border:0;border-radius:9px;
+ background:#e74d69;color:#fff;font-size:11px;font-weight:850;
+ transition:background .15s;
+}
+.school-shell.student-shell .vokasi-study-recommendation-body>button:hover{background:#cd3955}
+.school-shell.student-shell .vokasi-study-recommendation-body.is-improve>button{background:#c68a36}
+.school-shell.student-shell .vokasi-study-recommendation-body>button:disabled{opacity:.5;cursor:not-allowed}
+.school-shell.student-shell .student-reference-topic.needs-practice{
+ border-color:#f1aab9;border-left:4px solid #e65169;background:#fff9fa;
+}
+.school-shell.student-shell .student-reference-topic.needs-practice:hover:not(:disabled){
+ border-color:#e5556e;background:#fff3f5;
+}
+.school-shell.student-shell .student-reference-topic.needs-improve{
+ border-color:#f0d4aa;border-left:4px solid #eab14a;background:#fffcf7;
+}
+.school-shell.student-shell .student-reference-topic .vokasi-topic-status{
+ display:inline-flex;align-items:center;flex-wrap:wrap;gap:5px;
+ width:fit-content;max-width:100%;margin-top:4px;
+ padding:4px 7px;border-radius:6px;background:#f0f6ff;
+ color:#7894b3;font-size:9px;font-weight:750;line-height:1.4;
+}
+.school-shell.student-shell .student-reference-topic .vokasi-topic-status.status-weak{
+ background:#ffe4e9;color:#bd3e59;
+}
+.school-shell.student-shell .student-reference-topic .vokasi-topic-status.status-improve{
+ background:#fff0d8;color:#ac762c;
+}
+.school-shell.student-shell .student-reference-topic .vokasi-topic-status.status-good{
+ background:#e1f5eb;color:#22865d;
+}
+.school-shell.student-shell .student-reference-topic .vokasi-topic-status.status-timeout{
+ background:#fff1db;color:#aa7025;
+}
+.school-shell.student-shell .vokasi-report-action{display:grid;gap:5px;max-width:100%}
+.school-shell.student-shell .vokasi-report-download{
+ display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ width:max-content;max-width:100%;min-height:39px;padding:10px 15px;
+ border:1px solid #c6dcfb;border-radius:10px;background:#eaf3ff;
+ color:#2269c9;font-size:11px;font-weight:850;
+ transition:background .14s,border-color .14s;
+}
+.school-shell.student-shell .vokasi-report-download:hover:not(:disabled){
+ background:#dcecff;border-color:#9abef0;
+}
+.school-shell.student-shell .vokasi-report-download:disabled{
+ cursor:wait;opacity:.7;
+}
+.school-shell.student-shell .vokasi-report-error{
+ color:#ba465c;font-size:10px;line-height:1.45;overflow-wrap:anywhere;
+}
+.school-shell.student-shell .vprofile-report-toolbar{
+ display:flex;align-items:center;flex-wrap:wrap;gap:10px;
+ margin:10px 12px 12px;padding:0 0 4px;
+}
+.school-shell.student-shell .vprofile-report-toolbar>small{
+ color:#8ca0b8;font-size:9px;line-height:1.4;
+}
+.school-shell.student-shell .student-history-download{
+ display:flex;align-items:center;padding:10px 16px 13px;
+}
+.school-shell.student-shell .vokasi-report-spinner{
+ animation:vokasi-report-spin 1.3s linear infinite;
+}
+@keyframes vokasi-report-spin{to{transform:rotate(360deg)}}
+@media(max-width:770px){
+ .school-shell.student-shell .vokasi-study-recommendation{padding:13px 12px;border-radius:13px}
+ .school-shell.student-shell .vokasi-study-recommendation-title>span{margin-left:0;width:100%}
+ .school-shell.student-shell .vokasi-study-recommendation-body{
+   flex-direction:column;align-items:stretch;gap:11px;padding:11px;
+ }
+ .school-shell.student-shell .vokasi-study-recommendation-body>button{
+   align-self:stretch;min-height:43px;
+ }
+ .school-shell.student-shell .student-reference-topic .vokasi-topic-status{font-size:9px}
+ .school-shell.student-shell .student-reference-topic.needs-practice{border-left-width:3px}
+ .school-shell.student-shell .vprofile-report-toolbar{align-items:stretch;flex-direction:column}
+ .school-shell.student-shell .vprofile-report-toolbar .vokasi-report-download{
+   width:100%;min-height:42px;
+ }
+ .school-shell.student-shell .student-history-download .vokasi-report-action,
+ .school-shell.student-shell .student-history-download .vokasi-report-download{
+   width:100%;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .school-shell.student-shell .vokasi-report-spinner{animation:none}
+}
