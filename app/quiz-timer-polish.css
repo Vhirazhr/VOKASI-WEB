@@ -1,0 +1,256 @@
+/* Focus timer card — deliberate three-part alignment rather than stacked legacy flex.
+   Question clock | current question | total-session clock. The slim countdown
+   remains anchored to the bottom. All official timing stays server-driven. */
+.school-shell.student-shell .quiz-focus-timer-banner{
+  --clock-size:clamp(76px,10.7dvh,96px);
+  display:grid;
+  grid-template-columns:var(--clock-size) minmax(0,1fr) auto;
+  grid-template-rows:1fr;
+  align-items:center;
+  gap:clamp(14px,1.7vw,25px);
+  width:100%;
+  height:clamp(112px,14dvh,138px);
+  min-height:0;
+  padding:14px clamp(17px,2.1vw,30px) 18px;
+  border-radius:21px;
+  box-sizing:border-box;
+}
+.school-shell.student-shell .quiz-focus-timer-banner::after{
+  display:none;
+}
+.school-shell.student-shell .quiz-focus-timer-ring{
+  grid-column:1;
+  width:var(--clock-size);
+  height:var(--clock-size);
+  padding:6px;
+  margin:0;
+  box-shadow:0 0 0 4px #e3efff,0 4px 14px #2a71d11c;
+}
+.school-shell.student-shell .quiz-focus-timer-inner{
+  gap:1px;
+}
+.school-shell.student-shell .quiz-focus-timer-inner strong{
+  font-size:clamp(21px,2.4vw,27px);
+  letter-spacing:-.05em;
+}
+.school-shell.student-shell .quiz-focus-timer-inner small{
+  font-size:7px;
+  letter-spacing:.04em;
+}
+.school-shell.student-shell .quiz-focus-timer-copy{
+  grid-column:2;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  align-self:stretch;
+  gap:5px;
+  margin:0;
+  min-width:0;
+  text-align:left;
+}
+.school-shell.student-shell .quiz-focus-question-eyebrow{
+  display:block;
+  color:#7293ba;
+  font-size:9px;
+  letter-spacing:.12em;
+  font-weight:850;
+  line-height:1.25;
+}
+.school-shell.student-shell .quiz-focus-timer-copy h2{
+  margin:0;
+  max-width:100%;
+  font-size:clamp(19px,2.25vw,27px);
+  font-weight:850;
+  line-height:1.23;
+  letter-spacing:-.035em;
+  overflow-wrap:normal;
+}
+.school-shell.student-shell .quiz-focus-timer-copy h2>span{
+  color:#7694bb;
+  font-size:.75em;
+  letter-spacing:-.02em;
+  white-space:nowrap;
+}
+.school-shell.student-shell .quiz-focus-question-progress{
+  display:block;
+  color:#4381c7;
+  font-size:11px;
+  font-weight:750;
+  line-height:1.25;
+  font-variant-numeric:tabular-nums;
+}
+.school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time{
+  grid-column:3;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:none;
+  gap:11px;
+  width:clamp(162px,16vw,192px);
+  min-width:0;
+  height:68px;
+  min-height:0;
+  margin:0;
+  padding:11px 13px;
+  border-radius:14px;
+  box-sizing:border-box;
+}
+.school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time>svg{
+  display:block;
+  flex:none;
+  width:19px;
+  height:19px;
+}
+.school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time>div{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+}
+.school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time small{
+  font-size:9px;
+  line-height:1.05;
+  letter-spacing:.055em;
+  white-space:nowrap;
+}
+.school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time strong{
+  font-size:23px;
+  line-height:1;
+}
+.school-shell.student-shell .quiz-focus-timer-track{
+  height:4px;
+  border-radius:0 0 21px 21px;
+  overflow:hidden;
+}
+@media(max-width:1100px){
+  .school-shell.student-shell .quiz-focus-timer-banner{
+    --clock-size:78px;
+    gap:13px;
+    padding-left:17px;
+    padding-right:17px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time{
+    width:158px;
+    height:62px;
+    gap:8px;
+    padding:9px 11px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time strong{
+    font-size:21px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-copy h2{
+    font-size:clamp(17px,2.1vw,23px);
+  }
+}
+@media(max-width:800px){
+  .school-shell.student-shell .quiz-focus-timer-banner{
+    --clock-size:75px;
+    display:grid;
+    grid-template-columns:var(--clock-size) minmax(0,1fr) auto;
+    height:110px;
+    gap:12px;
+    padding:12px 16px 17px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-copy h2{
+    font-size:clamp(18px,3.1vw,22px);
+  }
+  .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time{
+    width:151px;
+    height:61px;
+  }
+}
+@media(max-width:510px){
+  .school-shell.student-shell .quiz-focus-timer-banner{
+    --clock-size:64px;
+    grid-template-columns:var(--clock-size) minmax(0,1fr) 106px;
+    gap:9px;
+    height:99px;
+    padding:11px 10px 15px;
+    border-radius:15px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-ring{
+    padding:5px;
+    box-shadow:0 0 0 3px #e3efff,0 3px 9px #2a71d115;
+  }
+  .school-shell.student-shell .quiz-focus-timer-inner strong{
+    font-size:18px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-inner svg{
+    width:12px;height:12px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-inner small{
+    font-size:6px;
+  }
+  .school-shell.student-shell .quiz-focus-question-eyebrow{
+    font-size:7px;
+    letter-spacing:.04em;
+  }
+  .school-shell.student-shell .quiz-focus-timer-copy{
+    gap:3px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-copy h2{
+    font-size:15px;
+    line-height:1.2;
+  }
+  .school-shell.student-shell .quiz-focus-timer-copy h2>span{
+    display:block;
+    font-size:12px;
+  }
+  .school-shell.student-shell .quiz-focus-question-progress{
+    font-size:9px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time{
+    width:106px;
+    height:55px;
+    padding:7px 8px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time>svg{
+    display:none;
+  }
+  .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time small{
+    font-size:7px;
+    letter-spacing:0;
+  }
+  .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time strong{
+    font-size:19px;
+  }
+}
+@media(max-width:350px){
+  .school-shell.student-shell .quiz-focus-timer-banner{
+    --clock-size:54px;
+    grid-template-columns:var(--clock-size) minmax(0,1fr) 93px;
+    gap:7px;
+    height:90px;
+    padding-left:8px;
+    padding-right:8px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-inner strong{
+    font-size:15px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-copy h2{
+    font-size:14px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time{
+    width:93px;height:49px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time strong{
+    font-size:17px;
+  }
+}
+@media(max-height:680px){
+  .school-shell.student-shell .quiz-focus-timer-banner{
+    --clock-size:58px;
+    height:80px;
+    padding-top:8px;
+    padding-bottom:12px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-inner strong{
+    font-size:16px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-inner svg{display:none}
+  .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time{
+    height:49px;
+  }
+}
