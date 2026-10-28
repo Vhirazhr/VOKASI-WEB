@@ -24,11 +24,13 @@ export default function StudentNotices({profile,attempts,insights,busy}:{
  },[key,prefKey]);
  const notices=useMemo(()=>{
    const current=wibDate();
+   const [year,month,day]=current.split('-').map(Number);
+   const yesterday=wibDate(Date.UTC(year,month-1,day-1,12));
    const official=officialMandatoryAttempts(attempts);
    const verified=attempts.filter(a=>a.signature.startsWith('WEB-SERVER-v1:'));
    const messages:Notice[]=[];
    if(enabled&&!official.some(a=>wibDate(a.completed_at_ms)===current)){
-     const previous=verified.some(a=>wibDate(a.completed_at_ms)===wibDate(Date.now()-86400000));
+     const previous=verified.some(a=>wibDate(a.completed_at_ms)===yesterday);
      messages.push({id:'daily-'+current,title:previous?'Lanjutkan streak belajarmu':'Latihan wajib hari ini belum selesai',
       message:previous?'Kamu sudah berlatih kemarin. Selesaikan latihan hari ini untuk melanjutkan kebiasaan belajarmu.':'Mulai latihan wajib untuk mencatat nilai resmi hari ini.',
       href:'/siswa',action:'Buka latihan',icon:previous?'flame':'book'});
