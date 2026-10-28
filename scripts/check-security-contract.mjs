@@ -9,11 +9,18 @@ const safe=file('supabase/migrations/202610260006_vokasi_resume_with_quarantined
 assert(!quiz.includes('makeAttempt('),'Browser must not generate authoritative scores');
 assert(!quiz.includes('fetchBank('),'Student must not download complete answer key bank');
 assert(quiz.includes('vokasi_web_submit_answer'),'Student answers must be server graded');
+assert(!quiz.includes("recordExamActivity('answer_option_selected'"),'Unsubmitted answer selections must not be written to activity logs');
+assert(quiz.includes('Pilihan hanya dikirim ke server saat tombol Kirim jawaban ditekan'),'Quiz UI must make explicit submission semantics clear');
 assert(school.includes("allRows<Attempt>('vokasi_verified_attempts'"),'Admin grades must be server verified');
 assert(school.includes("allRows<AttemptSummary>('vokasi_verified_attempts'"),'Analytics must be server verified');
 assert(migration.includes('REVOKE INSERT ON TABLE public.student_attempts FROM authenticated'),'Direct client scores must be revoked');
 assert(migration.includes('FROM public.vokasi_verified_attempts AS a'),'Leaderboard must use verified attempts');
 assert(secure.includes('auth_user_id=auth.uid() FOR UPDATE'),'Session write must lock and check ownership');
+assert(secure.includes("'selected_index',NULL,'status','TIMEOUT'"),'Expired unsubmitted choices must be recorded as TIMEOUT without a selected answer');
+const auth=file('lib/use-school-auth.ts');
+const landing=file('components/landing/LandingAccess.tsx');
+assert(auth.includes("login:'1',role:required"),'Expired sessions must return to landing-page login');
+assert(landing.includes('url.searchParams.get("login") !== "1"'),'Landing page must auto-open login from the session redirect');
 assert(safe.includes('vokasi_visual_asset_blocks'),'Known defective diagrams must be quarantined');
 
 const examHardening=file('supabase/migrations/202610260009_vokasi_exam_clock_xp_asset_scope.sql');
