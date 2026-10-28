@@ -52,6 +52,6 @@ assert.match(seed, /ALLOW_SUPER_ADMIN_BOOTSTRAP/);
 assert.match(seed, /refusing to overwrite/i);
 assert.match(seed, /bcrypt\.hash\(password, 12\)/);
 assert.match(docs, /NOT YET A FULL CUTOVER/);
-assert.match(docs, /Do not delete or modify the current backend/);
+assert.match(docs, /do not remove the existing backend/i);
 
 console.log('OK: self-hosted PostgreSQL foundation and native-auth security contracts passed.');
