@@ -79,7 +79,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
 
  const accept=useCallback((next:State)=>{
    setState(next);setNow(Date.now());setClockBase(Date.now()-next.server_now_ms);
-   if(next.status==='active')setSelected(null);
+   if(next.status==='active'){setSelected(null);setTimeoutReaction(false);}
  },[]);
 
  useEffect(()=>{
