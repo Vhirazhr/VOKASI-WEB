@@ -180,9 +180,11 @@ export default function QuizView({profile,category,onDone,onQuit}:{
 
  useEffect(()=>{
    if(state?.status!=='complete')return;
+   let current=true;
    const session=state.session_id;
    void supabase().from('student_attempts').select('earned_xp').eq('session_key',session)
-     .maybeSingle().then(({data})=>{if(live.current&&data)setXp(data.earned_xp);});
+     .maybeSingle().then(({data})=>{if(current&&live.current&&data)setXp(data.earned_xp);});
+   return()=>{current=false;};
  },[state?.status,state?.session_id]);
 
  // Navigator verdicts come from a separate read-only, student-owned server RPC.
