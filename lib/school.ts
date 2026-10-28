@@ -94,6 +94,19 @@ export async function getLeaderboard():Promise<LeaderboardEntry[]> {
       || b.mandatory_days - a.mandatory_days
       || a.display_name.localeCompare(b.display_name, 'id'));
 }
+// Past compulsory sessions predate web-server score verification.
+// Never mix this provisional archive with the verified official leaderboard.
+export async function getHistoricalLeaderboard():Promise<LeaderboardEntry[]> {
+  const {data,error}=await supabase().rpc('vokasi_school_legacy_leaderboard');
+  if(error)throw error;
+  return ((data||[]) as Pick<LeaderboardEntry,'username'|'display_name'|'major'|'classroom'|'mandatory_average'|'mandatory_days'>[])
+    .filter(row=>row.mandatory_days>0&&typeof row.mandatory_average==='number'&&Number.isFinite(row.mandatory_average))
+    .map(row=>({...row,season_xp:0,lifetime_xp:0,streak:0}))
+    .sort((a,b)=>(b.mandatory_average??0)-(a.mandatory_average??0)
+      || b.mandatory_days-a.mandatory_days
+      || a.display_name.localeCompare(b.display_name,'id'));
+}
+
 export function latestGrades(attempts:Attempt[], students:SchoolStudent[]): Map<string,Attempt> {
   const map=new Map<string,Attempt>();
   const userByAlias=new Map(students.filter(s=>s.username).map(s=>[s.username.trim().toLowerCase(),s.authId]));
