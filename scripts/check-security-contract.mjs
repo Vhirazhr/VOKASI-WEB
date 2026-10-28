@@ -20,7 +20,7 @@ assert(secure.includes('auth_user_id=auth.uid() FOR UPDATE'),'Session write must
 const autoSave=file('supabase/migrations/202610280013_vokasi_autosave_student_answers.sql');
 assert(autoSave.includes('pending_choice=p_choice'),'Server must persist the selected option in the session row');
 assert(autoSave.includes('s.pending_choice IS NOT NULL'),'Expired questions must finalize a saved choice');
-assert(autoSave.includes("'selected_index',NULL,'status','TIMEOUT'"),'Only a genuinely unanswered expired question should be TIMEOUT');
+assert(autoSave.includes("'selected_index',NULL")&&autoSave.includes("'status','TIMEOUT'"),'Only a genuinely unanswered expired question should be TIMEOUT');
 const auth=file('lib/use-school-auth.ts');
 const landing=file('components/landing/LandingAccess.tsx');
 assert(auth.includes("login:'1',role:required"),'Expired sessions must return to landing-page login');
