@@ -1938,3 +1938,158 @@
     font-size: 16px;
   }
 }
+
+
+/* Login modal refinement: a larger, readable card with a clearly distinct primary action. */
+.vkw-login-dialog {
+  width: min(600px, calc(100vw - 28px));
+  max-width: calc(100vw - 28px);
+  max-height: min(900px, calc(100dvh - 32px));
+  border-radius: 28px;
+  color: #f2f8ff;
+  background: linear-gradient(145deg, rgb(20 57 91 / 97%), rgb(7 29 52 / 98%));
+  border: 1px solid rgb(218 240 255 / 58%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 22%),
+    0 34px 110px rgb(0 10 28 / 58%);
+  -webkit-backdrop-filter: blur(24px) saturate(135%);
+  backdrop-filter: blur(24px) saturate(135%);
+}
+.vkw-login-dialog::backdrop {
+  background: rgb(4 17 34 / 58%);
+  -webkit-backdrop-filter: blur(13px) saturate(125%);
+  backdrop-filter: blur(13px) saturate(125%);
+}
+.vkw-login-inner {
+  padding: clamp(30px, 4.5vw, 44px);
+}
+.vkw-login-dialog h2 {
+  font-size: clamp(29px, 3vw, 35px);
+  line-height: 1.2;
+}
+.vkw-login-dialog #vkw-login-description {
+  font-size: 14px;
+  line-height: 1.75;
+}
+.vkw-login-tabs {
+  gap: 6px;
+  padding: 5px;
+  border-radius: 13px;
+  background: rgb(2 18 35 / 48%);
+  border-color: rgb(210 235 255 / 28%);
+}
+.vkw-login-tabs button {
+  min-height: 46px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.vkw-login-tabs button[aria-pressed="true"] {
+  color: #133454;
+  background: #f2f8ff;
+  box-shadow: 0 3px 10px rgb(0 12 28 / 18%);
+}
+.vkw-login-dialog form > label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 21px;
+}
+.vkw-login-dialog input:not([type="checkbox"]) {
+  height: 54px;
+  padding-inline: 15px;
+  border-radius: 12px;
+  background: rgb(1 19 37 / 48%);
+  border-color: rgb(195 225 250 / 42%);
+  font-size: 15px;
+}
+.vkw-password-field button {
+  top: 17px;
+}
+.vkw-login-dialog .vkw-login-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 62px;
+  margin-top: 28px;
+  padding: 16px 24px;
+  border: 1px solid #fff0b8;
+  border-radius: 13px;
+  color: #102d49 !important;
+  background: linear-gradient(135deg, #ffe7a0 0%, #ffc443 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 82%),
+    0 11px 28px rgb(255 190 53 / 28%);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: .01em;
+  transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.vkw-login-dialog .vkw-login-submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #fff0bd 0%, #ffd15e 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 90%),
+    0 14px 32px rgb(255 190 53 / 36%);
+  transform: translateY(-2px);
+}
+.vkw-login-dialog .vkw-login-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+.vkw-login-dialog .vkw-login-submit:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+.vkw-login-note {
+  font-size: 11px;
+  line-height: 1.6;
+}
+@media (max-width: 700px) {
+  .vkw-login-dialog {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 23px;
+  }
+  .vkw-login-inner {
+    padding: 29px 23px 25px;
+  }
+  .vkw-login-brand {
+    margin-bottom: 24px;
+  }
+  .vkw-login-dialog h2 {
+    font-size: 28px;
+  }
+  .vkw-login-dialog #vkw-login-description {
+    font-size: 13px;
+    margin-bottom: 21px;
+  }
+  .vkw-login-tabs {
+    margin-bottom: 19px;
+  }
+  .vkw-login-dialog form > label {
+    margin-top: 17px;
+  }
+  .vkw-login-dialog input:not([type="checkbox"]) {
+    height: 52px;
+  }
+  .vkw-password-field button {
+    top: 16px;
+  }
+  .vkw-login-dialog .vkw-login-submit {
+    min-height: 58px;
+    margin-top: 23px;
+  }
+}
+@media (max-width: 380px) {
+  .vkw-login-inner {
+    padding: 25px 18px 22px;
+  }
+  .vkw-login-dialog h2 {
+    font-size: 25px;
+  }
+  .vkw-login-tabs button {
+    min-height: 42px;
+    padding-inline: 8px;
+  }
+}
