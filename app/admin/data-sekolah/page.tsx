@@ -21,7 +21,7 @@ function field(row:Record<string,unknown>,aliases:string[]):string{
  const key=Object.keys(row).find(k=>aliases.includes(normalize(k)));
  const v=key?row[key]:null;return v==null?'':String(v).trim();
 }
-function yearOf(cl:ClassOption){return Number(cl.school_year.slice(0,4))+(cl.grade_level-10);}
+function yearOf(cl:ClassOption){return Number(cl.school_year.slice(0,4))-(cl.grade_level-10);}
 export default function AdminDataManagement(){
  const {loading,error,logout}=useSchoolAuth('admin');
  const [majors,setMajors]=useState<Major[]>([]),[classes,setClasses]=useState<ClassOption[]>([]),[students,setStudents]=useState<SchoolStudent[]>([]);
