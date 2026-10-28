@@ -1,0 +1,449 @@
+/* Student profile: the complete Android profile feature set in the VOKASI web design.
+   All scores, XP, streaks and trends are derived from stored verified attempts. */
+.school-shell.student-shell .vokasi-profile-page{
+  display:grid;gap:22px;max-width:1520px;min-width:0;margin:0 auto;color:#16375f;
+}
+.school-shell.student-shell .vprofile-hero{
+  position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;gap:25px;
+  min-height:220px;overflow:hidden;padding:32px clamp(28px,3.7vw,55px);
+  border-radius:26px;background:linear-gradient(115deg,#1556b8,#2678e8 56%,#5091f1);
+  color:#fff;box-shadow:0 16px 35px #1f64c51d;
+}
+.school-shell.student-shell .vprofile-hero:before{
+  content:"";position:absolute;z-index:-1;right:-70px;top:-170px;
+  width:420px;height:420px;border:1px solid #ffffff26;border-radius:50%;
+  box-shadow:0 0 0 65px #ffffff09,0 0 0 125px #ffffff08;
+}
+.school-shell.student-shell .vprofile-hero-copy{min-width:0;max-width:720px}
+.school-shell.student-shell .vprofile-hero-kicker{
+  display:inline-flex;align-items:center;gap:9px;padding:10px 12px;
+  border:1px solid #ffffff35;border-radius:25px;background:#ffffff17;
+  color:#e9f3ff;font-size:10px;font-weight:850;letter-spacing:.015em;
+}
+.school-shell.student-shell .vprofile-hero h1{
+  margin:28px 0 10px;color:#fff;font-size:clamp(28px,3.6vw,47px);
+  font-weight:650;line-height:1.15;letter-spacing:-.05em;overflow-wrap:anywhere;
+}
+.school-shell.student-shell .vprofile-hero p{margin:0;color:#d8e9ff;font-size:12px;line-height:1.7}
+.school-shell.student-shell .vprofile-week-highlight{
+  display:flex;align-items:center;gap:18px;flex:none;min-width:265px;max-width:355px;
+  padding:21px;border:1px solid #ffffff3a;border-radius:18px;background:#ffffff21;
+  backdrop-filter:blur(6px);box-shadow:0 10px 25px #1e58aa21;
+}
+.school-shell.student-shell .vprofile-ring{
+  display:grid;place-items:center;flex:none;width:75px;height:75px;padding:6px;border-radius:50%;
+}
+.school-shell.student-shell .vprofile-ring span{
+  display:grid;place-items:center;width:100%;height:100%;border-radius:50%;
+  background:#327de5;color:#fff;font-size:14px;font-weight:900;
+}
+.school-shell.student-shell .vprofile-week-highlight>div:last-child{min-width:0}
+.school-shell.student-shell .vprofile-week-highlight small{
+  display:block;color:#daebff;font-size:9px;font-weight:800;
+}
+.school-shell.student-shell .vprofile-week-highlight strong{
+  display:block;margin:8px 0 5px;color:#fff;font-size:15px;font-weight:900;
+}
+.school-shell.student-shell .vprofile-week-highlight p{font-size:10px;color:#e5f0ff}
+.school-shell.student-shell .vprofile-layout{
+  display:grid;grid-template-columns:minmax(270px,340px) minmax(0,1fr);
+  align-items:start;gap:20px;min-width:0;
+}
+.school-shell.student-shell .vprofile-identity,
+.school-shell.student-shell .vprofile-panel,
+.school-shell.student-shell .vprofile-tabs{
+  min-width:0;border:1px solid #dce6f4;border-radius:21px;
+  background:#fff;box-shadow:0 9px 30px #234b8a09;
+}
+.school-shell.student-shell .vprofile-identity{
+  position:relative;display:flex;flex-direction:column;align-items:center;
+  margin:0;padding:0 27px 22px;text-align:center;
+}
+.school-shell.student-shell .vprofile-portrait-wrap{
+  position:relative;display:grid;place-items:center;
+  width:138px;height:138px;margin:-42px auto 12px;isolation:isolate;
+}
+.school-shell.student-shell .vprofile-portrait-ring{
+  position:relative;display:grid;place-items:center;width:136px;height:136px;
+  padding:7px;border-radius:37px;background:#fff;
+  box-shadow:0 13px 32px #215abb28;
+}
+.school-shell.student-shell .vprofile-portrait-ring:before{
+  content:"";position:absolute;z-index:-1;inset:-5px;border-radius:41px;
+  background:conic-gradient(#96c3fd,#fff,#3178e3,#b2e7ff,#fff,#96c3fd);
+  animation:vprofile-glow 12s linear infinite;
+}
+.school-shell.student-shell .vprofile-portrait{
+  display:grid;place-items:center;width:100%;height:100%;overflow:hidden;
+  border-radius:29px;background:#307cde;color:#fff;font-size:36px;font-weight:900;
+}
+.school-shell.student-shell .vprofile-portrait-camera{
+  position:absolute;z-index:5;right:-6px;bottom:6px;
+  display:grid;place-items:center;width:39px;height:39px;
+  border:3px solid #fff;border-radius:50%;background:#216fe8;color:#fff;
+  cursor:pointer;box-shadow:0 6px 16px #1957a44f;
+}
+.school-shell.student-shell .vprofile-portrait-camera:focus-within{outline:2px solid #2875e5;outline-offset:3px}
+.school-shell.student-shell .vprofile-portrait-camera input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.school-shell.student-shell .vprofile-verified{
+  display:inline-flex;align-items:center;gap:6px;margin:6px 0 13px;
+  color:#109d78;font-size:9px;font-weight:900;letter-spacing:.04em;
+}
+.school-shell.student-shell .vprofile-identity h2{
+  max-width:100%;margin:0;color:#17395f;
+  font-size:20px;font-weight:850;line-height:1.3;overflow-wrap:anywhere;
+}
+.school-shell.student-shell .vprofile-username{margin:7px 0 0;color:#879db8;font-size:11px;overflow-wrap:anywhere}
+.school-shell.student-shell .vprofile-role{
+  display:inline-flex;align-items:center;gap:7px;margin:17px 0 0;
+  padding:9px 13px;border-radius:99px;background:#edf5ff;color:#2e76d4;
+  font-size:10px;font-weight:850;
+}
+.school-shell.student-shell .vprofile-identity-divider{
+  width:100%;height:1px;margin:23px 0 17px;background:#e3eaf5;
+}
+.school-shell.student-shell .vprofile-identity dl{display:grid;gap:16px;width:100%;margin:0;text-align:left}
+.school-shell.student-shell .vprofile-identity dl>div{
+  display:grid;grid-template-columns:37px minmax(0,1fr);
+  grid-template-rows:auto auto;column-gap:10px;align-items:center;row-gap:4px;
+  min-width:0;
+}
+.school-shell.student-shell .vprofile-identity dl>div>span{
+  display:grid;grid-column:1;grid-row:1/span 2;place-items:center;
+  width:37px;height:37px;border-radius:11px;background:#edf4ff;color:#3079e6;
+}
+.school-shell.student-shell .vprofile-identity dt{grid-column:2;color:#8ca0bb;font-size:9px}
+.school-shell.student-shell .vprofile-identity dd{
+  grid-column:2;margin:0;color:#24466c;font-size:11px;font-weight:800;
+  overflow-wrap:anywhere;
+}
+.school-shell.student-shell .vprofile-identity dd small{
+  display:block;margin-top:4px;color:#8da1b9;font-size:9px;font-weight:500;line-height:1.45;
+}
+.school-shell.student-shell .vprofile-notice{
+  width:100%;margin:13px 0 0;padding:10px;border:1px solid #cbeadb;border-radius:9px;
+  background:#effaf4;color:#227a59;font-size:11px;line-height:1.5;text-align:left;
+}
+.school-shell.student-shell .vprofile-notice.is-error{border-color:#f7cfda;background:#fff4f6;color:#af3954}
+.school-shell.student-shell .vprofile-edit-button{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;margin:23px 0 0;min-height:44px;
+  border:1px solid #b9d1f9;border-radius:11px;background:#f8fbff;
+  color:#246fe1;font-size:11px;font-weight:850;transition:background .15s;
+}
+.school-shell.student-shell .vprofile-edit-button:hover{background:#e9f3ff}
+.school-shell.student-shell .vprofile-photo-note{
+  display:block;margin:10px auto 0;color:#8ba0b8;font-size:9px;line-height:1.55;
+}
+.school-shell.student-shell .vprofile-logout{
+  display:inline-flex;align-items:center;gap:8px;margin-top:22px;
+  padding:8px 12px;border:0;border-radius:9px;background:transparent;
+  color:#738bad;font-size:11px;font-weight:800;
+}
+.school-shell.student-shell .vprofile-logout:hover{background:#fff0f2;color:#c13f59}
+.school-shell.student-shell .vprofile-main{display:grid;gap:17px;min-width:0}
+.school-shell.student-shell .vprofile-tabs{
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0;padding:6px;
+  border-radius:14px;
+}
+.school-shell.student-shell .vprofile-tabs button{
+  min-height:39px;padding:11px 16px;border:0;border-radius:10px;
+  background:transparent;color:#7290b5;font-size:11px;font-weight:850;
+}
+.school-shell.student-shell .vprofile-tabs button.active{
+  background:#e8f2ff;color:#206ce1;
+}
+.school-shell.student-shell .vprofile-tabs button:not(.active):hover{background:#f5f9ff}
+.school-shell.student-shell .vprofile-kpis{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;min-width:0;
+}
+.school-shell.student-shell .vprofile-kpi{
+  display:flex;align-items:center;gap:10px;min-width:0;min-height:107px;
+  padding:15px 13px;border:1px solid #dce6f4;border-radius:16px;
+  background:#fff;box-shadow:0 8px 25px #234b8a0a;
+}
+.school-shell.student-shell .vprofile-kpi-icon{
+  display:grid;place-items:center;flex:none;width:43px;height:43px;border-radius:13px;
+  background:#eaf3ff;color:#2c75e1;
+}
+.school-shell.student-shell .vprofile-kpi-icon.amber{background:#fff2d9;color:#e8a222}
+.school-shell.student-shell .vprofile-kpi-icon.green{background:#e7f8f3;color:#20ac83}
+.school-shell.student-shell .vprofile-kpi-icon.violet{background:#f1ecff;color:#8068df}
+.school-shell.student-shell .vprofile-kpi>span:last-child{display:grid;gap:5px;min-width:0}
+.school-shell.student-shell .vprofile-kpi small{color:#869bb6;font-size:9px}
+.school-shell.student-shell .vprofile-kpi strong{
+  display:block;overflow:hidden;color:#153f6b;font-size:clamp(20px,2vw,28px);
+  font-weight:900;line-height:1.1;white-space:nowrap;text-overflow:ellipsis;
+}
+.school-shell.student-shell .vprofile-kpi em{
+  overflow:hidden;color:#8da3bb;font-size:8px;font-style:normal;
+  white-space:nowrap;text-overflow:ellipsis;
+}
+.school-shell.student-shell .vprofile-insights{
+  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(225px,.85fr);
+  gap:14px;align-items:stretch;min-width:0;
+}
+.school-shell.student-shell .vprofile-panel{padding:24px}
+.school-shell.student-shell .vprofile-section-title>span{
+  display:block;color:#2876df;font-size:10px;font-weight:850;letter-spacing:.07em;
+}
+.school-shell.student-shell .vprofile-section-title h3{
+  margin:9px 0 0;color:#173c68;font-size:18px;font-weight:850;line-height:1.4;
+}
+.school-shell.student-shell .vprofile-section-title p{
+  margin:7px 0 0;color:#88a0bc;font-size:10px;line-height:1.6;
+}
+.school-shell.student-shell .vprofile-level-top{
+  display:flex;align-items:center;gap:14px;margin:20px 0 15px;
+}
+.school-shell.student-shell .vprofile-level-badge{
+  display:grid;place-items:center;flex:none;width:58px;height:58px;border-radius:16px;
+  background:#eaf3ff;color:#3879d9;
+}
+.school-shell.student-shell .vprofile-level-top>div{display:grid;gap:4px;min-width:0;flex:1}
+.school-shell.student-shell .vprofile-level-top>div small{color:#8fa2bb;font-size:9px;font-weight:750}
+.school-shell.student-shell .vprofile-level-top>div strong{color:#173e6a;font-size:23px;font-weight:900}
+.school-shell.student-shell .vprofile-level-top>b{
+  flex:none;padding:9px 12px;border-radius:40px;background:#fff4dd;
+  color:#b78125;font-size:11px;font-weight:900;
+}
+.school-shell.student-shell .vprofile-level-track{
+  height:10px;overflow:hidden;border-radius:20px;background:#e8f1fd;
+}
+.school-shell.student-shell .vprofile-level-track span{
+  display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#2678df,#4cbed9);
+  transition:width .5s ease;
+}
+.school-shell.student-shell .vprofile-level-footer{
+  display:flex;justify-content:space-between;gap:9px;margin-top:8px;
+  color:#8199b4;font-size:9px;line-height:1.5;
+}
+.school-shell.student-shell .vprofile-level-footer b{color:#376eae;font-weight:800}
+.school-shell.student-shell .vprofile-mini-metrics{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:20px;
+}
+.school-shell.student-shell .vprofile-mini-metrics>div{
+  display:grid;place-items:center;gap:5px;min-height:94px;
+  padding:9px 6px;border-radius:13px;background:#f5f9ff;text-align:center;
+}
+.school-shell.student-shell .vprofile-mini-metrics>div>span{color:#5b8bd5}
+.school-shell.student-shell .vprofile-mini-metrics>div:nth-child(2)>span{color:#e49327}
+.school-shell.student-shell .vprofile-mini-metrics>div:nth-child(3)>span{color:#8b6ac5}
+.school-shell.student-shell .vprofile-mini-metrics strong{color:#183d68;font-size:16px;font-weight:900}
+.school-shell.student-shell .vprofile-mini-metrics small{color:#89a0ba;font-size:9px}
+.school-shell.student-shell .vprofile-streak{
+  display:flex;align-items:center;flex-direction:column;text-align:center;
+}
+.school-shell.student-shell .vprofile-streak .vprofile-section-title{align-self:stretch;text-align:left}
+.school-shell.student-shell .vprofile-streak-symbol{
+  display:grid;place-items:center;width:80px;height:80px;margin:18px auto 12px;
+  border-radius:25px;background:#fff2dc;color:#f3ad2f;
+}
+.school-shell.student-shell .vprofile-streak>strong{color:#1c416d;font-size:15px;font-weight:900}
+.school-shell.student-shell .vprofile-streak>p{color:#879bb3;font-size:10px;line-height:1.7}
+.school-shell.student-shell .vprofile-week-days{
+  display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;
+  width:100%;margin-top:8px;
+}
+.school-shell.student-shell .vprofile-week-days>div{display:grid;gap:6px;justify-items:center;min-width:0}
+.school-shell.student-shell .vprofile-week-days>div>span{
+  display:grid;place-items:center;width:27px;height:27px;border-radius:9px;
+  background:#eaf2ff;color:#a6b7ca;font-size:20px;font-weight:850;
+}
+.school-shell.student-shell .vprofile-week-days>div>span.is-done{background:#20af8e;color:#fff}
+.school-shell.student-shell .vprofile-week-days small{color:#92a3b9;font-size:9px}
+.school-shell.student-shell .vprofile-streak .vprofile-week-foot{margin-top:auto;padding-top:13px}
+.school-shell.student-shell .vprofile-chart{display:grid;gap:16px}
+.school-shell.student-shell .vprofile-bars{
+  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:end;
+  gap:13px;min-height:175px;padding:0 5px;
+}
+.school-shell.student-shell .vprofile-month{display:grid;gap:6px;justify-items:center;min-width:0}
+.school-shell.student-shell .vprofile-month-track{
+  position:relative;width:100%;height:135px;overflow:hidden;
+  border-radius:12px;background:#edf3fa;
+}
+.school-shell.student-shell .vprofile-month-track>span{
+  position:absolute;bottom:0;left:0;right:0;display:block;
+  border-radius:11px 11px 5px 5px;background:linear-gradient(180deg,#67a3f6,#226cdb);
+  box-shadow:0 -7px 20px #4580dd21;
+}
+.school-shell.student-shell .vprofile-month strong{color:#4a75ab;font-size:11px}
+.school-shell.student-shell .vprofile-month small{color:#8ca2bc;font-size:9px}
+.school-shell.student-shell .vprofile-chart-empty{
+  margin:0;color:#8da1bb;font-size:10px;text-align:center;line-height:1.6;
+}
+.school-shell.student-shell .vprofile-season{display:flex;flex-direction:column;align-items:center;text-align:center}
+.school-shell.student-shell .vprofile-season .vprofile-section-title{text-align:left;align-self:stretch}
+.school-shell.student-shell .vprofile-season-star{
+  display:grid;place-items:center;width:90px;height:90px;margin:20px auto 9px;
+  border-radius:25px;background:#fff3d8;color:#f4a92a;
+}
+.school-shell.student-shell .vprofile-season h4{margin:10px 0 5px;color:#1c4169;font-size:15px}
+.school-shell.student-shell .vprofile-season p{max-width:260px;color:#90a0b5;font-size:10px;line-height:1.7}
+.school-shell.student-shell .vprofile-season-totals{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
+  width:100%;margin-top:auto;padding-top:15px;
+}
+.school-shell.student-shell .vprofile-season-totals span{
+  display:grid;gap:5px;padding:12px 7px;border:1px solid #e6ecf6;border-radius:12px;background:#f8fbff;
+}
+.school-shell.student-shell .vprofile-season-totals strong{color:#2a6ec7;font-size:16px}
+.school-shell.student-shell .vprofile-season-totals small{color:#8da1b8;font-size:9px}
+.school-shell.student-shell .vprofile-section-title-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.school-shell.student-shell .vprofile-section-title-row button{
+  display:flex;align-items:center;gap:7px;border:0;background:transparent;
+  color:#2874de;font-size:10px;font-weight:850;white-space:nowrap;
+}
+.school-shell.student-shell .vprofile-recent,
+.school-shell.student-shell .vprofile-all-activity{min-width:0}
+.school-shell.student-shell .vprofile-activity-list{display:grid;gap:9px;margin-top:16px}
+.school-shell.student-shell .vprofile-attempt{min-width:0;border:1px solid #e4eaf4;border-radius:14px;background:#fbfdff}
+.school-shell.student-shell .vprofile-attempt[open]{border-color:#bad5f7;background:#f9fcff}
+.school-shell.student-shell .vprofile-attempt summary{
+  display:flex;align-items:center;gap:10px;min-width:0;
+  padding:13px 12px;list-style:none;cursor:pointer;
+}
+.school-shell.student-shell .vprofile-attempt summary::-webkit-details-marker{display:none}
+.school-shell.student-shell .vprofile-attempt-icon{
+  display:grid;place-items:center;flex:none;width:39px;height:39px;border-radius:11px;
+  background:#edf5ff;color:#2772d1;
+}
+.school-shell.student-shell .vprofile-attempt-name{display:grid;gap:5px;min-width:0;flex:1}
+.school-shell.student-shell .vprofile-attempt-name b{
+  color:#214976;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.school-shell.student-shell .vprofile-attempt-name small{color:#8da2bc;font-size:9px;line-height:1.4}
+.school-shell.student-shell .vprofile-attempt-meta{display:grid;gap:4px;justify-items:end;min-width:75px}
+.school-shell.student-shell .vprofile-attempt-meta strong{color:#296fd1;font-size:16px}
+.school-shell.student-shell .vprofile-attempt-meta strong small{color:#91a5bd;font-size:8px}
+.school-shell.student-shell .vprofile-attempt-meta>small{color:#8a9eb9;font-size:8px;text-align:right}
+.school-shell.student-shell .vprofile-attempt-chevron{flex:none;color:#779bc0}
+.school-shell.student-shell .vprofile-attempt[open] .vprofile-attempt-chevron{transform:rotate(180deg)}
+.school-shell.student-shell .vprofile-attempt-details{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px;
+  border-top:1px solid #e2eaf4;
+}
+.school-shell.student-shell .vprofile-attempt-details span{
+  display:grid;gap:6px;justify-items:center;padding:9px 6px;border-radius:9px;background:#edf5ff;
+}
+.school-shell.student-shell .vprofile-attempt-details b{color:#2e73d0;font-size:14px}
+.school-shell.student-shell .vprofile-attempt-details small{color:#8199b5;font-size:9px}
+.school-shell.student-shell .vprofile-attempt-note{padding:12px;color:#869bb5;font-size:10px}
+.school-shell.student-shell .vprofile-activity-empty{
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;
+  min-height:145px;color:#7e9ab9;font-size:11px;text-align:center;
+}
+.school-shell.student-shell .vprofile-activity-empty strong{color:#2e5683;font-size:13px}
+.school-shell.student-shell .vprofile-activity-empty span{color:#879bb4;line-height:1.5}
+.school-shell.student-shell .vprofile-history-filters{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+.school-shell.student-shell .vprofile-history-filters label{
+  display:grid;gap:7px;flex:1;min-width:145px;color:#7993af;font-size:10px;font-weight:750;
+}
+.school-shell.student-shell .vprofile-history-filters select,
+.school-shell.student-shell .vprofile-history-filters input{
+  width:100%;min-height:41px;padding:10px 11px;border:1px solid #d7e5f6;
+  border-radius:10px;background:#fafdff;color:#294d77;font-size:12px;
+}
+.school-shell.student-shell .vprofile-history-count{margin:17px 0 0;color:#819bb5;font-size:10px}
+.school-shell.student-shell .vprofile-show-more,
+.school-shell.student-shell .vprofile-full-history-link{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;margin-top:14px;padding:12px 10px;border:1px solid #cce0fa;
+  border-radius:10px;background:#f5f9ff;color:#3174cd;font-size:11px;font-weight:800;
+}
+.school-shell.student-shell .vprofile-full-history-link{width:max-content;max-width:100%;margin-left:auto;border:none;background:none}
+.school-shell.student-shell .vprofile-settings{display:grid;gap:14px}
+.school-shell.student-shell .vprofile-account-identity{display:flex;align-items:center;gap:12px;margin-top:18px}
+.school-shell.student-shell .vprofile-settings-avatar{
+  display:grid;place-items:center;flex:none;width:62px;height:62px;overflow:hidden;
+  border:3px solid #fff;border-radius:16px;background:#dceaff;color:#2c73d7;
+  box-shadow:0 0 0 1px #dce9fa;
+}
+.school-shell.student-shell .vprofile-account-identity>div{display:grid;gap:6px;min-width:0}
+.school-shell.student-shell .vprofile-account-identity b{color:#244d76;font-size:13px;overflow-wrap:anywhere}
+.school-shell.student-shell .vprofile-account-identity small{color:#8aa0bc;font-size:10px;line-height:1.4}
+.school-shell.student-shell .vprofile-settings-hint{
+  margin:16px 0 0;padding:12px;border-radius:10px;background:#f1f7ff;
+  color:#728eae;font-size:11px;line-height:1.7;
+}
+.school-shell.student-shell .vprofile-password-form{display:grid;gap:13px;margin-top:18px;max-width:560px}
+.school-shell.student-shell .vprofile-password-form>label:not(.vprofile-reveal-password){
+  display:grid;gap:7px;color:#5277a3;font-size:11px;font-weight:800;
+}
+.school-shell.student-shell .vprofile-password-form input:not([type=checkbox]){
+  width:100%;min-height:43px;padding:11px 12px;
+  border:1px solid #d9e6f6;border-radius:10px;background:#fbfdff;
+  color:#21436e;font-size:12px;outline:none;
+}
+.school-shell.student-shell .vprofile-password-form input:focus{border-color:#73a7ef;box-shadow:0 0 0 3px #daeaff}
+.school-shell.student-shell .vprofile-reveal-password{
+  display:flex;align-items:center;gap:8px;color:#718aab;font-size:11px;
+}
+.school-shell.student-shell .vprofile-password-form>button{
+  display:flex;justify-content:center;align-items:center;gap:9px;
+  min-height:45px;border:0;border-radius:11px;background:#246cd0;
+  color:#fff;font-size:11px;font-weight:850;
+}
+.school-shell.student-shell .vprofile-password-form>button:disabled{background:#bdd0e9;cursor:not-allowed}
+.school-shell.student-shell .vprofile-password-form>button:not(:disabled):hover{background:#185bbd}
+.school-shell.student-shell .vokasi-student-avatar img{display:block;width:100%;height:100%;border-radius:inherit;object-fit:cover}
+.school-shell.student-shell .vokasi-student-avatar>.vokasi-avatar-initials{
+  display:grid;place-items:center;width:100%;height:100%;border-radius:inherit;
+}
+@keyframes vprofile-glow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@media(max-width:1240px){
+  .school-shell.student-shell .vprofile-layout{grid-template-columns:290px minmax(0,1fr);gap:14px}
+  .school-shell.student-shell .vprofile-hero{padding:26px 30px}
+  .school-shell.student-shell .vprofile-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .school-shell.student-shell .vprofile-kpi{min-height:90px}
+  .school-shell.student-shell .vprofile-insights{grid-template-columns:1fr}
+}
+@media(max-width:940px){
+  .school-shell.student-shell .vprofile-hero{min-height:215px}
+  .school-shell.student-shell .vprofile-week-highlight{min-width:210px;padding:15px;gap:11px}
+  .school-shell.student-shell .vprofile-ring{width:60px;height:60px}
+  .school-shell.student-shell .vprofile-layout{grid-template-columns:minmax(240px,.8fr) minmax(0,1.2fr)}
+  .school-shell.student-shell .vprofile-identity{padding-left:17px;padding-right:17px}
+}
+@media(max-width:760px){
+  .school-shell.student-shell .vokasi-profile-page{gap:14px}
+  .school-shell.student-shell .vprofile-hero{
+    align-items:flex-start;flex-direction:column;gap:15px;
+    min-height:0;padding:23px 21px 43px;border-radius:19px;
+  }
+  .school-shell.student-shell .vprofile-hero h1{margin:17px 0 8px;font-size:clamp(26px,7vw,36px)}
+  .school-shell.student-shell .vprofile-hero p{font-size:11px}
+  .school-shell.student-shell .vprofile-week-highlight{width:100%;max-width:none;min-width:0;padding:12px 15px}
+  .school-shell.student-shell .vprofile-layout{grid-template-columns:1fr;gap:12px}
+  .school-shell.student-shell .vprofile-identity{padding:0 20px 20px}
+  .school-shell.student-shell .vprofile-portrait-wrap{margin-top:-36px}
+  .school-shell.student-shell .vprofile-main{gap:12px}
+  .school-shell.student-shell .vprofile-tabs{gap:2px}
+  .school-shell.student-shell .vprofile-tabs button{flex:1;min-height:39px;padding:9px 8px;font-size:10px}
+  .school-shell.student-shell .vprofile-kpis{gap:8px}
+  .school-shell.student-shell .vprofile-kpi{min-height:94px;padding:10px;gap:8px;border-radius:13px}
+  .school-shell.student-shell .vprofile-kpi-icon{width:37px;height:37px;border-radius:11px}
+  .school-shell.student-shell .vprofile-kpi-icon svg{width:20px}
+  .school-shell.student-shell .vprofile-kpi strong{font-size:22px}
+  .school-shell.student-shell .vprofile-panel{padding:17px;border-radius:17px}
+  .school-shell.student-shell .vprofile-mini-metrics{gap:6px}
+  .school-shell.student-shell .vprofile-mini-metrics strong{font-size:13px}
+  .school-shell.student-shell .vprofile-bars{gap:8px}
+  .school-shell.student-shell .vprofile-month-track{height:130px}
+}
+@media(max-width:390px){
+  .school-shell.student-shell .vprofile-tabs button{font-size:9px;padding:9px 6px}
+  .school-shell.student-shell .vprofile-kpi{flex-direction:column;align-items:flex-start;min-height:119px}
+  .school-shell.student-shell .vprofile-level-top{gap:9px}
+  .school-shell.student-shell .vprofile-level-top>div strong{font-size:19px}
+  .school-shell.student-shell .vprofile-level-top>b{padding:7px 8px;font-size:10px}
+  .school-shell.student-shell .vprofile-mini-metrics{grid-template-columns:1fr 1fr}
+  .school-shell.student-shell .vprofile-mini-metrics>div:last-child{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:reduce){
+  .school-shell.student-shell .vprofile-portrait-ring:before{animation:none}
+  .school-shell.student-shell .vprofile-level-track span{transition:none}
+}
