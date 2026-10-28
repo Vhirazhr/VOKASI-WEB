@@ -122,6 +122,9 @@ function RankingView({leaders,profile,busy,failed,avatarUrls}:{leaders:Leaderboa
                 <span className="vokasi-ranking-photo-frame">
                   <StudentAvatar name={student.display_name} url={avatar(student)} className="vokasi-ranking-photo" size={126}/>
                   <span className="vokasi-ranking-photo-badge">{rank}</span>
+                  <span className="vokasi-deco-spark vokasi-deco-spark-one" aria-hidden="true">✦</span>
+                  <span className="vokasi-deco-spark vokasi-deco-spark-two" aria-hidden="true">✧</span>
+                  <span className="vokasi-deco-spark vokasi-deco-spark-three" aria-hidden="true">✦</span>
                 </span>
                 <span className="vokasi-ranking-card-subtitle">{rank===1?'CHAMPION':'TOP PERFORMER'}</span>
                 <span className="vokasi-ranking-card-score-label">NILAI RATA-RATA</span>
@@ -199,7 +202,12 @@ function ProfileView({profile,attempts,busy,avatarUrl,onAvatarUploaded}:{profile
     <StudentHeading kicker="AKUN BELAJAR" title="Profil siswa" description="Informasi akun, aktivitas, dan ringkasan capaian pribadimu."/>
     <div className="student-profile-grid">
       <section className="student-panel student-profile-card">
-        <StudentAvatar className="student-profile-avatar" name={profile.fullName} url={avatarUrl} size={100}/>
+        <span className="vokasi-profile-photo-decoration">
+          <StudentAvatar className="student-profile-avatar" name={profile.fullName} url={avatarUrl} size={100}/>
+          <span className="vokasi-deco-spark vokasi-deco-spark-one" aria-hidden="true">✦</span>
+          <span className="vokasi-deco-spark vokasi-deco-spark-two" aria-hidden="true">✧</span>
+          <span className="vokasi-deco-spark vokasi-deco-spark-three" aria-hidden="true">✦</span>
+        </span>
         <label className="vokasi-photo-upload"><ImageIcon size={16}/>{photoBusy?'Mengunggah foto...':avatarUrl?'Ganti foto profil':'Pasang foto profil'}
           <input type="file" accept="image/jpeg" disabled={photoBusy} onChange={event=>{const file=event.target.files?.[0];event.target.value='';void handlePhoto(file);}}/>
         </label>
