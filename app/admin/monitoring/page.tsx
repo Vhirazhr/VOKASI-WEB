@@ -86,7 +86,7 @@ export default function AdminMonitoringPage(){
    </div>
    <section className="admin-monitoring-card">
     <div className="admin-monitoring-card-top">
-     <div><span className="section-kicker">HASIL LATIHAN WAJIB</span><h2>Daftar monitoring siswa</h2><p>Nilai pertama yang terverifikasi pada hari terpilih. Pengulangan tidak mengganti nilai resmi.</p></div>
+     <div><span className="section-kicker">HASIL LATIHAN WAJIB</span><h2>Daftar monitoring siswa</h2><p>Pantau nilai dan lihat pola jawaban untuk mengetahui materi yang perlu diperkuat.</p></div>
      <Link className="admin-monitoring-back" href={embed?'/admin?embed=1':'/admin'}><ArrowLeft size={16}/> Ringkasan</Link>
     </div>
     <div className="admin-monitoring-filters">
