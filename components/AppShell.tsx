@@ -120,11 +120,11 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
       {!chatOpen&&<span className="vokasi-chatbot-fab-status" aria-hidden="true"/>}
       <span className="vokasi-chatbot-fab-tooltip" aria-hidden="true">{chatOpen?'Tutup chat':'Butuh bantuan?'}</span>
     </button>}
-    {!isAdmin&&!navigationBlocked&&!quizFocusMode&&chatOpen&&<div className="vokasi-chatbot-layer">
+    {!isAdmin&&!navigationBlocked&&!quizFocusMode&&<div className="vokasi-chatbot-layer" hidden={!chatOpen}>
       <button type="button" className="vokasi-chatbot-backdrop" onClick={()=>setChatOpen(false)} aria-label="Tutup chatbot"/>
       <section id="vokasi-chatbot-dialog" className="vokasi-chatbot-dialog" role="dialog" aria-modal="true" aria-label="Chatbot VOKASI">
         <header className="vokasi-chatbot-dialog-header"><span className="vokasi-chatbot-dialog-mark"><Bot size={23}/></span><span><strong>Chatbot VOKASI</strong><small>Tanya materi dan panduan aplikasi</small></span><button type="button" className="vokasi-chatbot-close" onClick={()=>setChatOpen(false)} aria-label="Tutup chatbot"><X size={20}/></button></header>
-        <StudentAssistant/>
+        <StudentAssistant isOpen={chatOpen}/>
       </section>
     </div>}
     {isAdmin&&!embedMode&&!navigationBlocked&&<nav className="admin-bottom-nav" aria-label="Menu admin seluler">
