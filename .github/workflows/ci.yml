@@ -30,5 +30,7 @@ jobs:
         run: npm run lint
       - name: Typecheck
         run: npm run typecheck
+      - name: Validate student PDF exports
+        run: node scripts/check-student-report.mjs
       - name: Build Next.js
         run: npm run build
