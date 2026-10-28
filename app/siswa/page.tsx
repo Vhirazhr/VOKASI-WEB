@@ -9,7 +9,7 @@ import QuizView from '@/components/QuizView';
 import ReviewHistory from '@/components/ReviewHistory';
 import {getPublishedBankVersion,PRACTICE_CATEGORIES} from '@/lib/quiz';
 import {useSchoolAuth} from '@/lib/use-school-auth';
-import {getOwnAttempts,getLeaderboard,getHistoricalLeaderboard,wibDate} from '@/lib/school';
+import {getOwnAttempts,getLeaderboard,wibDate} from '@/lib/school';
 import type {Attempt,LeaderboardEntry,StudentProfile} from '@/lib/types';
 import '@/app/student-experience.css';
 import '@/app/student-unified-ui.css';
@@ -62,7 +62,7 @@ function HistoryView({attempts,busy}:{attempts:Attempt[];busy:boolean}) {
   </div>;
 }
 
-function RankingView({leaders,profile,busy,failed,historical}:{leaders:LeaderboardEntry[];profile:StudentProfile;busy:boolean;failed:boolean;historical:boolean}) {
+function RankingView({leaders,profile,busy,failed}:{leaders:LeaderboardEntry[];profile:StudentProfile;busy:boolean;failed:boolean}) {
   const [scope,setScope]=useState('school');
   const [query,setQuery]=useState('');
   const normalized=(value:string)=>value.trim().toLocaleLowerCase('id-ID');
@@ -71,9 +71,9 @@ function RankingView({leaders,profile,busy,failed,historical}:{leaders:Leaderboa
   const ownIndex=visible.findIndex(a=>normalized(a.username)===normalized(profile.username));
   return <div className="student-experience student-ranking-experience">
     <header className="student-ranking-masthead">
-      <span className="student-ranking-kicker">VOKASI · {historical?'ARSIP HASIL LATIHAN':'PERINGKAT SISWA'}</span>
-      <h1><span>TOP PERFORMERS</span><small>{historical?'PERINGKAT RIWAYAT LAMA':'HASIL LATIHAN WAJIB'}</small></h1>
-      <p>{historical?'Arsip hasil latihan wajib sebelum verifikasi server diterapkan. Urutan ini bersifat sementara, bukan peringkat resmi.':'Apresiasi untuk usaha dan hasil belajar terbaik. Peringkat dihitung dari rata-rata nilai latihan wajib terverifikasi, bukan XP.'}</p>
+      <span className="student-ranking-kicker">VOKASI · PERINGKAT SISWA</span>
+      <h1><span>TOP PERFORMERS</span><small>HASIL LATIHAN WAJIB</small></h1>
+      <p>Apresiasi untuk usaha dan hasil belajar terbaik. Peringkat dihitung dari rata-rata nilai latihan wajib terverifikasi, bukan XP.</p>
     </header>
     <div className="student-ranking-toolbar">
       <div className="student-segments" role="group" aria-label="Lingkup peringkat">
@@ -81,10 +81,10 @@ function RankingView({leaders,profile,busy,failed,historical}:{leaders:Leaderboa
       </div>
       <label className="student-ranking-search"><Search size={16}/><input aria-label="Cari nama atau kelas" placeholder="Cari nama / kelas..." value={query} onChange={e=>setQuery(e.target.value)}/></label>
     </div>
-    <div className={'student-ranking-info'+(historical?' student-ranking-historical-info':'')}><ShieldCheck size={16}/>{historical?'Menampilkan hasil wajib lama yang tersimpan di database, tetapi belum memiliki bukti verifikasi server. Nilai tidak diubah dan tidak digabung dengan peringkat resmi.':'Data nilai berasal dari hasil latihan yang terverifikasi server. Hasil mengikuti filter yang dipilih; nilai kosong tidak dihitung.'}</div>
+    <div className="student-ranking-info"><ShieldCheck size={16}/> Hanya nilai latihan wajib yang dihitung server yang masuk peringkat. Riwayat lama tetap tersimpan dan bisa dilihat di menu Riwayat.</div>
     {busy?<div className="student-panel student-blank student-rank-empty"><RefreshCw size={25}/><b>Memuat peringkat...</b><span>Sebentar, kami sedang mengambil hasil latihan.</span></div>:
      failed?<div className="student-panel student-blank student-rank-empty"><Trophy size={38}/><b>Peringkat belum dapat dimuat</b><span>Data belum bisa diakses. Periksa koneksi lalu coba kembali.</span></div>:
-     !visible.length?<div className="student-panel student-blank student-rank-empty"><Trophy size={40}/><b>Belum ada hasil peringkat</b><span>Hasil akan muncul setelah nilai latihan wajib tercatat untuk lingkup atau pencarian ini.</span></div>:
+     !visible.length?<div className="student-panel student-blank student-rank-empty"><Trophy size={40}/><b>Belum ada hasil peringkat resmi</b><span>Kerjakan latihan wajib terbaru agar nilaimu dihitung server dan masuk peringkat sekolah.</span></div>:
      <>
       <div className="student-podium">{podium.map((a,i)=>a?<article className={'student-podium-item student-podium-'+(i===1?1:i===0?2:3)} key={a.username||i}>
         <div className="student-rank-card-top"><span className="student-rank-medal"><Medal size={17}/><b>{i===1?1:i===0?2:3}</b></span><span className="student-rank-avatar">{a.display_name.trim().slice(0,1).toUpperCase()}</span></div>
@@ -158,7 +158,6 @@ export default function StudentPage(){
   const {profile,loading,error,logout}=useSchoolAuth('student');
   const [attempts,setAttempts]=useState<Attempt[]>([]);
   const [leaders,setLeaders]=useState<LeaderboardEntry[]>([]);
-  const [historicalRanking,setHistoricalRanking]=useState(false);
   const [busy,setBusy]=useState(true);
   const [warning,setWarning]=useState('');
   const [rankFailed,setRankFailed]=useState(false);
@@ -183,17 +182,11 @@ export default function StudentPage(){
   const refresh=useCallback(async()=>{
     if(!profile)return;
     setBusy(true);setWarning('');setRankFailed(false);
-    const [hist,rank,legacy]=await Promise.allSettled([getOwnAttempts(profile.authId),getLeaderboard(),getHistoricalLeaderboard()]);
+    const [hist,rank]=await Promise.allSettled([getOwnAttempts(profile.authId),getLeaderboard()]);
     if(hist.status==='fulfilled')setAttempts(hist.value);
     else setWarning('Gagal membaca riwayat nilai dari Supabase.');
-    if(rank.status==='fulfilled'&&rank.value.length>0){
-      setLeaders(rank.value);setHistoricalRanking(false);
-    }else if(legacy.status==='fulfilled'&&legacy.value.length>0){
-      setLeaders(legacy.value);setHistoricalRanking(true);
-    }else{
-      setLeaders([]);setHistoricalRanking(false);
-      if(rank.status==='rejected'&&legacy.status==='rejected')setRankFailed(true);
-    }
+    if(rank.status==='fulfilled')setLeaders(rank.value);
+    else {setLeaders([]);setRankFailed(true);}
     setBusy(false);
   },[profile]);
   useEffect(()=>{queueMicrotask(()=>void refresh());},[refresh]);
@@ -207,7 +200,7 @@ export default function StudentPage(){
     <>
       {warning&&<div className="alert danger">{warning} <button type="button" className="link-action" onClick={()=>void refresh()}>Coba lagi</button></div>}
       {view==='history'?<HistoryView attempts={attempts} busy={busy}/>:
-       view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed} historical={historicalRanking}/>:
+       view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed}/>:
        view==='profile'?<ProfileView profile={profile} attempts={attempts} busy={busy}/>:
         <main className="student-home student-home-dashboard">
           <section className="student-featured-practice student-reference-hero" aria-labelledby="mandatory-practice-title">
@@ -252,8 +245,8 @@ export default function StudentPage(){
 
             <aside className="student-reference-rail" aria-label="Ringkasan hasil belajar">
               <section className="student-aside-card student-reference-rank">
-                <div className="student-reference-section-heading"><div><span className="student-card-eyebrow">{historicalRanking?'ARSIP LATIHAN':'PERINGKAT SEKOLAH'}</span><h2>{historicalRanking?'Peringkat riwayat lama':'Peringkatmu saat ini'}</h2></div><span className="student-dashboard-card-icon blue"><TrendingUp size={19}/></span></div>
-                {busy?<div className="student-reference-empty">Memuat peringkat...</div>:rankFailed?<div className="student-reference-empty"><b>Peringkat belum tersedia</b><span>Data peringkat belum dapat dimuat.</span></div>:(()=>{const rankIndex=leaders.findIndex(row=>row.username.trim().toLocaleLowerCase('id-ID')===profile.username.trim().toLocaleLowerCase('id-ID'));const rank=rankIndex>=0?rankIndex+1:null;return <div className="student-reference-rank-value"><strong>{rank?'#'+rank:'—'}</strong><div><b>{rank?'Dari '+leaders.length+' siswa':'Belum tersedia'}</b><span>{rank?(historicalRanking?'Berdasarkan hasil wajib lama, belum terverifikasi server.':'Posisi berdasarkan hasil latihan wajib terverifikasi.'):'Peringkat tampil setelah data hasil belajar tersedia.'}</span></div></div>;})()}
+                <div className="student-reference-section-heading"><div><span className="student-card-eyebrow">PERINGKAT SEKOLAH</span><h2>Peringkatmu saat ini</h2></div><span className="student-dashboard-card-icon blue"><TrendingUp size={19}/></span></div>
+                {busy?<div className="student-reference-empty">Memuat peringkat...</div>:rankFailed?<div className="student-reference-empty"><b>Peringkat belum tersedia</b><span>Data peringkat belum dapat dimuat.</span></div>:(()=>{const rankIndex=leaders.findIndex(row=>row.username.trim().toLocaleLowerCase('id-ID')===profile.username.trim().toLocaleLowerCase('id-ID'));const rank=rankIndex>=0?rankIndex+1:null;return <div className="student-reference-rank-value"><strong>{rank?'#'+rank:'—'}</strong><div><b>{rank?'Dari '+leaders.length+' siswa':'Belum tersedia'}</b><span>{rank?'Posisi berdasarkan hasil latihan wajib terverifikasi.':'Peringkat resmi muncul setelah kamu menyelesaikan latihan wajib terbaru.'}</span></div></div>;})()}
                 <Link className="student-reference-primary-link" href={embed?'/siswa/peringkat?embed=1':'/siswa/peringkat'}>Lihat peringkat <ArrowRight size={15}/></Link>
               </section>
 
