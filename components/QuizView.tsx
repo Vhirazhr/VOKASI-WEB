@@ -72,6 +72,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const [xp,setXp]=useState<number|null>(null);
  const [liveProgress,setLiveProgress]=useState<LiveProgress|null>(null);
  const [restartCycle,setRestartCycle]=useState(0);
+ const [timeoutReaction,setTimeoutReaction]=useState(false);
  const live=useRef(true);
  const inFlight=useRef(false);
  const feedbackTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
@@ -200,6 +201,16 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    return()=>{cancelled=true;};
  },[state?.session_id,state?.status,state?.index]);
 
+ // Timeout emotion is driven by a server-confirmed verdict, never browser guesses.
+ // Show it briefly on the next question without overlaying its text or choices.
+ useEffect(()=>{
+   if(state?.status!=='active'||state.index===undefined||!liveProgress)return;
+   if(liveProgress.statuses.length!==state.index||liveProgress.statuses.at(-1)!=='TIMEOUT')return;
+   const show=window.setTimeout(()=>setTimeoutReaction(true),0);
+   const hide=window.setTimeout(()=>setTimeoutReaction(false),2600);
+   return()=>{window.clearTimeout(show);window.clearTimeout(hide);};
+ },[state?.status,state?.index,liveProgress]);
+
  async function submit(){
    if(!state||state.status!=='active'||selected===null||sending||feedback)return;
    const current=state.question;
@@ -247,6 +258,8 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const finishedStatuses=liveProgress?.statuses||[];
  const processed=Math.max(finishedStatuses.length,currentIndex);
  const monitorRemaining=state?Math.max(0,state.total-processed):0;
+ const mascotMood=feedback?(feedback.correct?'happy':'sad'):timeoutReaction?'angry':'neutral';
+ const mascotText=mascotMood==='happy'?'Jawaban benar, semangat!':mascotMood==='sad'?'Jawaban salah, coba lagi!':mascotMood==='angry'?'Yah, waktunya habis!':'Semangat mengerjakan!';
  const allRows=(review||[]).filter(r=>reviewFilter==='Semua'||(reviewFilter==='Benar'?r.status==='BENAR':reviewFilter==='Salah'?r.status==='SALAH':r.status==='TIMEOUT'));
  const pages=Math.max(1,Math.ceil(allRows.length/10));
  const page=Math.min(reviewPage,pages-1);
@@ -254,7 +267,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  function restart(){
    sessionStorage.removeItem(key(profile.authId));
    setReview(null);setReviewShown(false);setReviewPage(0);setReviewFilter('Semua');
-   setXp(null);setLiveProgress(null);setSelected(null);setFeedback(null);setFeedbackQuestion(null);
+   setXp(null);setLiveProgress(null);setSelected(null);setFeedback(null);setFeedbackQuestion(null);setTimeoutReaction(false);
    setImageUrls(new Map());setState(null);setError('');setRestartCycle(v=>v+1);
  }
  function quit(){if(!window.confirm('Keluar dari latihan? Sesi tetap berjalan di server dan dapat dilanjutkan dari browser ini.'))return;onQuit();}
@@ -328,19 +341,20 @@ export default function QuizView({profile,category,onDone,onQuit}:{
          <p>{feedback?'Jawaban sudah diperiksa server, lanjut ke soal berikutnya.':'Pilih jawaban sebelum waktu soal habis. Waktu terus berjalan otomatis.'}</p>
          <div className="quiz-focus-inline-stats"><span>SOAL <b>{currentIndex+1}/{state.total}</b></span><span>SELESAI <b>{progress}%</b></span></div>
        </div>
+       <div className={'quiz-focus-mascot quiz-focus-mascot-'+mascotMood} role="img" aria-label={mascotText}>
+         <span className="quiz-focus-mascot-halo" aria-hidden="true"/>
+         <span className="quiz-focus-mascot-face" aria-hidden="true">
+           <i className="quiz-focus-mascot-eye"/><i className="quiz-focus-mascot-eye"/>
+           <span className="quiz-focus-mascot-mouth"/>
+           <span className="quiz-focus-mascot-cheek left"/><span className="quiz-focus-mascot-cheek right"/>
+         </span>
+         <span className="quiz-focus-mascot-caption">{mascotMood==='happy'?'HEBAT!':mascotMood==='sad'?'SEMANGAT!':mascotMood==='angry'?'TIMEOUT!':'AYO BISA!'}</span>
+       </div>
        <div className="quiz-focus-timer-track" aria-hidden="true"><span style={{width:timePercent+'%'}}/></div>
      </section>
-     {state.category===null&&liveProgress?.repeat_today&&<div className="alert info quiz-focus-repeat-notice"><RefreshCw size={17}/> <span><b>Mode pengulangan.</b> Kamu boleh berlatih lagi, tetapi nilai resmi dan XP pertama hari ini tidak berubah.</span></div>}
      <div className="quiz-layout quiz-playful">
-   <div className="quiz-progress"><div className="quiz-progress-label"><span>Soal <b>{currentIndex+1}</b> dari {state.total}</span><span>{progress}% selesai</span></div>
-   <div className="progress-track"><div style={{width:progress+'%'}}/></div></div>
    <div className="quiz-card">
-    <div className="quiz-playful-deco">✦ VOKASI PLAY MODE ✧</div>
-    <div className="quiz-card-head"><span className="question-type">PERTANYAAN {currentIndex+1}</span>
-     <div className="time-group"><span className={remaining<=5?'timer urgent':'timer'}><Clock3 size={17}/>{feedback?'Tersimpan':textClock(remaining)}</span>
-       <span className="total-time">Total: {textClock(totalRemaining)}</span></div></div>
-    <div className="quiz-playful-question"><div><h2>{question.text}</h2><p className="question-hint">Pilih satu jawaban yang paling tepat.</p></div>
-      <div className="quiz-playful-mascot" aria-hidden="true"><span className="quiz-mascot-face"><i/><i/></span><span className="quiz-mascot-grin"/></div></div>
+    <div className="quiz-playful-question"><div><h2>{question.text}</h2><p className="question-hint">Pilih satu jawaban yang paling tepat.</p></div></div>
     {question.image_path&&imageUrls.get(question.image_path)&&<div className="quiz-visual-figure">
       <img src={imageUrls.get(question.image_path)} alt="Gambar soal numerasi" loading="eager"/></div>}
     <div className="answers">{question.options.map((option,i)=><button type="button" key={i}
