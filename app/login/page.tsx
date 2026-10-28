@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {useRouter} from 'next/navigation';
 import {ArrowRight,Eye,EyeOff,LockKeyhole,ShieldCheck,UserRound} from 'lucide-react';
-import {configured} from '@/lib/supabase';
 import {signIn,currentRole} from '@/lib/auth';
 import type {UserRole} from '@/lib/types';
 import '@/app/login-visual.css';
@@ -16,7 +15,7 @@ export default function LoginPage(){
   useEffect(()=>{
     const qs=new URLSearchParams(window.location.search);
     queueMicrotask(()=>{setRole(qs.get('role')==='admin'?'admin':'student');setEmbed(qs.get('embed')==='1');});
-    if(configured()){void currentRole().then(s=>{if(s) router.replace((s.role==='admin'?'/admin':'/siswa')+(qs.get('embed')==='1'?'?embed=1':''));}).catch(()=>{});}
+    void currentRole().then(s=>{if(s) router.replace((s.role==='admin'?'/admin':'/siswa')+(qs.get('embed')==='1'?'?embed=1':''));}).catch(()=>{});
   },[router]);
   async function submit(e:React.FormEvent){e.preventDefault();setError('');setPending(true);
     try{await signIn(identity,password,role);router.replace((role==='admin'?'/admin':'/siswa')+(embed?'?embed=1':''));}
@@ -48,7 +47,6 @@ export default function LoginPage(){
           <button type="button" aria-pressed={role==='student'} className={role==='student'?'active':''} onClick={()=>{setRole('student');setError('');}}><UserRound size={23}/> Siswa</button>
           <button type="button" aria-pressed={role==='admin'} className={role==='admin'?'active':''} onClick={()=>{setRole('admin');setError('');}}><ShieldCheck size={23}/> Admin</button>
         </div>
-        {!configured()&&<div className="alert danger" role="alert">Supabase belum disetel. Isi <code>.env.local</code> terlebih dahulu.</div>}
         <form onSubmit={submit} className="login-photo-form">
           <label htmlFor="vokasi-login-identity">{role==='student'?'Username':'Email Admin'}</label>
           <div className="login-photo-field">
@@ -63,7 +61,7 @@ export default function LoginPage(){
             <button type="button" className="login-photo-reveal" aria-label={visible?'Sembunyikan password':'Lihat password'} aria-pressed={visible} onClick={()=>setVisible(!visible)}>{visible?<EyeOff size={23}/>:<Eye size={23}/>}</button>
           </div>
           {error&&<div className="alert danger" role="alert">{error}</div>}
-          <button className="login-photo-submit" type="submit" disabled={pending||!configured()}>
+          <button className="login-photo-submit" type="submit" disabled={pending}>
             {pending?'Memeriksa akun...':'Masuk'} <ArrowRight size={23}/>
           </button>
         </form>
