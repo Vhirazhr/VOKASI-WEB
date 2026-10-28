@@ -80,13 +80,15 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const [monitorOpen,setMonitorOpen]=useState(false);
  const [figureOpen,setFigureOpen]=useState(false);
  useEffect(()=>{
-   if(!figureOpen&&!monitorOpen)return;
+   if(!figureOpen&&!monitorOpen&&!exitConfirmOpen)return;
    const escape=(event:KeyboardEvent)=>{
-     if(event.key==='Escape'){setFigureOpen(false);setMonitorOpen(false);}
+     if(event.key!=='Escape')return;
+     if(exitConfirmOpen){if(!exiting)setExitConfirmOpen(false);return;}
+     setFigureOpen(false);setMonitorOpen(false);
    };
    window.addEventListener('keydown',escape);
    return()=>window.removeEventListener('keydown',escape);
- },[figureOpen,monitorOpen]);
+ },[figureOpen,monitorOpen,exitConfirmOpen,exiting]);
 
  const live=useRef(true);
  const inFlight=useRef(false);
@@ -371,7 +373,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      <div className="quiz-layout quiz-playful">
    <div className="quiz-card">
     <div className="quiz-question-scroll" key={state.session_id+':'+state.index}>
-    <div className="quiz-playful-question"><div><h2>{question.text}</h2><p className="question-hint">Pilih satu jawaban yang paling tepat.</p></div></div>
+    <div className="quiz-playful-question"><div><h2>{question.text}</h2></div></div>
     {question.image_path&&imageUrls.get(question.image_path)&&<button type="button" className="quiz-visual-figure quiz-focus-figure-zoom" onClick={()=>setFigureOpen(true)} aria-label="Perbesar gambar soal">
       <img src={imageUrls.get(question.image_path)} alt="Gambar soal numerasi" loading="eager"/>
       <span className="quiz-focus-zoom-label"><ZoomIn size={15}/> Perbesar gambar</span>
