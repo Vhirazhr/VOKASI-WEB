@@ -9,10 +9,13 @@ import StudentAvatar from '@/components/StudentAvatar';
 import StudentProfileDashboard from '@/components/StudentProfileDashboard';
 import QuizView from '@/components/QuizView';
 import ReviewHistory from '@/components/ReviewHistory';
+import StudentReportDownload from '@/components/StudentReportDownload';
 import {getPublishedBankVersion,PRACTICE_CATEGORIES} from '@/lib/quiz';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {getOwnAttempts,getLeaderboard,officialMandatoryAttempts,wibDate} from '@/lib/school';
 import {getSchoolAvatarUrls} from '@/lib/student-avatar';
+import {getWeakTopicInsights,rankRecommendedTopics,topicInsight} from '@/lib/student-insights';
+import type {TopicInsight} from '@/lib/student-insights';
 import type {Attempt,LeaderboardEntry,StudentProfile} from '@/lib/types';
 import '@/app/student-experience.css';
 import '@/app/student-unified-ui.css';
@@ -30,7 +33,7 @@ function StudentHeading({kicker,title,description}:{kicker:string;title:string;d
   </header>;
 }
 
-function HistoryView({attempts,busy}:{attempts:Attempt[];busy:boolean}) {
+function HistoryView({attempts,busy,profile}:{attempts:Attempt[];busy:boolean;profile:StudentProfile}) {
   const [kind,setKind]=useState('all');
   const [date,setDate]=useState('');
   const [query,setQuery]=useState('');
@@ -59,6 +62,7 @@ function HistoryView({attempts,busy}:{attempts:Attempt[];busy:boolean}) {
        <div className="student-session-list">{rows.map((a)=><details key={a.session_key} className="student-session-card">
          <summary><span className="student-session-icon"><BookOpen size={20}/></span><span className="student-session-main"><b>{a.practice_category||'Latihan wajib'}</b><small>{toDay(a.completed_at_ms)} • {toTime(a.seconds_spent)} • {a.question_count} soal</small></span><span className="student-session-score">{a.score}<small>/100</small><small>{a.signature?.startsWith('WEB-SERVER-v1:')?'Terverifikasi':'Riwayat lama · belum terverifikasi'}</small>{a.practice_category===null&&a.signature?.startsWith('WEB-SERVER-v1:')&&<small>{officialKeys.has(a.session_key)?'Nilai resmi harian':'Pengulangan · tidak mengubah nilai resmi'}</small>}</span><span className="student-session-open">Detail <ArrowRight size={15}/></span></summary>
          <div className="student-session-detail"><div><span>Jawaban benar</span><strong>{a.correct}</strong></div><div><span>Jumlah terjawab</span><strong>{a.answered}</strong></div><div><span>XP sesi</span><strong>+{a.earned_xp}</strong></div><div><span>Durasi</span><strong>{toTime(a.seconds_spent)}</strong></div></div>
+         <div className="student-history-download"><StudentReportDownload profile={profile} attempt={a} official={a.practice_category===null&&officialKeys.has(a.session_key)}/></div>
          {a.signature?.startsWith('WEB-SERVER-v1:')&&<ReviewHistory sessionId={a.session_key}/>}
          {a.review_summary?.length>0&&<div className="student-answer-summary"><b>Ringkasan status jawaban</b><p>Status diambil dari catatan sesi yang sudah selesai.</p><div>{a.review_summary.slice(0,100).map((answer,j)=><span key={j} title={'Soal '+(j+1)+': '+answer.status} className={'student-answer-dot '+(/^(BENAR|CORRECT|RIGHT)$/i.test(answer.status)?'is-correct':/^(TIMEOUT)$/i.test(answer.status)?'is-timeout': 'is-other')}>{j+1}</span>)}</div></div>}
        </details>)}</div>}
@@ -210,6 +214,8 @@ export default function StudentPage(){
   const view:PageView=pathname.endsWith('/riwayat')?'history':pathname.endsWith('/peringkat')?'ranking':pathname.endsWith('/profil')?'profile':'home';
   const {profile,loading,error,logout}=useSchoolAuth('student');
   const [attempts,setAttempts]=useState<Attempt[]>([]);
+  const [topicInsights,setTopicInsights]=useState<TopicInsight[]>([]);
+  const [insightsError,setInsightsError]=useState(false);
   const [leaders,setLeaders]=useState<LeaderboardEntry[]>([]);
   const [avatarUrls,setAvatarUrls]=useState<Record<string,string>>({});
   const [busy,setBusy]=useState(true);
@@ -235,10 +241,12 @@ export default function StudentPage(){
   useEffect(()=>{queueMicrotask(()=>setEmbed(new URLSearchParams(window.location.search).get('embed')==='1'));},[]);
   const refresh=useCallback(async()=>{
     if(!profile)return;
-    setBusy(true);setWarning('');setRankFailed(false);
-    const [hist,rank]=await Promise.allSettled([getOwnAttempts(profile.authId),getLeaderboard()]);
+    setBusy(true);setWarning('');setRankFailed(false);setInsightsError(false);
+    const [hist,rank,topics]=await Promise.allSettled([getOwnAttempts(profile.authId),getLeaderboard(),getWeakTopicInsights()]);
     if(hist.status==='fulfilled')setAttempts(hist.value);
     else setWarning('Gagal membaca riwayat nilai dari Supabase.');
+    if(topics.status==='fulfilled')setTopicInsights(topics.value);
+    else {setTopicInsights([]);setInsightsError(true);}
     if(rank.status==='fulfilled')setLeaders(rank.value);
     else {setLeaders([]);setRankFailed(true);}
     try{
@@ -252,6 +260,7 @@ export default function StudentPage(){
   },[profile]);
   useEffect(()=>{queueMicrotask(()=>void refresh());},[refresh]);
   if(loading||!profile)return <main className="page-loader">{error||'Memeriksa akun siswa...'}</main>;
+  const recommended=rankRecommendedTopics(topicInsights).find(insight=>insight.needsPractice||insight.status==='improve');
   const compulsory=officialMandatoryAttempts(attempts);
   const latest=compulsory[0];
   const today=compulsory.find(a=>wibDate(a.completed_at_ms)===wibDate());
@@ -260,7 +269,7 @@ export default function StudentPage(){
     {category!==undefined?<QuizView profile={profile} category={category} history={attempts} onQuit={()=>setCategory(undefined)} onDone={()=>{setCategory(undefined);void refresh();}}/>:
     <>
       {warning&&<div className="alert danger">{warning} <button type="button" className="link-action" onClick={()=>void refresh()}>Coba lagi</button></div>}
-      {view==='history'?<HistoryView attempts={attempts} busy={busy}/>:
+      {view==='history'?<HistoryView attempts={attempts} busy={busy} profile={profile}/>:
        view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed} avatarUrls={avatarUrls}/>:
        view==='profile'?<StudentProfileDashboard profile={profile} attempts={attempts} busy={busy} avatarUrl={avatarUrls[profile.username.toLowerCase()]} onAvatarUploaded={url=>setAvatarUrls(previous=>({...previous,[profile.username.toLowerCase()]:url}))} onLogout={()=>void logout()}/>:
         <main className="student-home student-home-dashboard">
@@ -294,11 +303,21 @@ export default function StudentPage(){
 
           <section className="student-reference-content">
             <div className="student-reference-lessons student-aside-card">
-              <div className="student-reference-section-heading"><div><span className="student-card-eyebrow">BANK SOAL</span><h2>Pilih latihan mandiri</h2><p>Latih kemampuanmu melalui enam materi numerasi.</p></div><span className="student-reference-count">6 materi</span></div>
+              <div className="student-reference-section-heading"><div><span className="student-card-eyebrow">BANK SOAL</span><h2>Pilih latihan mandiri</h2><p>Materi yang perlu diperbaiki ditandai berdasarkan jawabanmu.</p></div><span className="student-reference-count">6 materi</span></div>
+              <section className="vokasi-study-recommendation" aria-label="Rekomendasi materi belajar">
+                <div className="vokasi-study-recommendation-title"><Target size={17}/><strong>REKOMENDASI BELAJAR</strong><span>Analisis 5 sesi terakhir</span></div>
+                {busy?<p>Memeriksa hasil jawabanmu...</p>:insightsError?<p>Rekomendasi belum dapat dimuat. Coba segarkan halaman.</p>:recommended?
+                  <div className={'vokasi-study-recommendation-body '+(recommended.needsPractice?'is-weak':'is-improve')}>
+                    <div><b>{recommended.category}</b><span>{recommended.needsPractice?'Prioritas latihan · banyak jawaban salah':'Materi untuk ditingkatkan'}</span><small>Benar {recommended.correct} dari {recommended.answered} jawaban · {recommended.wrong} salah{recommended.timeout>0?' · '+recommended.timeout+' timeout':''}</small></div>
+                    <button type="button" disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(recommended.category)}>Latih materi <ArrowRight size={16}/></button>
+                  </div>:
+                  <p>{topicInsights.some(item=>item.answered>0)?'Belum ada materi dengan akurasi di bawah 85%. Pertahankan hasil belajarmu!':'Selesaikan latihan untuk melihat materi yang perlu diperbaiki. Soal timeout dibedakan dari jawaban salah.'}</p>}
+              </section>
               <div className="student-reference-topic-list">
-                {categories.map((cat,i)=>{const TopicIcon=[Calculator,Divide,Sigma,Atom,Brain,ImageIcon][i%6];return <button type="button" className="student-reference-topic" key={cat} disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(cat)}>
+                {categories.map((cat,i)=>{const TopicIcon=[Calculator,Divide,Sigma,Atom,Brain,ImageIcon][i%6];const insight=topicInsights.find(x=>x.category===cat)||topicInsight(cat);return <button type="button" className={'student-reference-topic'+(insight.needsPractice?' needs-practice':insight.status==='improve'?' needs-improve':'')} key={cat} disabled={!BANK_IS_PUBLISHED} onClick={()=>setCategory(cat)}>
                   <span className={'student-reference-topic-icon tone-'+i}><TopicIcon size={20}/></span>
-                  <span className="student-reference-topic-copy"><b>{cat}</b><small>{BANK_IS_PUBLISHED?'10 soal latihan mandiri':'Menunggu bank soal aktif'}</small></span>
+                  <span className="student-reference-topic-copy"><b>{cat}</b><small>{BANK_IS_PUBLISHED?'10 soal latihan mandiri':'Menunggu bank soal aktif'}</small>
+                  {!busy&&!insightsError&&<span className={'vokasi-topic-status status-'+insight.status}>{insight.label}{insight.answered>=5&&insight.accuracy!==null?' · '+insight.accuracy+'% benar':''}</span>}</span>
                   <span className="student-reference-topic-arrow"><ArrowRight size={17}/></span>
                 </button>;})}
               </div>
