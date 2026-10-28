@@ -235,3 +235,70 @@
 @media(max-width:600px){
  .school-shell.admin-shell:not(.shell-embed) .sidebar{display:none}
 }
+
+
+/* Mobile administrator access — all school tools, even those not in the 5-item bar. */
+.school-shell.admin-shell .admin-mobile-menu-trigger{display:none}
+.school-shell.admin-shell .admin-mobile-menu-layer{
+ position:fixed;inset:0;z-index:220;isolation:isolate;
+ display:flex;align-items:flex-end;justify-content:center;
+}
+.school-shell.admin-shell .admin-mobile-menu-backdrop{
+ position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;
+ background:#112b4b94;
+}
+.school-shell.admin-shell .admin-mobile-menu-dialog{
+ position:relative;z-index:1;display:grid;gap:0;
+ width:min(590px,100%);max-height:calc(100dvh - 60px);
+ overflow:hidden;border-radius:23px 23px 0 0;
+ border:1px solid #cddff4;background:#fff;
+ box-shadow:0 -15px 48px #142d5260;
+}
+.school-shell.admin-shell .admin-mobile-menu-dialog>header{
+ display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+ padding:21px 20px;border-bottom:1px solid #e3ecf7;
+ background:linear-gradient(110deg,#f1f7ff,#fff);
+}
+.school-shell.admin-shell .admin-mobile-menu-dialog>header>div{display:grid;gap:5px}
+.school-shell.admin-shell .admin-mobile-menu-dialog>header span{
+ color:#3175ce;font-size:9px;font-weight:900;letter-spacing:.1em;
+}
+.school-shell.admin-shell .admin-mobile-menu-dialog h2{
+ margin:0;color:#234771;font-size:21px;font-weight:850;
+}
+.school-shell.admin-shell .admin-mobile-menu-dialog p{margin:0;color:#8ba1ba;font-size:11px}
+.school-shell.admin-shell .admin-mobile-menu-dialog>header>button{
+ display:grid;place-items:center;flex:none;width:35px;height:35px;
+ border:1px solid #d6e5f7;border-radius:10px;background:#fff;color:#4276bd;
+}
+.school-shell.admin-shell .admin-mobile-menu-dialog>nav{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:10px;min-height:0;overflow-y:auto;padding:17px 19px 24px;
+}
+.school-shell.admin-shell .admin-mobile-menu-dialog>nav a{
+ display:flex;align-items:center;gap:12px;min-height:60px;
+ padding:13px 12px;border:1px solid #e0eaf7;border-radius:12px;
+ background:#fff;color:#3b648f;font-size:12px;font-weight:800;
+}
+.school-shell.admin-shell .admin-mobile-menu-dialog>nav a svg{flex:none;color:#367bd1}
+.school-shell.admin-shell .admin-mobile-menu-dialog>nav a.selected{
+ background:#ecf5ff;border-color:#a8cafd;color:#1b62c2;
+}
+@media(max-width:600px){
+ .school-shell.admin-shell .admin-mobile-menu-trigger{
+   display:flex;align-items:center;justify-content:center;gap:5px;
+   min-height:39px;padding:7px 11px;border:1px solid #d7e5f6;
+   border-radius:11px;background:#f1f7ff;color:#2b70c6;
+   font-size:10px;font-weight:850;
+ }
+}
+@media(max-width:390px){
+ .school-shell.admin-shell .admin-mobile-menu-trigger span{display:none}
+ .school-shell.admin-shell .admin-mobile-menu-dialog>nav{
+   gap:7px;padding:12px 10px 19px;
+ }
+ .school-shell.admin-shell .admin-mobile-menu-dialog>nav a{
+   gap:7px;min-height:57px;padding:9px;font-size:10px;
+ }
+ .school-shell.admin-shell .admin-mobile-menu-dialog>nav a svg{width:17px;height:17px}
+}
