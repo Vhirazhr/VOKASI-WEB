@@ -24,10 +24,11 @@ Until the old frontend is migrated, the existing `NEXT_PUBLIC_SUPABASE_URL` and 
 1. Confirm the target database is the empty testing database, not the current production database.
 2. Use the hosting's PostgreSQL import tool (for example phpPgAdmin if provided) or `psql` from a trusted terminal.
 3. Import `database/schema.sql` once into the empty database. It is a bootstrap script, not a repeatable migration; it intentionally wraps changes in a transaction.
-4. Confirm `schema_migrations` contains `20261029_self_hosted_postgres_bootstrap`.
-5. Confirm the new tables exist and no existing production data has been changed.
+4. Import `database/functions.sql` next, using the same database role. It installs the existing server-validated VOKASI business functions against the local `auth.uid()` bridge and local object metadata table.
+5. Confirm `schema_migrations` contains `20261029_self_hosted_postgres_bootstrap`, `20261029_self_hosted_compatibility`, and `20261029_self_hosted_native_functions`.
+6. Confirm the new tables/functions exist and no existing production data has been changed.
 
-The schema retains the current exam-verification view and important data-integrity triggers. It does not yet recreate every Supabase RPC as native server functions; those are being moved into server-side API routes.
+The schema retains the current exam-verification view and important data-integrity triggers. `database/functions.sql` ports the current business RPC functions; the explicit `/api/rpc` allowlist executes them only after the native server session is checked and the authenticated user ID is set transaction-locally. Direct frontend table queries and local file storage are still being migrated, so this is not yet the complete cutover.
 
 ## Create the initial Super Admin
 
