@@ -1,5 +1,6 @@
 'use client';
 
+import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useMemo,useState} from 'react';
 import {CalendarDays,CheckCircle2,Clock3,LogOut,Mail,Plus,RefreshCw,Search,Send,ShieldCheck,ShieldOff,UserRound,Users,X,PenLine,Trash2,LockKeyhole,UserCheck,UserX,Crown} from 'lucide-react';
 import AppShell from '@/components/AppShell';
@@ -62,7 +63,7 @@ export default function AdminSettingsPage(){
    try{
     const [session,result]=await Promise.all([
      supabase().auth.getUser(),
-     supabase().rpc('vokasi_admin_list_administrators')
+     nativeRpc('vokasi_admin_list_administrators')
     ]);
     if(session.error)throw session.error;
     if(!active)return;
@@ -138,7 +139,7 @@ export default function AdminSettingsPage(){
   if(action==='deactivate'&&!window.confirm('Nonaktifkan akses admin '+member.email+'?'))return;
   setManaging(true);setEditIssue('');setManageNotice('');
   try{
-   const {error:changeError}=await supabase().rpc('vokasi_super_admin_manage_account',{
+   const {error:changeError}=await nativeRpc('vokasi_super_admin_manage_account',{
     p_target:member.user_id,p_action:action,p_display_name:action==='edit'?name||'':null
    });
    if(changeError)throw changeError;
