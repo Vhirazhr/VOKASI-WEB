@@ -129,3 +129,33 @@
 @media(prefers-reduced-motion:reduce){
  .school-shell.student-shell .vokasi-report-spinner{animation:none}
 }
+
+
+/* Verified daily progress mirrors the Android dashboard without inventing goals. */
+.school-shell.student-shell .vokasi-today-progress-status{
+ display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:15px 0 12px;
+}
+.school-shell.student-shell .vokasi-today-progress-status strong{
+ color:#2874d4;font-size:25px;font-weight:900;line-height:1.1;
+}
+.school-shell.student-shell .vokasi-today-progress-status>span{
+ flex:1;min-width:100px;color:#6888ae;font-size:11px;line-height:1.5;
+}
+.school-shell.student-shell .vokasi-today-progress-track{
+ height:8px;overflow:hidden;border-radius:50px;background:#e4edf9;
+}
+.school-shell.student-shell .vokasi-today-progress-track>span{
+ display:block;height:100%;border-radius:50px;
+ background:linear-gradient(90deg,#1a7fd9,#4ad1a1);
+ transition:width .2s ease;
+}
+.school-shell.student-shell .vokasi-today-season{
+ display:flex;justify-content:space-between;align-items:center;gap:10px;
+ margin-top:15px;padding:10px 0;border-bottom:1px solid #e6edf7;
+}
+.school-shell.student-shell .vokasi-today-season span{color:#869cb5;font-size:10px}
+.school-shell.student-shell .vokasi-today-season strong{color:#285f9d;font-size:12px}
+.school-shell.student-shell .vokasi-today-progress p{margin-top:11px}
+@media(prefers-reduced-motion:reduce){
+ .school-shell.student-shell .vokasi-today-progress-track>span{transition:none}
+}
