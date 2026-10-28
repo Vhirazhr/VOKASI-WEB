@@ -36,7 +36,7 @@ assert.match(auth, /expires_at > now\(\)/);
 assert.match(auth, /school_admins AS sa/);
 assert.match(auth, /registration_status = 'registered'/);
 
-assert.match(login, /count\(\).*identifier_hash/s);
+assert.match(login, /count\(\*\).*identifier_hash/s);
 assert.match(login, /Terlalu banyak percobaan login/);
 assert.match(login, /LIMIT 2/);
 assert.match(login, /Username\/email atau password salah/);
