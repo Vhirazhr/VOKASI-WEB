@@ -1,5 +1,9 @@
 # Deployment VOKASI-WEB ke cPanel (tanpa Supervisor)
 
+Panduan ini untuk **uji publik/staging** di hosting sekolah berbasis cPanel Node.js App.
+
+> **Peringatan:** dokumen ini masih menjelaskan deployment legacy yang memakai Supabase. Migrasi ke PostgreSQL mandiri sedang dikerjakan pada branch `feat/self-hosted-postgres`; fondasi database dan autentikasi native belum berarti seluruh fitur siswa/admin sudah berpindah. Jangan menganggap aplikasi siap standalone sampai semua UI, ujian, bank soal, storage, dan fungsi admin sudah memakai API native serta CI dan smoke test lulus.
+
 Panduan ini untuk **uji publik/staging** di hosting sekolah berbasis cPanel Node.js App. Aplikasi menggunakan Next.js 16 dan Supabase; database/auth/storage tetap berada di project Supabase yang dikonfigurasi, bukan otomatis dibuat di cPanel.
 
 ## 0. Sebelum mulai
