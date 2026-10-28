@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { BookOpen, BarChart3, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2 } from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import AdminNotificationBell from '@/components/AdminNotificationBell';
+import StudentAvatar from '@/components/StudentAvatar';
 import type { ReactNode } from 'react';
 import '@/app/school-shell.css';
 
@@ -14,12 +15,13 @@ type ShellProps = {
   role: 'student' | 'admin';
   onLogout: () => void;
   displayName: string;
+  studentAvatarUrl?:string;
   embed?: boolean;
   navigationBlocked?: boolean;
   dashboardStyle?: boolean;
 };
 
-export default function AppShell({children,role,onLogout,displayName,embed=false,navigationBlocked=false,dashboardStyle=false}:ShellProps) {
+export default function AppShell({children,role,onLogout,displayName,studentAvatarUrl,embed=false,navigationBlocked=false,dashboardStyle=false}:ShellProps) {
   const isAdmin=role==='admin';
   const pathname=usePathname();
   const [urlEmbed,setUrlEmbed]=useState(false);
@@ -66,7 +68,7 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
         </Link>)}
       </nav>
       {!isAdmin&&<div className="side-bottom">
-        <div className="side-user"><span className="user-badge">{displayName.slice(0,1).toUpperCase()||'V'}</span><span><b>{displayName}</b><small>Siswa VOKASI</small></span></div>
+        <div className="side-user"><StudentAvatar className="user-badge" name={displayName} url={studentAvatarUrl} size={48}/><span><b>{displayName}</b><small>Siswa VOKASI</small></span></div>
         <button type="button" onClick={onLogout} className="side-link signout"><LogOut size={18}/><span>Keluar akun</span></button>
       </div>}
     </aside>
@@ -83,7 +85,7 @@ export default function AppShell({children,role,onLogout,displayName,embed=false
             </div>
           </div>:<div className="student-header-actions">
             <div className="student-header-account" aria-label="Akun siswa yang sedang masuk">
-              <span className="student-header-avatar" aria-label={displayName}>{displayName.trim().split(/\s+/).slice(0,2).map(part=>part[0]).join('').toUpperCase()||'V'}</span>
+              <StudentAvatar className="student-header-avatar" name={displayName} url={studentAvatarUrl} size={48}/>
               <span className="student-header-identity"><strong>{displayName}</strong><small>Siswa · SMK Negeri 1 Singosari</small></span>
             </div>
             <button type="button" className="top-logout student-header-logout" title="Keluar akun" onClick={onLogout}><LogOut size={16}/><span>Keluar</span></button>
