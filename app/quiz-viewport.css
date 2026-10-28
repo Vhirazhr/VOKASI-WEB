@@ -432,3 +432,157 @@
 @media(prefers-reduced-motion:reduce){
  .school-shell.student-shell .quiz-focus-monitor{transition:none}
 }
+
+
+/* Focus exam cleanup: only brand, current question, two real countdowns,
+   and the secure question navigator remain on screen. */
+.school-shell.student-shell .quiz-focus-appbar{
+ grid-template-columns:minmax(0,1fr) auto;
+}
+.school-shell.student-shell .quiz-focus-appbrand{
+ display:flex;align-items:center;gap:11px;min-width:0;
+}
+.school-shell.student-shell .quiz-focus-school-logo{
+ display:block;flex:none;width:42px;height:42px;
+ object-fit:contain;border-radius:11px;
+ background:#fff;border:1px solid #e3ecf8;
+ padding:3px;box-shadow:0 3px 12px #204c8320;
+}
+.school-shell.student-shell .quiz-focus-appbrand>strong{
+ color:#194570;font-size:17px;font-weight:900;letter-spacing:.02em;
+}
+.school-shell.student-shell .quiz-focus-timer-copy{
+ display:flex;flex-direction:column;justify-content:center;min-width:0;
+}
+.school-shell.student-shell .quiz-focus-timer-copy h2{
+ margin:0 0 5px;color:#20518a;font-size:clamp(16px,1.85vw,23px);
+ font-weight:850;line-height:1.2;
+}
+.school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time{
+ position:relative;z-index:2;
+ display:flex;flex:none;align-items:center;gap:9px;
+ min-width:166px;min-height:63px;
+ padding:10px 14px;border-radius:13px;
+ box-shadow:0 5px 17px #2c69bd21;
+}
+.school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time small{
+ font-size:9px;line-height:1.2;
+}
+.school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time strong{
+ font-size:24px;line-height:1.05;
+}
+.school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time>svg{
+ flex:none;width:19px;height:19px;
+}
+.school-shell.student-shell .quiz-focus-inline-stats span{
+ font-weight:700;font-size:10px;
+}
+.school-shell.student-shell .quiz-focus-exit-overlay{
+ position:fixed;z-index:260;inset:0;
+ display:flex;align-items:center;justify-content:center;
+ padding:22px;isolation:isolate;
+}
+.school-shell.student-shell .quiz-focus-exit-backdrop{
+ position:absolute;inset:0;width:100%;height:100%;
+ padding:0;border:0;border-radius:0;
+ background:#0a254ba8;cursor:default;
+ backdrop-filter:blur(4px);
+}
+.school-shell.student-shell .quiz-focus-exit-dialog{
+ position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;
+ gap:0;width:min(460px,100%);max-height:calc(100dvh - 35px);
+ overflow-y:auto;padding:30px 29px 26px;
+ border:1px solid #dae7fb;border-radius:21px;background:#fff;
+ box-shadow:0 28px 85px #0e326b54;
+ text-align:center;
+}
+.school-shell.student-shell .quiz-focus-exit-icon{
+ display:grid;place-items:center;width:59px;height:59px;
+ margin-bottom:18px;border-radius:17px;
+ background:#fff0e7;color:#d4773c;
+}
+.school-shell.student-shell .quiz-focus-exit-dialog h2{
+ margin:0 0 10px;color:#153d69;
+ font-size:clamp(20px,2.3vw,24px);line-height:1.3;
+ font-weight:900;
+}
+.school-shell.student-shell .quiz-focus-exit-dialog p{
+ margin:0;max-width:385px;
+ color:#6d86a4;font-size:12px;line-height:1.75;
+}
+.school-shell.student-shell .quiz-focus-exit-dialog p b{color:#bc4960}
+.school-shell.student-shell .quiz-focus-exit-dialog .quiz-focus-exit-error{
+ width:100%;margin-top:16px;padding:11px 12px;
+ border:1px solid #f4bdc6;border-radius:9px;
+ background:#fff4f6;color:#b23951;text-align:left;font-size:11px;
+}
+.school-shell.student-shell .quiz-focus-exit-actions{
+ display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-top:24px;
+}
+.school-shell.student-shell .quiz-focus-exit-actions button{
+ display:flex;align-items:center;justify-content:center;
+ min-height:47px;padding:11px;
+ border-radius:11px;font-size:12px;font-weight:850;
+ transition:background .15s;
+}
+.school-shell.student-shell .quiz-focus-stay{
+ border:1px solid #cddff7;background:#eef5ff;color:#2367bd;
+}
+.school-shell.student-shell .quiz-focus-stay:hover{background:#dfedff}
+.school-shell.student-shell .quiz-focus-confirm-exit{
+ border:1px solid #e15265;background:#e15265;color:#fff;
+}
+.school-shell.student-shell .quiz-focus-confirm-exit:hover{background:#ca4357}
+.school-shell.student-shell .quiz-focus-exit-actions button:disabled{
+ cursor:wait;opacity:.6;
+}
+@media(max-width:800px){
+ .school-shell.student-shell .quiz-focus-appbar{
+  grid-template-columns:minmax(0,1fr) auto;gap:9px;
+ }
+ .school-shell.student-shell .quiz-focus-school-logo{
+  width:35px;height:35px;padding:2px;border-radius:9px;
+ }
+ .school-shell.student-shell .quiz-focus-appbrand>strong{font-size:15px}
+ .school-shell.student-shell .quiz-focus-timer-banner{
+  display:flex;align-items:center;gap:12px;
+ }
+ .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time{
+  min-width:124px;min-height:58px;padding:8px 10px;gap:5px;
+  border-radius:11px;
+ }
+ .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time small{font-size:8px}
+ .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time strong{font-size:21px}
+ .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time>svg{display:none}
+ .school-shell.student-shell .quiz-focus-timer-copy h2{font-size:clamp(15px,3.3vw,20px);line-height:1.13}
+}
+@media(max-width:430px){
+ .school-shell.student-shell .quiz-focus-school-logo{width:32px;height:32px}
+ .school-shell.student-shell .quiz-focus-appbrand>strong{font-size:14px}
+ .school-shell.student-shell .quiz-focus-timer-banner{
+  gap:9px;padding:8px 10px 12px;
+ }
+ .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time{
+  min-width:105px;min-height:52px;padding:7px 8px;
+ }
+ .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time small{font-size:7px}
+ .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time strong{font-size:18px}
+ .school-shell.student-shell .quiz-focus-timer-copy h2{font-size:14px}
+ .school-shell.student-shell .quiz-focus-inline-stats span{font-size:8px;padding:3px 6px}
+ .school-shell.student-shell .quiz-focus-exit-dialog{
+  padding:25px 19px 20px;border-radius:18px;
+ }
+ .school-shell.student-shell .quiz-focus-exit-actions{
+  grid-template-columns:1fr;gap:9px;
+ }
+}
+@media(max-height:675px){
+ .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time{
+  min-height:44px;padding:5px 10px;
+ }
+ .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time strong{font-size:17px}
+ .school-shell.student-shell .quiz-focus-timer-banner .quiz-focus-session-time small{font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .school-shell.student-shell .quiz-focus-exit-actions button{transition:none}
+}
