@@ -50,6 +50,7 @@ CREATE TABLE public.app_login_attempts (
 );
 CREATE INDEX app_login_attempts_identifier_recent_idx ON public.app_login_attempts (identifier_hash, attempted_at DESC) WHERE succeeded = false;
 CREATE INDEX app_login_attempts_ip_recent_idx ON public.app_login_attempts (ip_hash, attempted_at DESC) WHERE succeeded = false;
+CREATE INDEX app_login_attempts_expiry_idx ON public.app_login_attempts (attempted_at);
 
 -- Existing VOKASI data tables, with identity references mapped to app_users.
 
@@ -604,6 +605,10 @@ END;
 $function$
 
 
+
+CREATE TRIGGER app_users_set_updated_at
+BEFORE UPDATE ON public.app_users
+FOR EACH ROW EXECUTE FUNCTION public.vokasi_set_updated_at();
 
 CREATE TRIGGER vokasi_protect_super_admin
 BEFORE DELETE OR UPDATE ON public.school_admins
