@@ -10,7 +10,7 @@ import QuizView from '@/components/QuizView';
 import ReviewHistory from '@/components/ReviewHistory';
 import {getPublishedBankVersion,PRACTICE_CATEGORIES} from '@/lib/quiz';
 import {useSchoolAuth} from '@/lib/use-school-auth';
-import {getOwnAttempts,getLeaderboard,wibDate} from '@/lib/school';
+import {getOwnAttempts,getLeaderboard,officialMandatoryAttempts,wibDate} from '@/lib/school';
 import {getSchoolAvatarUrls,uploadOwnAvatar} from '@/lib/student-avatar';
 import type {Attempt,LeaderboardEntry,StudentProfile} from '@/lib/types';
 import '@/app/student-experience.css';
@@ -193,7 +193,7 @@ function ProfileView({profile,attempts,busy,avatarUrl,onAvatarUploaded}:{profile
       setPhotoMessage(error instanceof Error?error.message:'Gagal mengunggah foto profil.');
     }finally{setPhotoBusy(false);}
   };
-  const compulsory=attempts.filter(a=>a.practice_category===null);
+  const compulsory=officialMandatoryAttempts(attempts);
   const average=compulsory.length?Math.round(compulsory.reduce((s,a)=>s+a.score,0)/compulsory.length):null;
   const highest=compulsory.length?Math.max(...compulsory.map(a=>a.score)):null;
   const latest=compulsory[0];
@@ -295,7 +295,7 @@ export default function StudentPage(){
   },[profile]);
   useEffect(()=>{queueMicrotask(()=>void refresh());},[refresh]);
   if(loading||!profile)return <main className="page-loader">{error||'Memeriksa akun siswa...'}</main>;
-  const compulsory=attempts.filter(a=>a.practice_category===null);
+  const compulsory=officialMandatoryAttempts(attempts);
   const latest=compulsory[0];
   const today=compulsory.find(a=>wibDate(a.completed_at_ms)===wibDate());
   const average=compulsory.length?Math.round(compulsory.reduce((s,a)=>s+a.score,0)/compulsory.length):null;
