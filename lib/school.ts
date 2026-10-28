@@ -1,3 +1,4 @@
+import { nativeRpc } from '@/lib/native-rpc';
 import { supabase } from './supabase';
 import type { Attempt, AttemptSummary, RosterRow, SchoolStudent, StudentProfile, LeaderboardEntry } from './types';
 
@@ -135,7 +136,7 @@ export function officialMandatoryAttempts(attempts:Attempt[]):Attempt[]{
 }
 
 export async function getLeaderboard():Promise<LeaderboardEntry[]> {
-  const {data,error}=await supabase().rpc('vokasi_school_leaderboard');
+  const {data,error}=await nativeRpc('vokasi_school_leaderboard');
   if(error) throw error;
   // Urutan RPC bisa berbasis XP. Peringkat akademik web wajib berbasis nilai.
   // Tanpa hasil wajib terverifikasi, siswa tidak diberi posisi peringkat.
@@ -148,7 +149,7 @@ export async function getLeaderboard():Promise<LeaderboardEntry[]> {
 // Past compulsory sessions predate web-server score verification.
 // Never mix this provisional archive with the verified official leaderboard.
 export async function getHistoricalLeaderboard():Promise<LeaderboardEntry[]> {
-  const {data,error}=await supabase().rpc('vokasi_school_legacy_leaderboard');
+  const {data,error}=await nativeRpc('vokasi_school_legacy_leaderboard');
   if(error)throw error;
   return ((data||[]) as Pick<LeaderboardEntry,'username'|'display_name'|'major'|'classroom'|'mandatory_average'|'mandatory_days'>[])
     .filter(row=>row.mandatory_days>0&&typeof row.mandatory_average==='number'&&Number.isFinite(row.mandatory_average))
