@@ -83,6 +83,25 @@ export async function getAdminAnalyticsAttempts(endDate:string,days:number):Prom
 export async function getOwnAttempts(authId:string): Promise<Attempt[]> {
   return allRows<Attempt>('student_attempts','*',{equals:{column:'auth_user_id',value:authId},order:[{column:'completed_at_ms',ascending:false},{column:'id',ascending:false}]});
 }
+/**
+ * Official mandatory score is the FIRST server-verified completion of each WIB day.
+ * Repeats remain accessible in History but must not change dashboard averages.
+ * The database leaderboard applies the same first-per-day rule.
+ */
+export function officialMandatoryAttempts(attempts:Attempt[]):Attempt[]{
+  const firstByDay=new Map<string,Attempt>();
+  const eligible=attempts
+    .filter(a=>a.practice_category===null&&a.question_count===100&&
+      a.signature.startsWith('WEB-SERVER-v1:'))
+    .sort((a,b)=>a.completed_at_ms-b.completed_at_ms||
+      a.session_key.localeCompare(b.session_key));
+  for(const attempt of eligible){
+    const day=wibDate(attempt.completed_at_ms);
+    if(!firstByDay.has(day))firstByDay.set(day,attempt);
+  }
+  return [...firstByDay.values()].sort((a,b)=>b.completed_at_ms-a.completed_at_ms);
+}
+
 export async function getLeaderboard():Promise<LeaderboardEntry[]> {
   const {data,error}=await supabase().rpc('vokasi_school_leaderboard');
   if(error) throw error;
