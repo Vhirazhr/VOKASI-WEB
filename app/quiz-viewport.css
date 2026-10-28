@@ -3,9 +3,11 @@
  * the submit action and both countdowns stay in view.
  * This stylesheet is intentionally loaded after quiz-focus.css.
  */
-.school-shell.student-shell.quiz-focus-mode,
-.school-shell.student-shell.quiz-focus-mode .shell-main,
-.school-shell.student-shell.quiz-focus-mode .shell-body{
+/* Clip the outer page ONLY while an active question is displayed.
+ * Prepared and completed result screens must remain normally scrollable. */
+.school-shell.student-shell.quiz-focus-mode:has(.quiz-focus-exam),
+.school-shell.student-shell.quiz-focus-mode:has(.quiz-focus-exam) .shell-main,
+.school-shell.student-shell.quiz-focus-mode:has(.quiz-focus-exam) .shell-body{
   height:100dvh;min-height:0;overflow:hidden;
 }
 .school-shell.student-shell .quiz-focus-exam{
