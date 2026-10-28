@@ -2,7 +2,7 @@
 
 import {useMemo,useState} from 'react';
 import Link from 'next/link';
-import {Activity,ArrowRight,Award,BarChart3,BookOpen,CalendarDays,Camera,Check,CheckCircle2,ChevronDown,Clock3,Eye,EyeOff,Flame,GraduationCap,History,KeyRound,LockKeyhole,LogOut,Medal,ShieldCheck,Sparkles,Target,Trophy,TrendingUp,UserRound,Wallet} from 'lucide-react';
+import {ArrowRight,Award,BarChart3,BookOpen,Camera,Check,CheckCircle2,ChevronDown,Clock3,Eye,EyeOff,Flame,GraduationCap,History,KeyRound,LockKeyhole,LogOut,ShieldCheck,Sparkles,Target,Trophy,UserRound,Wallet} from 'lucide-react';
 import StudentAvatar from '@/components/StudentAvatar';
 import ReviewHistory from '@/components/ReviewHistory';
 import {uploadOwnAvatar} from '@/lib/student-avatar';
@@ -34,7 +34,7 @@ function weekActivity(attempts:Attempt[]){
 }
 function streakCount(attempts:Attempt[]){
  const dates=new Set(attempts.filter(a=>a.answered>0).map(a=>wibDate(a.completed_at_ms)));
- let start=dates.has(wibDate())?0:1;
+ const start=dates.has(wibDate())?0:1;
  let streak=0;
  while(streak<3660&&dates.has(wibDate(Date.now()-(start+streak)*86400000)))streak++;
  return streak;
@@ -49,6 +49,31 @@ function monthPerformance(official:Attempt[]):MonthPoint[]{
    return {key,label:new Intl.DateTimeFormat('id-ID',{month:'short',timeZone:'UTC'}).format(utc),score,days:rows.length};
  });
 }
+
+function ActivityEntries({rows,busy,officialKeys}:{rows:Attempt[];busy:boolean;officialKeys:Set<string>}){
+  if(busy)return <div className="vprofile-activity-empty">Memuat aktivitas dari Supabase...</div>;
+  if(!rows.length)return <div className="vprofile-activity-empty"><History size={23}/><strong>Belum ada sesi latihan</strong><span>Hasil latihan akan muncul setelah kamu menyelesaikan soal.</span></div>;
+  return <div className="vprofile-activity-list">{rows.map(a=>{
+    const officialResult=a.practice_category===null&&officialKeys.has(a.session_key);
+    const repeat=a.practice_category===null&&hasProof(a)&&!officialResult;
+    return <details className="vprofile-attempt" key={a.session_key}>
+      <summary>
+       <span className="vprofile-attempt-icon"><BookOpen size={17}/></span>
+       <span className="vprofile-attempt-name"><b>{a.practice_category||'Latihan wajib'}</b><small>{stamp(a.completed_at_ms)} WIB · {a.question_count} soal</small></span>
+       <span className="vprofile-attempt-meta"><strong>{a.score}<small>/100</small></strong><small>{officialResult?'Resmi harian':repeat?'Latihan ulang':hasProof(a)?'Terverifikasi':'Riwayat lama'}</small></span>
+       <ChevronDown size={16} className="vprofile-attempt-chevron"/>
+      </summary>
+      <div className="vprofile-attempt-details">
+       <span><b>{a.correct}</b><small>Benar</small></span>
+       <span><b>{a.answered}</b><small>Terjawab</small></span>
+       <span><b>+{a.earned_xp||0}</b><small>XP sesi</small></span>
+       <span><b>{Math.round((a.seconds_spent||0)/60)} m</b><small>Durasi</small></span>
+      </div>
+      {hasProof(a)?<ReviewHistory sessionId={a.session_key}/>:<p className="vprofile-attempt-note">Catatan lama belum memiliki pembahasan yang diverifikasi server.</p>}
+    </details>;
+   })}</div>;
+ }
+
 
 export default function StudentProfileDashboard({profile,attempts,busy,avatarUrl,onAvatarUploaded,onLogout}:{
  profile:StudentProfile;attempts:Attempt[];busy:boolean;avatarUrl?:string;
@@ -125,29 +150,6 @@ export default function StudentProfileDashboard({profile,attempts,busy,avatarUrl
  }
  function chooseTab(next:ProfileTab){setTab(next);setHistoryShown(5);}
 
- function ActivityEntries({rows}:{rows:Attempt[]}){
-  if(busy)return <div className="vprofile-activity-empty">Memuat aktivitas dari Supabase...</div>;
-  if(!rows.length)return <div className="vprofile-activity-empty"><History size={23}/><strong>Belum ada sesi latihan</strong><span>Hasil latihan akan muncul setelah kamu menyelesaikan soal.</span></div>;
-  return <div className="vprofile-activity-list">{rows.map(a=>{
-    const officialResult=a.practice_category===null&&officialKeys.has(a.session_key);
-    const repeat=a.practice_category===null&&hasProof(a)&&!officialResult;
-    return <details className="vprofile-attempt" key={a.session_key}>
-      <summary>
-       <span className="vprofile-attempt-icon"><BookOpen size={17}/></span>
-       <span className="vprofile-attempt-name"><b>{a.practice_category||'Latihan wajib'}</b><small>{stamp(a.completed_at_ms)} WIB · {a.question_count} soal</small></span>
-       <span className="vprofile-attempt-meta"><strong>{a.score}<small>/100</small></strong><small>{officialResult?'Resmi harian':repeat?'Latihan ulang':hasProof(a)?'Terverifikasi':'Riwayat lama'}</small></span>
-       <ChevronDown size={16} className="vprofile-attempt-chevron"/>
-      </summary>
-      <div className="vprofile-attempt-details">
-       <span><b>{a.correct}</b><small>Benar</small></span>
-       <span><b>{a.answered}</b><small>Terjawab</small></span>
-       <span><b>+{a.earned_xp||0}</b><small>XP sesi</small></span>
-       <span><b>{Math.round((a.seconds_spent||0)/60)} m</b><small>Durasi</small></span>
-      </div>
-      {hasProof(a)?<ReviewHistory sessionId={a.session_key}/>:<p className="vprofile-attempt-note">Catatan lama belum memiliki pembahasan yang diverifikasi server.</p>}
-    </details>;
-   })}</div>;
- }
 
  return <main className="vokasi-profile-page">
    <section className="vprofile-hero">
@@ -245,7 +247,7 @@ export default function StudentProfileDashboard({profile,attempts,busy,avatarUrl
        </div>
        <section className="vprofile-panel vprofile-recent">
         <div className="vprofile-section-title"><span>TERAKHIR DIKERJAKAN</span><div className="vprofile-section-title-row"><h3>Aktivitas terbaru</h3><button type="button" onClick={()=>chooseTab('activity')}>Lihat semua <ArrowRight size={15}/></button></div></div>
-        <ActivityEntries rows={latest.slice(0,3)}/>
+        <ActivityEntries rows={latest.slice(0,3)} busy={busy} officialKeys={officialKeys}/>
        </section>
       </>}
       {tab==='activity'&&<section className="vprofile-panel vprofile-all-activity">
@@ -255,7 +257,7 @@ export default function StudentProfileDashboard({profile,attempts,busy,avatarUrl
         <label>Tanggal<input type="date" value={historyDate} onChange={e=>{setHistoryDate(e.target.value);setHistoryShown(5);}}/></label>
        </div>
        <p className="vprofile-history-count">{busy?'Memuat...':filtered.length+' sesi ditemukan · terbaru lebih dulu'}</p>
-       <ActivityEntries rows={filtered.slice(0,historyShown)}/>
+       <ActivityEntries rows={filtered.slice(0,historyShown)} busy={busy} officialKeys={officialKeys}/>
        {historyShown<filtered.length&&<button type="button" className="vprofile-show-more" onClick={()=>setHistoryShown(n=>n+5)}>Muat 5 lainnya ({filtered.length-historyShown} tersisa) <ArrowRight size={16}/></button>}
        <Link href="/siswa/riwayat" className="vprofile-full-history-link">Buka halaman Riwayat lengkap <ArrowRight size={16}/></Link>
       </section>}
