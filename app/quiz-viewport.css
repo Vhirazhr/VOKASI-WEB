@@ -586,3 +586,190 @@
 @media(prefers-reduced-motion:reduce){
  .school-shell.student-shell .quiz-focus-exit-actions button{transition:none}
 }
+
+
+/* === COMFORT PASS: spacious classroom exam layout (desktop + Android) ===
+   Let ordinary 3/4-option questions breathe without requiring page scrolling.
+   The question-content scroller is the sole fallback for oversized content;
+   the secure submit button remains visible and unchanged. */
+@media(min-width:801px){
+ .school-shell.student-shell .quiz-focus-columns{
+   grid-template-columns:minmax(0,1fr) clamp(290px,25.5vw,380px);
+   gap:clamp(15px,1.55vw,24px);
+   padding:clamp(14px,2.15vh,24px) clamp(15px,1.75vw,30px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace{
+   gap:clamp(12px,1.8vh,21px);
+ }
+ .school-shell.student-shell .quiz-focus-timer-banner{
+   height:clamp(105px,13.8dvh,143px);
+   padding:14px clamp(20px,2.15vw,33px) 18px;
+   border-radius:23px;
+ }
+ .school-shell.student-shell .quiz-focus-timer-ring{
+   width:clamp(78px,10.5dvh,110px);
+   height:clamp(78px,10.5dvh,110px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-card{
+   border-radius:23px;
+   padding:clamp(23px,2.35vw,38px)!important;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-question-scroll{
+   padding:clamp(14px,3.8dvh,48px) 5px 17px 2px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-playful-question h2{
+   font-size:clamp(23px,2.32vw,35px);
+   line-height:1.42;
+   letter-spacing:-.025em;
+   margin:0;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answers{
+   gap:clamp(13px,1.25vw,19px);
+   margin:clamp(27px,4.8dvh,53px) 0 18px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answer{
+   min-height:clamp(65px,9dvh,94px);
+   padding:clamp(12px,1.5vw,19px) clamp(15px,1.55vw,24px);
+   gap:clamp(11px,1.3vw,18px);
+   border-radius:16px;
+   font-size:clamp(14px,1.17vw,17px);
+   line-height:1.5;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answer-letter{
+   width:clamp(38px,3.35vw,46px);
+   height:clamp(38px,3.35vw,46px);
+   border-radius:13px;font-size:15px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure{
+   max-height:min(24dvh,235px);
+   margin:clamp(15px,2.2dvh,25px) 0 0;
+   padding:12px;
+   border-radius:16px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure img{
+   max-height:min(19.5dvh,195px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-card:has(.quiz-visual-figure) .quiz-question-scroll{
+   padding-top:clamp(8px,1.8dvh,18px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-card:has(.quiz-visual-figure) .answers{
+   margin-top:clamp(16px,2.6dvh,26px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer{
+   min-height:clamp(63px,8vh,82px);
+   padding:clamp(11px,1.5dvh,18px) 0 2px!important;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer>span{
+   max-width:360px;font-size:10px;line-height:1.55;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer .btn.primary{
+   min-height:48px;padding:12px clamp(18px,1.65vw,26px);
+   font-size:13px;border-radius:12px;
+ }
+ .school-shell.student-shell .quiz-focus-monitor{
+   border-radius:22px;
+ }
+ .school-shell.student-shell .quiz-focus-monitor-heading{
+   min-height:76px;padding:15px 18px;
+ }
+ .school-shell.student-shell .quiz-focus-monitor-counts{
+   gap:10px;padding:15px 16px;
+ }
+ .school-shell.student-shell .quiz-focus-monitor-counts>div{
+   min-height:65px;border-radius:12px;
+ }
+ .school-shell.student-shell .quiz-focus-monitor-grid{
+   gap:clamp(7px,.6vw,11px);
+   padding:14px 16px;
+ }
+ .school-shell.student-shell .quiz-focus-number{
+   min-height:clamp(38px,4.6vh,49px);
+   border-radius:11px;font-size:11px;
+ }
+ .school-shell.student-shell .quiz-focus-monitor-legend{
+   padding:12px 16px;gap:9px;
+ }
+ .school-shell.student-shell .quiz-focus-monitor-assurance{
+   padding:12px 16px;
+ }
+}
+/* Keep the choices readable on phones but leave the pinned send action visible. */
+@media(max-width:800px){
+ .school-shell.student-shell .quiz-focus-columns{
+   padding:clamp(9px,1.8dvh,16px) clamp(9px,2.5vw,16px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace{
+   gap:clamp(8px,1.5dvh,13px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-card{
+   padding:clamp(15px,3.1vw,22px)!important;
+   border-radius:17px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-question-scroll{
+   padding:clamp(11px,2.1dvh,20px) 4px 13px 1px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-playful-question h2{
+   font-size:clamp(19px,4.4vw,24px);
+   line-height:1.4;
+   margin:0;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answers{
+   gap:clamp(9px,1.5dvh,14px);
+   margin:clamp(20px,3.3dvh,29px) 0 14px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answer{
+   min-height:clamp(51px,7.5dvh,71px);
+   padding:9px clamp(12px,3vw,19px);
+   gap:12px;border-radius:13px;
+   font-size:clamp(13px,3.4vw,16px);
+   line-height:1.4;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answer-letter{
+   width:36px;height:36px;border-radius:11px;font-size:14px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure{
+   max-height:min(22dvh,175px);margin:12px 0 0;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure img{
+   max-height:min(17.5dvh,140px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-card:has(.quiz-visual-figure) .quiz-question-scroll{
+   padding-top:7px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-card:has(.quiz-visual-figure) .answers{
+   margin-top:15px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer{
+   min-height:59px;padding:9px 0 1px!important;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer .btn.primary{
+   min-height:45px;padding:10px 14px;border-radius:11px;
+ }
+}
+/* On short screens, reduce decoration BEFORE sacrificing answer readability. */
+@media(max-height:720px){
+ .school-shell.student-shell .quiz-focus-workspace .quiz-question-scroll{
+   padding-top:10px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answers{
+   margin-top:16px;gap:9px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answer{
+   min-height:48px;padding-top:7px;padding-bottom:7px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer{min-height:51px}
+}
+@media(max-height:500px){
+ .school-shell.student-shell .quiz-focus-workspace .quiz-question-scroll{
+   padding-top:4px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-playful-question h2{
+   font-size:clamp(16px,3vw,21px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answers{
+   margin-top:11px;gap:7px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answer{
+   min-height:43px;
+ }
+}
