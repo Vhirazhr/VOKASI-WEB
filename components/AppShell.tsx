@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { BookOpen, BarChart3, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, Bot } from 'lucide-react';
+import { BookOpen, BarChart3, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, Bot, Bell } from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import AdminNotificationBell from '@/components/AdminNotificationBell';
 import StudentAvatar from '@/components/StudentAvatar';
@@ -43,7 +43,8 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
     {href:'/siswa/riwayat',label:'Riwayat',icon:History},
     {href:'/siswa/peringkat',label:'Peringkat',icon:Trophy},
     {href:'/siswa/profil',label:'Profil',icon:UserRound},
-    {href:'/siswa/asisten',label:'Asisten',icon:Bot}
+    {href:'/siswa/asisten',label:'Asisten',icon:Bot},
+    {href:'/siswa/notifikasi',label:'Notifikasi',icon:Bell}
   ];
   const adminLinks=[
     {href:'/admin',label:'Ringkasan sekolah',icon:LayoutDashboard},
@@ -77,7 +78,7 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
     <div className="shell-main">
       {embedMode&&!navigationBlocked&&<nav className="embed-shortcuts" aria-label="Menu VOKASI dalam website sekolah">{items.map(({href,label})=><Link key={href} href={linkTo(href)} className={active(href)?'active':''}>{label}</Link>)}</nav>}
       <header className="topbar">
-        <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':pathname==='/admin/logs'?'Log Aktivitas':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':pathname.endsWith('/asisten')?'Asisten VOKASI':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
+        <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':pathname==='/admin/logs'?'Log Aktivitas':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':pathname.endsWith('/asisten')?'Asisten VOKASI':pathname.endsWith('/notifikasi')?'Notifikasi Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
         <div className="top-actions">
           {isAdmin?<div className="admin-header-actions">
             <AdminNotificationBell/>
@@ -86,6 +87,7 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
               <span className="admin-header-identity"><strong>{adminEmail||displayName}</strong><small>Administrator · Aktif</small></span>
             </div>
           </div>:<div className="student-header-actions">
+            <Link className="student-header-bell" title="Pemberitahuan siswa" aria-label="Buka pemberitahuan siswa" href={linkTo('/siswa/notifikasi')}><Bell size={19}/></Link>
             <Link className="student-header-help" title="Asisten VOKASI" aria-label="Buka Asisten VOKASI" href={linkTo('/siswa/asisten')}><Bot size={19}/></Link>
             <div className="student-header-account" aria-label="Akun siswa yang sedang masuk">
               <StudentAvatar className="student-header-avatar" name={displayName} url={studentAvatarUrl} size={48}/>
@@ -98,7 +100,7 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
       <div className="shell-body">{children}</div>
     </div>
     {!isAdmin&&!embedMode&&!navigationBlocked&&<nav className="student-bottom-nav" aria-label="Navigasi siswa seluler">
-      {studentLinks.filter(item=>item.href!=='/siswa/asisten').map(({href,label,icon:Icon})=><Link key={href} href={href} className={pathname===href?'active':''} aria-current={pathname===href?'page':undefined}>
+      {studentLinks.filter(item=>item.href!=='/siswa/asisten'&&item.href!=='/siswa/notifikasi').map(({href,label,icon:Icon})=><Link key={href} href={href} className={pathname===href?'active':''} aria-current={pathname===href?'page':undefined}>
         <Icon size={21}/><span>{label}</span>
       </Link>)}
     </nav>}
