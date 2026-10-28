@@ -1,4 +1,5 @@
 'use client';
+import { nativeRpc } from '@/lib/native-rpc';
 import {useState} from 'react';
 import {supabase} from '@/lib/supabase';
 
@@ -17,7 +18,7 @@ export default function ReviewHistory({sessionId}:{sessionId:string}){
   if(reviews){setShown(v=>!v);return;}
   setLoading(true);setError('');
   try{
-   const {data,error:e}=await supabase().rpc('vokasi_web_completed_review',{p_session:sessionId});
+   const {data,error:e}=await nativeRpc('vokasi_web_completed_review',{p_session:sessionId});
    if(e)throw e;
    if(!Array.isArray(data))throw new Error('Pembahasan tidak tersedia.');
    const items=data as Review[];
