@@ -2,10 +2,11 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {BookOpen,Clock3,FileQuestion,Plus,Search,FileUp,PenLine,AlertCircle,FileText,CheckCircle2,UploadCloud,Trash2} from 'lucide-react';
+import {BookOpen,Clock3,FileQuestion,Plus,Search,FileUp,PenLine,AlertCircle,FileText,CheckCircle2,UploadCloud,Trash2,Download} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {fetchBank} from '@/lib/quiz';
+import {exportAdminQuestions} from '@/lib/admin-question-export';
 import {supabase} from '@/lib/supabase';
 import {APPROVED_BLUEPRINT,APPROVED_GROUPS,approvedGroup} from '@/lib/new-bank-blueprint';
 import BankFilterDropdown from '@/components/BankFilterDropdown';
@@ -47,6 +48,7 @@ export default function AdminBankPage(){
  const {loading,error,logout}=useSchoolAuth('admin');
  const [bank,setBank]=useState<BankQuestion[]>([]),[busy,setBusy]=useState(true),[issue,setIssue]=useState('');
  const [tab,setTab]=useState<BankTab>('published');
+ const [exportingQuestions,setExportingQuestions]=useState(false);
  const [review,setReview]=useState<ReviewItem[]>([]),[draftProblems,setDraftProblems]=useState<DraftIssue[]>([]);
  const [drafts,setDrafts]=useState<DraftRow[]>([]),[importDrafts,setImportDrafts]=useState<ImportDraft[]>([]);
  const [createOpen,setCreateOpen]=useState(false),[createSaving,setCreateSaving]=useState(false),[createNotice,setCreateNotice]=useState('');
@@ -256,6 +258,14 @@ export default function AdminBankPage(){
   ];
  },[bank,category,codes]);
  const filtered=useMemo(()=>bank.filter(b=>(!category||b.category===category)&&(!code||b.difficultyCode===code)&&(!search||[String(b.id),b.question,b.category,b.difficultyCode].some(x=>x.toLowerCase().includes(search.trim().toLowerCase())))),[bank,category,code,search]);
+ async function downloadQuestions(){
+  if(!filtered.length||busy||exportingQuestions)return;
+  if(!window.confirm('Ekspor ini memuat kunci jawaban dan pembahasan. Simpan file hanya untuk administrator sekolah. Lanjutkan?'))return;
+  setExportingQuestions(true);setIssue('');
+  try{await exportAdminQuestions(filtered,category||code||'Semua');}
+  catch(e){setIssue('Gagal ekspor soal: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}
+  finally{setExportingQuestions(false);}
+ }
  const pages=Math.max(1,Math.ceil(filtered.length/30)),activePage=Math.min(page,pages-1);
  if(loading)return <main className="page-loader">Memverifikasi hak akses admin...</main>;
  if(error)return <main className="page-loader">{error}</main>;
@@ -266,7 +276,7 @@ export default function AdminBankPage(){
     <div className="admin-mini-stats"><div><BookOpen size={20}/><span>Jumlah soal</span><strong>{busy?'—':bank.length.toLocaleString('id-ID')}</strong></div><div><FileQuestion size={20}/><span>Kategori</span><strong>{busy?'—':categories.length}</strong></div><div><Clock3 size={20}/><span>Blueprint wajib</span><strong>100 soal</strong></div></div>
    </section>
    <section className="admin-data-card">
-    <div className="admin-data-title"><div><h2>Daftar pertanyaan</h2><p>Cari berdasarkan materi atau kelompok ujian. Keduanya berbeda: materi adalah topik, kelompok menentukan pembagian soal dan waktu ujian.</p></div><div className="admin-bank-actions"><button type="button" className="btn secondary small" onClick={()=>openImport()}><FileUp size={16}/> Impor soal</button><button type="button" className="btn primary small" onClick={()=>openNew()}><Plus size={17}/> Tambah soal</button></div></div>
+    <div className="admin-data-title"><div><h2>Daftar pertanyaan</h2><p>Cari berdasarkan materi atau kelompok ujian. Keduanya berbeda: materi adalah topik, kelompok menentukan pembagian soal dan waktu ujian.</p></div><div className="admin-bank-actions"><button type="button" className="btn secondary small" onClick={()=>void downloadQuestions()} disabled={busy||!!issue||!filtered.length||exportingQuestions} title="Ekspor soal terbit sesuai filter, termasuk kunci jawaban untuk admin"><Download size={16}/>{exportingQuestions?'Mengekspor...':'Ekspor soal Excel'}</button><button type="button" className="btn secondary small" onClick={()=>openImport()}><FileUp size={16}/> Impor soal</button><button type="button" className="btn primary small" onClick={()=>openNew()}><Plus size={17}/> Tambah soal</button></div></div>
     {issue&&<div className="alert danger" role="alert">{issue}</div>}
     <div className="admin-bank-workspace-tabs" role="tablist" aria-label="Status bank soal">
       <button role="tab" type="button" aria-selected={tab==='published'} className={tab==='published'?'active':''} onClick={()=>{setTab('published');setPage(0);}}><BookOpen size={15}/> Semua soal <span>{bank.length}</span></button>
