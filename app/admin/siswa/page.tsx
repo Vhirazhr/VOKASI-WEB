@@ -3,6 +3,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {CheckCircle2,GraduationCap,Search,Users,UserRound,RefreshCw,FileSpreadsheet,Download} from 'lucide-react';
 import AppShell from '@/components/AppShell';
+import AdminStudentHistory from '@/components/AdminStudentHistory';
 import {supabase} from '@/lib/supabase';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {getSchoolStudents} from '@/lib/school';
@@ -105,7 +106,7 @@ export default function AdminStudentsPage(){
     </section>
     {selected&&<div className="admin-modal-overlay" role="presentation" onMouseDown={()=>setSelected(null)}><section role="dialog" aria-modal="true" aria-label="Detail siswa" className="admin-modal-card" onMouseDown={e=>e.stopPropagation()}>
       <div className="admin-modal-top"><span className="admin-modal-avatar"><UserRound size={27}/></span><button type="button" aria-label="Tutup detail siswa" onClick={()=>setSelected(null)}>×</button></div><h2>{selected.fullName}</h2><p>Informasi akun sekolah</p>
-      <dl><div><dt>Username</dt><dd>{selected.username||'—'}</dd></div><div><dt>Jurusan</dt><dd>{selected.majorName}</dd></div><div><dt>Kelas</dt><dd>{selected.className}</dd></div><div><dt>Status</dt><dd>{selected.registered?'Terdaftar':'Belum terdaftar'}</dd></div></dl><div className="admin-safe-manage">
+      <dl><div><dt>Username</dt><dd>{selected.username||'—'}</dd></div><div><dt>Jurusan</dt><dd>{selected.majorName}</dd></div><div><dt>Kelas</dt><dd>{selected.className}</dd></div><div><dt>Status</dt><dd>{selected.registered?'Terdaftar':'Belum terdaftar'}</dd></div></dl>{selected.authId&&<AdminStudentHistory key={selected.authId} authId={selected.authId}/>}<div className="admin-safe-manage">
        <label>Pindahkan ke kelas (jurusan sama)
         <select value={targetClass} onChange={e=>setTargetClass(e.target.value)}>
          {classOptions.filter(cl=>cl.major_id===selected.majorId).map(cl=><option key={cl.id} value={cl.id}>{cl.class_name}</option>)}
