@@ -13,11 +13,50 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+type RequestedRole = 'student' | 'admin';
+type LoginRow = {
+  id: string;
+  username: string;
+  email: string | null;
+  password_hash: string;
+  is_active: boolean;
+  display_name: string;
+  role: 'student' | 'admin' | 'super_admin' | null;
+  roster_username: string | null;
+  full_name: string | null;
+  class_id: string | null;
+  class_name: string | null;
+  major_id: string | null;
+  major_name: string | null;
+};
+
 function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
   return NextResponse.json(body, {
     status,
     headers: { 'Cache-Control': 'no-store, max-age=0', ...extraHeaders },
   });
+}
+
+function parseStudentIdentity(raw: string): { name: string; classHint: string } | null {
+  const parts = raw.split('|');
+  if (parts.length > 2) return null;
+  const name = parts[0].trim().replace(/\s+/g, ' ');
+  const classHint = parts[1]?.trim().replace(/\s+/g, ' ').toUpperCase() ?? '';
+  if (name.length < 2 || (parts.length === 2 && !classHint)) return null;
+  return { name, classHint };
+}
+
+function studentProfile(row: LoginRow) {
+  if (!row.class_id || !row.class_name || !row.major_id || !row.major_name) return null;
+  return {
+    authId: row.id,
+    username: row.roster_username || row.username,
+    fullName: row.full_name || row.display_name,
+    classId: row.class_id,
+    className: row.class_name,
+    majorId: row.major_id,
+    majorName: row.major_name,
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -42,9 +81,15 @@ export async function POST(request: NextRequest) {
     ? payload.identifier.trim()
     : typeof payload.username === 'string' ? payload.username.trim() : '';
   const password = typeof payload.password === 'string' ? payload.password : '';
+  const requestedRole: RequestedRole | null = payload.role === 'admin' || payload.role === 'student' ? payload.role : null;
 
-  if (!identifier || identifier.length > 254 || !password || password.length > 1024) {
-    return json({ error: 'Masukkan username/email dan password yang valid.' }, 400);
+  if (!requestedRole || !identifier || identifier.length > 254 || !password || password.length > 1024) {
+    return json({ error: 'Masukkan jenis akun, username/email, dan password yang valid.' }, 400);
+  }
+
+  const studentIdentity = requestedRole === 'student' ? parseStudentIdentity(identifier) : null;
+  if (requestedRole === 'student' && !studentIdentity) {
+    return json({ error: 'Format nama siswa tidak valid. Jika nama sama, gunakan Nama Lengkap | Kelas.' }, 400);
   }
 
   try {
@@ -57,14 +102,12 @@ export async function POST(request: NextRequest) {
       || null;
     const ipHash = ip ? hashRateLimitKey(`ip:${ip.slice(0, 100)}`) : null;
 
-    // Serialize concurrent attempts for the same identifier and, when available, IP.
-    // This prevents parallel requests from racing past the failed-login thresholds.
+    // Serialize concurrent attempts so parallel requests cannot race past rate limits.
     const outcome = await db.begin(async tx => {
       await tx`SELECT pg_advisory_xact_lock(hashtextextended(${`identifier:${identifierHash}`}, 0))`;
-      if (ipHash) {
-        await tx`SELECT pg_advisory_xact_lock(hashtextextended(${`ip:${ipHash}`}, 0))`;
-      }
+      if (ipHash) await tx`SELECT pg_advisory_xact_lock(hashtextextended(${`ip:${ipHash}`}, 0))`;
 
+      await tx`DELETE FROM public.app_login_attempts WHERE attempted_at < now() - interval '7 days'`;
       const limits = ipHash
         ? await tx`
             SELECT
@@ -85,44 +128,79 @@ export async function POST(request: NextRequest) {
 
       const identifierFailures = Number(limits[0]?.identifier_failures ?? 0);
       const ipFailures = Number(limits[0]?.ip_failures ?? 0);
-      if (identifierFailures >= 8 || (ipHash && ipFailures >= 100)) {
-        return { kind: 'rate-limited' as const };
-      }
+      if (identifierFailures >= 8 || (ipHash && ipFailures >= 100)) return { kind: 'rate-limited' as const };
 
-      const found = await tx`
-        SELECT
-          u.id::text AS id,
-          u.username,
-          u.password_hash,
-          u.is_active,
-          COALESCE(NULLIF(u.display_name, ''), r.full_name, sa.display_name, u.username) AS display_name,
-          CASE
-            WHEN sa.access_role = 'super_admin' THEN 'super_admin'
-            WHEN sa.user_id IS NOT NULL THEN 'admin'
-            WHEN r.auth_user_id IS NOT NULL THEN 'student'
-            ELSE NULL
-          END AS role
-        FROM public.app_users AS u
-        LEFT JOIN public.school_admins AS sa ON sa.user_id = u.id AND sa.is_active = true
-        LEFT JOIN public.student_roster AS r
-          ON r.auth_user_id = u.id AND r.registration_status = 'registered'
-        WHERE lower(btrim(u.username)) = ${normalized}
-           OR lower(btrim(COALESCE(u.email, ''))) = ${normalized}
-        LIMIT 2
+      const fields = `
+        u.id::text AS id,
+        u.username,
+        u.email,
+        u.password_hash,
+        u.is_active,
+        COALESCE(NULLIF(u.display_name, ''), r.full_name, sa.display_name, u.username) AS display_name,
+        CASE
+          WHEN sa.access_role = 'super_admin' THEN 'super_admin'
+          WHEN sa.user_id IS NOT NULL THEN 'admin'
+          WHEN r.auth_user_id IS NOT NULL THEN 'student'
+          ELSE NULL
+        END AS role,
+        r.username AS roster_username,
+        r.full_name,
+        r.class_id::text AS class_id,
+        c.class_name,
+        COALESCE(r.major_id, c.major_id)::text AS major_id,
+        m.name AS major_name
       `;
 
-      // Fail closed if legacy data has ambiguous login identifiers across accounts.
-      const user = found.length === 1 ? found[0] as {
-        id: string;
-        username: string;
-        password_hash: string;
-        is_active: boolean;
-        display_name: string;
-        role: 'student' | 'admin' | 'super_admin' | null;
-      } : undefined;
+      let found: LoginRow[] = [];
+      if (requestedRole === 'admin') {
+        found = await tx.unsafe(`
+          SELECT ${fields}
+          FROM public.app_users AS u
+          JOIN public.school_admins AS sa ON sa.user_id = u.id AND sa.is_active = true
+          LEFT JOIN public.student_roster AS r ON r.auth_user_id = u.id AND r.registration_status = 'registered'
+          LEFT JOIN public.classes AS c ON c.id = r.class_id
+          LEFT JOIN public.majors AS m ON m.id = COALESCE(r.major_id, c.major_id)
+          WHERE lower(btrim(u.username)) = $1 OR lower(btrim(COALESCE(u.email, ''))) = $1
+          LIMIT 2
+        `, [normalized]) as LoginRow[];
+      } else {
+        found = await tx.unsafe(`
+          SELECT ${fields}
+          FROM public.app_users AS u
+          JOIN public.student_roster AS r ON r.auth_user_id = u.id AND r.registration_status = 'registered'
+          JOIN public.classes AS c ON c.id = r.class_id
+          LEFT JOIN public.school_admins AS sa ON sa.user_id = u.id AND sa.is_active = true
+          LEFT JOIN public.majors AS m ON m.id = COALESCE(r.major_id, c.major_id)
+          WHERE (lower(btrim(u.username)) = $1 OR lower(btrim(COALESCE(u.email, ''))) = $1)
+            AND sa.user_id IS NULL
+          LIMIT 2
+        `, [normalized]) as LoginRow[];
 
+        if (found.length === 0 && studentIdentity) {
+          const fullName = studentIdentity.name.toLowerCase();
+          const classHint = studentIdentity.classHint;
+          found = await tx.unsafe(`
+            SELECT ${fields}
+            FROM public.student_roster AS r
+            JOIN public.app_users AS u ON u.id = r.auth_user_id AND u.is_active = true
+            JOIN public.classes AS c ON c.id = r.class_id
+            LEFT JOIN public.school_admins AS sa ON sa.user_id = u.id AND sa.is_active = true
+            LEFT JOIN public.majors AS m ON m.id = COALESCE(r.major_id, c.major_id)
+            WHERE r.registration_status = 'registered'
+              AND sa.user_id IS NULL
+              AND lower(regexp_replace(btrim(r.full_name), '[[:space:]]+', ' ', 'g')) = $1
+              AND ($2 = '' OR upper(btrim(c.class_name)) = $2)
+            LIMIT 2
+          `, [fullName, classHint]) as LoginRow[];
+        }
+      }
+
+      // Ambiguous usernames/emails or duplicate full names fail closed.
+      const user = found.length === 1 ? found[0] : undefined;
       const validPassword = await verifyPassword(password, user?.password_hash);
-      const allowed = Boolean(user && user.is_active && user.role && validPassword);
+      const allowed = Boolean(user && user.is_active && user.role && validPassword
+        && (requestedRole === 'admin' ? user.role === 'admin' || user.role === 'super_admin' : user.role === 'student'));
+
       await tx`
         INSERT INTO public.app_login_attempts (identifier_hash, ip_hash, succeeded)
         VALUES (${identifierHash}, ${ipHash}, ${allowed})
@@ -140,8 +218,10 @@ export async function POST(request: NextRequest) {
         user: {
           id: user.id,
           username: user.username,
+          email: user.email,
           displayName: user.display_name,
           role: user.role as 'student' | 'admin' | 'super_admin',
+          profile: user.role === 'student' ? studentProfile(user) : null,
         },
       };
     });
@@ -149,7 +229,7 @@ export async function POST(request: NextRequest) {
     if (outcome.kind === 'rate-limited') {
       return json({ error: 'Terlalu banyak percobaan login. Coba lagi beberapa menit lagi.' }, 429, { 'Retry-After': '900' });
     }
-    if (outcome.kind === 'denied') return json({ error: 'Username/email atau password salah.' }, 401);
+    if (outcome.kind === 'denied') return json({ error: 'Nama/username, kelas, atau password tidak cocok.' }, 401);
 
     await createNativeSession(outcome.user.id, request);
     return json({ ok: true, user: outcome.user });
