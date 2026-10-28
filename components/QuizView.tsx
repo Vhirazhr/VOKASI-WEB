@@ -1,10 +1,11 @@
 'use client';
 
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle} from 'lucide-react';
+import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle,Grid2X2,ShieldCheck} from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import type {Attempt,StudentProfile} from '@/lib/types';
 import '@/app/quiz-playful.css';
+import '@/app/quiz-focus.css';
 
 type Option={text:string;image_path:string|null};
 type Question={id:number;category:string;text:string;image_path:string|null;options:Option[];seconds:number};
@@ -14,6 +15,7 @@ type State={
  score?:number;correct?:number;
  feedback?:{correct:boolean;selected_index:number};feedback_wait_ms?:number;late?:boolean;
 };
+type LiveProgress={correct:number;wrong:number;timeout:number;statuses:string[]};
 type Review={
  id:number;category:string;text:string;image_path:string|null;options:Option[];correct_index:number;
  selected_index:number|null;status:string;response_seconds:number;explanation?:string;
@@ -68,6 +70,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const [now,setNow]=useState(0);
  const [clockBase,setClockBase]=useState(0);
  const [xp,setXp]=useState<number|null>(null);
+ const [liveProgress,setLiveProgress]=useState<LiveProgress|null>(null);
  const live=useRef(true);
  const inFlight=useRef(false);
  const feedbackTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
@@ -171,6 +174,19 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      .maybeSingle().then(({data})=>{if(live.current&&data)setXp(data.earned_xp);});
  },[state?.status,state?.session_id]);
 
+ // Navigator verdicts come from a separate read-only, student-owned server RPC.
+ // A refresh or another device never resets the monitoring counters.
+ useEffect(()=>{
+   if(!state?.session_id||state.status==='prepared')return;
+   let cancelled=false;
+   const session=state.session_id;
+   void rpc<LiveProgress>('vokasi_web_quiz_progress',{p_session:session})
+     .then(result=>{
+       if(!cancelled&&result&&Array.isArray(result.statuses))setLiveProgress(result);
+     }).catch(()=>{/* A monitor read failure never interrupts the exam timer. */});
+   return()=>{cancelled=true;};
+ },[state?.session_id,state?.status,state?.index]);
+
  async function submit(){
    if(!state||state.status!=='active'||selected===null||sending||feedback)return;
    const current=state.question;
@@ -211,6 +227,11 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const totalRemaining=state?.status==='active'?Math.max(0,Math.ceil(((state.overall_deadline_ms||0)-serverNow)/1000)):0;
  const currentIndex=feedback&&state?.index!==undefined?Math.max(0,state.index-1):state?.index||0;
  const progress=state?Math.round(currentIndex/state.total*100):0;
+ const questionDuration=Math.max(1,Number(state?.question?.seconds||1));
+ const timePercent=Math.max(0,Math.min(100,Math.round(100*remaining/questionDuration)));
+ const finishedStatuses=liveProgress?.statuses||[];
+ const processed=Math.max(finishedStatuses.length,currentIndex);
+ const monitorRemaining=state?Math.max(0,state.total-processed):0;
  const allRows=(review||[]).filter(r=>reviewFilter==='Semua'||(reviewFilter==='Benar'?r.status==='BENAR':reviewFilter==='Salah'?r.status==='SALAH':r.status==='TIMEOUT'));
  const pages=Math.max(1,Math.ceil(allRows.length/10));
  const page=Math.min(reviewPage,pages-1);
@@ -253,8 +274,36 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    <div className="result-actions"><button className="btn primary" onClick={()=>{sessionStorage.removeItem(key(profile.authId));onDone();}}>Kembali ke dashboard <ArrowRight size={16}/></button></div>
  </section>;
  if(!question)return <section className="white-panel center-message">Menunggu soal berikutnya dari server...</section>;
- return <div className="quiz-layout quiz-playful">
-   <div className="quiz-header"><button className="back-button" onClick={quit}><ArrowLeft size={18}/> Keluar latihan</button><span className="quiz-topic">{state.category||'Latihan Wajib'}</span></div>
+ return <div className="quiz-focus-exam">
+   <header className="quiz-focus-appbar">
+     <div className="quiz-focus-appbrand">
+       <span className="quiz-focus-logo">V</span>
+       <div><small>VOKASI · MODE FOKUS</small><strong>{state.category||'Latihan Wajib'}</strong></div>
+     </div>
+     <div className={'quiz-focus-session-time '+(totalRemaining<=60?'is-critical':'')}>
+       <Clock3 size={24}/>
+       <div><small>SISA WAKTU SESI</small><strong role="timer">{textClock(totalRemaining)}</strong></div>
+     </div>
+     <button type="button" className="quiz-focus-leave" onClick={quit}><ArrowLeft size={16}/> Keluar latihan</button>
+   </header>
+   <div className="quiz-focus-session-track" aria-label={'Progres latihan '+progress+' persen'}>
+     <div style={{width:progress+'%'}}/>
+   </div>
+   <div className="quiz-focus-columns">
+    <main className="quiz-focus-workspace">
+     <section className={'quiz-focus-timer-banner '+(remaining<=5?'is-critical':remaining<=10?'is-warning':'')} aria-label="Waktu berjalan untuk soal saat ini">
+       <div className="quiz-focus-timer-ring" style={{background:'conic-gradient('+ (remaining<=5?'#f05b69':remaining<=10?'#f6aa39':'#2883f3')+' '+timePercent+'%, #e4edfa '+timePercent+'% 100%)'}}>
+         <div className="quiz-focus-timer-inner"><Clock3 size={19}/><strong role="timer">{feedback?'✓':textClock(remaining)}</strong><small>{feedback?'TERKIRIM':'WAKTU SOAL'}</small></div>
+       </div>
+       <div className="quiz-focus-timer-copy">
+         <span className="quiz-focus-live-dot"><i/> TIMER BERJALAN</span>
+         <h2>{remaining<=5?'Waktunya hampir habis!':'Fokus pada soal ini'}</h2>
+         <p>{feedback?'Jawaban sudah diperiksa server, lanjut ke soal berikutnya.':'Pilih jawaban sebelum waktu soal habis. Waktu terus berjalan otomatis.'}</p>
+         <div className="quiz-focus-inline-stats"><span>SOAL <b>{currentIndex+1}/{state.total}</b></span><span>SELESAI <b>{progress}%</b></span></div>
+       </div>
+       <div className="quiz-focus-timer-track" aria-hidden="true"><span style={{width:timePercent+'%'}}/></div>
+     </section>
+     <div className="quiz-layout quiz-playful">
    <div className="quiz-progress"><div className="quiz-progress-label"><span>Soal <b>{currentIndex+1}</b> dari {state.total}</span><span>{progress}% selesai</span></div>
    <div className="progress-track"><div style={{width:progress+'%'}}/></div></div>
    <div className="quiz-card">
@@ -281,6 +330,29 @@ export default function QuizView({profile,category,onDone,onQuit}:{
     <div className="quiz-footer"><span>Jawaban diperiksa server. Jawaban terkirim tidak bisa diubah.</span>
       <button className="btn primary" disabled={selected===null||sending||!!feedback||remaining<=0} onClick={()=>void submit()}>
         {sending?'Memverifikasi...':'Kirim jawaban'} <ArrowRight size={16}/></button></div>
-   </div><p className="quiz-footnote">Waktu dari server. Saat habis, sistem otomatis lanjut dan menandai TIMEOUT.</p>
+   </div><p className="quiz-footnote">Waktu dikendalikan server. Saat habis, sistem otomatis lanjut dan menandai TIMEOUT.</p>
+     </div>
+    </main>
+    <aside className="quiz-focus-monitor" aria-label="Monitoring status soal">
+      <div className="quiz-focus-monitor-heading"><span className="quiz-focus-monitor-icon"><Grid2X2 size={21}/></span><div><small>NAVIGASI</small><strong>Daftar soal</strong><span>Monitoring, bukan untuk lompat soal</span></div></div>
+      <div className="quiz-focus-monitor-counts">
+        <div className="is-correct"><strong>{liveProgress?.correct??'—'}</strong><small>Benar</small></div>
+        <div className="is-wrong"><strong>{liveProgress?.wrong??'—'}</strong><small>Salah</small></div>
+        <div className="is-remaining"><strong>{monitorRemaining}</strong><small>Tersisa</small></div>
+        <div className="is-timeout"><strong>{liveProgress?.timeout??'—'}</strong><small>Timeout</small></div>
+      </div>
+      <div className="quiz-focus-monitor-grid" role="list" aria-label="Status nomor soal">
+        {Array.from({length:state.total},(_,index)=>{
+          const status=finishedStatuses[index];
+          const current=index===currentIndex;
+          const kind=status==='BENAR'?'is-correct':status==='SALAH'?'is-wrong':status==='TIMEOUT'?'is-timeout':current?'is-active':'is-pending';
+          const textStatus=status==='BENAR'?'benar':status==='SALAH'?'salah':status==='TIMEOUT'?'timeout':current?'aktif':'belum dikerjakan';
+          return <span role="listitem" aria-current={current?'step':undefined} title={'Soal '+(index+1)+': '+textStatus} className={'quiz-focus-number '+kind} key={index}>{index+1}</span>;
+        })}
+      </div>
+      <div className="quiz-focus-monitor-legend"><span><i className="is-active"/>Aktif</span><span><i className="is-correct"/>Benar</span><span><i className="is-wrong"/>Salah</span><span><i className="is-timeout"/>Timeout</span></div>
+      <div className="quiz-focus-monitor-assurance"><ShieldCheck size={15}/><span>Jawaban dan waktu dikendalikan server. Nomor yang selesai tidak dapat diubah.</span></div>
+    </aside>
+   </div>
  </div>;
 }
