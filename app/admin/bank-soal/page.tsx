@@ -1,5 +1,6 @@
 'use client';
 
+import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {BookOpen,Clock3,FileQuestion,Plus,Search,FileUp,PenLine,AlertCircle,FileText,CheckCircle2,UploadCloud,Trash2,Download} from 'lucide-react';
@@ -105,7 +106,7 @@ export default function AdminBankPage(){
    const values={category:newCategory,difficulty_code:newGroup,time_limit_seconds:APPROVED_BLUEPRINT.groups[newGroup as keyof typeof APPROVED_BLUEPRINT.groups].seconds,
     question:newQuestion.trim(),question_image_path:imagePath,options:answers,correct_index:newCorrect,explanation:newExplanation.trim()};
    if(!saveAsDraft){
-    const {error:publishError}=await supabase().rpc('vokasi_admin_import_questions',{p_questions:[values],p_mode:'append'});
+    const {error:publishError}=await nativeRpc('vokasi_admin_import_questions',{p_questions:[values],p_mode:'append'});
     if(publishError)throw publishError;
    }else if(draftEditing){
     const {error:saveError}=await supabase().from('vokasi_question_drafts').update(values).eq('id',draftEditing);
@@ -130,7 +131,7 @@ export default function AdminBankPage(){
  const [editBusy,setEditBusy]=useState(false),[editIssue,setEditIssue]=useState(''),[refreshKey,setRefreshKey]=useState(0);
  async function startEdit(id:number){
   setEditBusy(true);setEditIssue('');
-  const {data,error:err}=await supabase().rpc('vokasi_admin_get_edit_question',{p_source_number:id});
+  const {data,error:err}=await nativeRpc('vokasi_admin_get_edit_question',{p_source_number:id});
   if(err||!data){setIssue(err?.message||'Soal tidak ditemukan.');setEditBusy(false);return;}
   const row=data as EditRow;
   setOriginal(row);setEdit(structuredClone(row));setEditImageFile(null);setEditOptionFiles({});setEditBusy(false);
@@ -177,7 +178,7 @@ export default function AdminBankPage(){
    const choiceRows=[];
    for(let i=0;i<edit.options.length;i++)
     choiceRows.push({...edit.options[i],image_path:editOptionFiles[i]?await upload(editOptionFiles[i]):edit.options[i].image_path});
-   const {error:err}=await supabase().rpc('vokasi_admin_edit_published_question',{
+   const {error:err}=await nativeRpc('vokasi_admin_edit_published_question',{
     p_source_number:edit.source_number,p_expected:original,
     p_change:{category:edit.category,difficulty_code:edit.difficulty_code,question:edit.question,question_image_path:imagePath,
      options:choiceRows,correct_index:edit.correct_index,explanation:edit.explanation}
@@ -209,7 +210,7 @@ export default function AdminBankPage(){
   async function load(){try{
     const [bankResult,qualityResult,draftResult,importResult]=await Promise.allSettled([
      fetchBank({allowIncomplete:true}),
-     supabase().rpc('vokasi_admin_question_health'),
+     nativeRpc('vokasi_admin_question_health'),
      supabase().from('vokasi_question_drafts').select('id,source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation,created_at').order('created_at',{ascending:false}).limit(1000),
      supabase().from('vokasi_web_import_drafts').select('id,file_name,mode,payload,created_at').order('created_at',{ascending:false}).limit(30)
     ]);
