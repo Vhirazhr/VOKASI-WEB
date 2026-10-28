@@ -1,10 +1,10 @@
 'use client';
+import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
 import {FileSpreadsheet,Upload,Plus,CheckCircle2,AlertTriangle,RefreshCw,School2,Users,Download} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
-import {supabase} from '@/lib/supabase';
 import {getAdminSchoolCatalog,getSchoolStudents} from '@/lib/school';
 import type {SchoolStudent} from '@/lib/types';
 import {downloadAdminRosterTemplate} from '@/lib/admin-excel';
@@ -98,7 +98,7 @@ export default function AdminDataManagement(){
    let done=0;
    for(let offset=0;offset<rows.length;offset+=200){
     const chunk=rows.slice(offset,offset+200);
-    const {data,error:e}=await supabase().rpc('vokasi_admin_add_pending_students',{p_rows:chunk.map(({full_name,username,class_id,admission_year})=>({full_name,username,class_id,admission_year}))});
+    const {data,error:e}=await nativeRpc('vokasi_admin_add_pending_students',{p_rows:chunk.map(({full_name,username,class_id,admission_year})=>({full_name,username,class_id,admission_year}))});
     if(e)throw new Error('Gagal pada kelompok '+(Math.floor(offset/200)+1)+': '+e.message+(done?' ('+done+' baris sebelumnya sudah tersimpan)':''));
     done+=Number(data||0);
    }
@@ -108,7 +108,7 @@ export default function AdminDataManagement(){
   finally{setSaving(false);}
  }
  async function addMajor(e:React.FormEvent){e.preventDefault();if(saving)return;setSaving(true);setProblem('');setNotice('');
-  const {error:e2}=await supabase().rpc('vokasi_admin_create_major',{p_name:majorName.trim(),p_code:majorCode.trim()||null});
+  const {error:e2}=await nativeRpc('vokasi_admin_create_major',{p_name:majorName.trim(),p_code:majorCode.trim()||null});
   if(e2)setProblem(e2.message);else{setNotice('Jurusan berhasil ditambahkan. Sekarang buat kelasnya lewat menu Kelas & Jurusan.');setMajorName('');setMajorCode('');setRefresh(n=>n+1);}setSaving(false);
  }
  function addManual(e:React.FormEvent){e.preventDefault();setNotice('');setProblem('');
