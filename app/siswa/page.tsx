@@ -299,7 +299,7 @@ export default function StudentPage(){
   const latest=compulsory[0];
   const today=compulsory.find(a=>wibDate(a.completed_at_ms)===wibDate());
   const average=compulsory.length?Math.round(compulsory.reduce((s,a)=>s+a.score,0)/compulsory.length):null;
-  return <AppShell role="student" onLogout={()=>void logout()} displayName={profile.fullName} studentAvatarUrl={avatarUrls[profile.username.toLowerCase()]} embed={embed} navigationBlocked={category!==undefined}>
+  return <AppShell role="student" onLogout={()=>void logout()} displayName={profile.fullName} studentAvatarUrl={avatarUrls[profile.username.toLowerCase()]} embed={embed} navigationBlocked={category!==undefined} quizFocusMode={category!==undefined}>
     {category!==undefined?<QuizView profile={profile} category={category} history={attempts} onQuit={()=>setCategory(undefined)} onDone={()=>{setCategory(undefined);void refresh();}}/>:
     <>
       {warning&&<div className="alert danger">{warning} <button type="button" className="link-action" onClick={()=>void refresh()}>Coba lagi</button></div>}
