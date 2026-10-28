@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import InteractiveLogo from "@/components/landing/InteractiveLogo";
 import SchoolMark from "@/components/landing/SchoolMark";
-import LandingRanking from "@/components/landing/LandingRanking";
+import LandingRanking, { LeaderboardLink } from "@/components/landing/LandingRanking";
 import LandingAccess, { AccessLink } from "@/components/landing/LandingAccess";
 import MotionSettings from "@/components/landing/MotionSettings";
 import "@fontsource-variable/plus-jakarta-sans/wght.css";
@@ -56,6 +56,7 @@ const steps = [
 export default function Home() {
   return (
     <LandingAccess>
+      <LandingRanking>
       <main className="vkw-page" id="beranda">
         <a className="vkw-skip" href="#tentang">
           Lewati animasi
@@ -76,7 +77,7 @@ export default function Home() {
             <nav aria-label="Navigasi utama">
               <a href="#beranda" className="vkw-nav-home">Beranda</a>
               <a href="#tentang">Tentang</a>
-              <a href="#leaderboard">Leaderboard</a>
+              <LeaderboardLink>Leaderboard</LeaderboardLink>
               <a href="#fitur">Fitur Unggulan</a>
             </nav>
             <AccessLink className="vkw-nav-login">
@@ -123,7 +124,6 @@ export default function Home() {
               </AccessLink>
             </div>
           </section>
-          <LandingRanking />
           <section
             className="vkw-features-section vkw-section"
             data-scene-stop
@@ -198,7 +198,7 @@ export default function Home() {
             <h2>Tautan Cepat</h2>
             <a href="#beranda">Beranda</a>
             <a href="#tentang">Tentang VOKASI</a>
-            <a href="#leaderboard">Leaderboard</a>
+            <LeaderboardLink>Leaderboard</LeaderboardLink>
             <a href="#fitur">Fitur Unggulan</a>
             <a href="#panduan">Panduan Penggunaan</a>
             <AccessLink role="admin">Login Admin ↗</AccessLink>
@@ -240,6 +240,7 @@ export default function Home() {
           </div>
         </footer>
       </main>
+      </LandingRanking>
     </LandingAccess>
   );
 }
