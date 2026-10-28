@@ -40,6 +40,12 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
     });
   },[pathname]);
   useEffect(()=>{
+    if(!adminMenuOpen)return;
+    const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape')setAdminMenuOpen(false);};
+    window.addEventListener('keydown',onKey);
+    return()=>window.removeEventListener('keydown',onKey);
+  },[adminMenuOpen]);
+  useEffect(()=>{
     if(!chatOpen)return;
     const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape')setChatOpen(false);};
     window.addEventListener('keydown',onKey);
@@ -94,7 +100,7 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
     <div className="shell-main">
       {embedMode&&!navigationBlocked&&<nav className="embed-shortcuts" aria-label="Menu VOKASI dalam website sekolah">{items.map(({href,label})=><Link key={href} href={linkTo(href)} className={active(href)?'active':''}>{label}</Link>)}</nav>}
       <header className="topbar">
-        <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':pathname==='/admin/logs'?'Log Aktivitas':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':pathname.endsWith('/notifikasi')?'Notifikasi Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
+        <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':pathname==='/admin/logs'?'Log Aktivitas':pathname==='/admin/monitoring'?'Monitoring Nilai':pathname==='/admin/bank-soal'?'Bank Soal':pathname==='/admin/kelas'?'Kelas & Jurusan':pathname==='/admin/analitik'?'Analitik Sekolah':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':pathname.endsWith('/notifikasi')?'Notifikasi Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
         <div className="top-actions">
           {isAdmin?<div className="admin-header-actions">
             <button type="button" className="admin-mobile-menu-trigger" aria-label="Buka semua fitur admin" aria-controls="vokasi-admin-mobile-menu" aria-expanded={adminMenuOpen} onClick={()=>setAdminMenuOpen(v=>!v)}><Menu size={20}/><span>Menu</span></button>
