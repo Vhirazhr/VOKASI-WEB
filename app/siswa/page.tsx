@@ -7,6 +7,7 @@ import { ArrowRight, Atom, BookOpen, Brain, Calculator, CalendarDays, CheckCircl
 import AppShell from '@/components/AppShell';
 import StudentAvatar from '@/components/StudentAvatar';
 import StudentProfileDashboard from '@/components/StudentProfileDashboard';
+import StudentAssistant from '@/components/StudentAssistant';
 import QuizView from '@/components/QuizView';
 import ReviewHistory from '@/components/ReviewHistory';
 import StudentReportDownload from '@/components/StudentReportDownload';
@@ -21,11 +22,12 @@ import '@/app/student-experience.css';
 import '@/app/student-unified-ui.css';
 import '@/app/student-ranking-reference.css';
 import '@/app/student-learning-extras.css';
+import '@/app/student-assistant.css';
 
 const categories=[...PRACTICE_CATEGORIES];
 const toDay=(ms:number)=>new Intl.DateTimeFormat('id-ID',{dateStyle:'long',timeZone:'Asia/Jakarta'}).format(new Date(ms));
 const toTime=(seconds:number)=>seconds>=60?Math.floor(seconds/60)+' mnt '+Math.floor(seconds%60)+' dtk':Math.floor(seconds||0)+' dtk';
-type PageView='home'|'history'|'ranking'|'profile';
+type PageView='home'|'history'|'ranking'|'profile'|'assistant';
 
 function StudentHeading({kicker,title,description}:{kicker:string;title:string;description:string}) {
   return <header className="student-section-hero" aria-label={title}>
@@ -212,7 +214,7 @@ function ClipboardListIcon(){return <div className="student-clipboard-illustrati
 
 export default function StudentPage(){
   const pathname=usePathname();
-  const view:PageView=pathname.endsWith('/riwayat')?'history':pathname.endsWith('/peringkat')?'ranking':pathname.endsWith('/profil')?'profile':'home';
+  const view:PageView=pathname.endsWith('/riwayat')?'history':pathname.endsWith('/peringkat')?'ranking':pathname.endsWith('/profil')?'profile':pathname.endsWith('/asisten')?'assistant':'home';
   const {profile,loading,error,logout}=useSchoolAuth('student');
   const [attempts,setAttempts]=useState<Attempt[]>([]);
   const [topicInsights,setTopicInsights]=useState<TopicInsight[]>([]);
@@ -272,6 +274,7 @@ export default function StudentPage(){
       {warning&&<div className="alert danger">{warning} <button type="button" className="link-action" onClick={()=>void refresh()}>Coba lagi</button></div>}
       {view==='history'?<HistoryView attempts={attempts} busy={busy} profile={profile}/>:
        view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed} avatarUrls={avatarUrls}/>:
+       view==='assistant'?<StudentAssistant/>:
        view==='profile'?<StudentProfileDashboard profile={profile} attempts={attempts} busy={busy} avatarUrl={avatarUrls[profile.username.toLowerCase()]} onAvatarUploaded={url=>setAvatarUrls(previous=>({...previous,[profile.username.toLowerCase()]:url}))} onLogout={()=>void logout()}/>:
         <main className="student-home student-home-dashboard">
           <section className="student-featured-practice student-reference-hero" aria-labelledby="mandatory-practice-title">
