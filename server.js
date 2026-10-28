@@ -1,3 +1,5 @@
+/* This startup file intentionally uses CommonJS for cPanel's Node.js app runner. */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { createServer } = require('node:http');
 const { parse } = require('node:url');
 const next = require('next');
