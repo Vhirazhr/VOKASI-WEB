@@ -94,6 +94,28 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const live=useRef(true);
  const inFlight=useRef(false);
  const feedbackTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+ const lastActivityAt=useRef<Map<string,number>>(new Map());
+ type ActivityEventType='tab_hidden'|'tab_visible'|'window_blur'|'window_focus'|'copy'|'paste'|'context_menu'|'fullscreen_exit'|'external_link'|'ui_click'|'answer_option_selected';
+ const recordExamActivity=useCallback((
+   eventType:ActivityEventType,targetLabel:string,targetKind:string,detail:string
+ )=>{
+   const session=state?.session_id;
+   if(!session||state?.status!=='active')return;
+   const now=Date.now();
+   const dedupeKey=[session,eventType,targetLabel,state?.index??-1].join(':');
+   const previous=lastActivityAt.current.get(dedupeKey)||0;
+   if(now-previous<350)return;
+   lastActivityAt.current.set(dedupeKey,now);
+   // Send labels only: never transmit clipboard contents or other-tab URLs.
+   void rpc<boolean>('vokasi_web_record_exam_activity',{
+     p_session:session,
+     p_event_type:eventType,
+     p_question_index:state?.index??null,
+     p_target_label:targetLabel.slice(0,120),
+     p_target_kind:targetKind.slice(0,40),
+     p_detail:detail.slice(0,240)
+   }).catch(()=>{/* Monitoring is best-effort and must never interrupt an exam. */});
+ },[state?.session_id,state?.status,state?.index]);
 
  const accept=useCallback((next:State)=>{
    setState(next);setNow(Date.now());setClockBase(Date.now()-next.server_now_ms);
@@ -205,6 +227,73 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      .maybeSingle().then(({data})=>{if(current&&live.current&&data)setXp(data.earned_xp);});
    return()=>{current=false;};
  },[state?.status,state?.session_id]);
+
+ // Passive exam activity log. Browser signals are indicators only; they do not reveal
+ // which app or other tab the student opened. Clipboard payloads are never read.
+ useEffect(()=>{
+   if(!state?.session_id||state.status!=='active'||busy)return;
+   const onVisibility=()=>{
+     if(document.visibilityState==='hidden'){
+       recordExamActivity('tab_hidden','Halaman ujian tidak terlihat','document','Browser melaporkan halaman ujian menjadi tidak aktif; aplikasi tujuan tidak diketahui');
+     }else{
+       recordExamActivity('tab_visible','Halaman ujian kembali aktif','document','Browser melaporkan halaman ujian terlihat kembali');
+     }
+   };
+   const onBlur=()=>recordExamActivity('window_blur','Jendela ujian kehilangan fokus','window','Indikator fokus hilang; tidak memastikan aplikasi lain dibuka');
+   const onFocus=()=>recordExamActivity('window_focus','Jendela ujian kembali fokus','window','Jendela browser kembali fokus');
+   const onCopy=()=>recordExamActivity('copy','Percobaan copy','document','Peristiwa copy terdeteksi; isi clipboard tidak direkam');
+   const onPaste=()=>recordExamActivity('paste','Percobaan paste','document','Peristiwa paste terdeteksi; isi clipboard tidak direkam');
+   const onContextMenu=(event:MouseEvent)=>{
+     const raw=event.target;
+     const target=raw instanceof Element?raw.closest('button,a,[role="button"]'):null;
+     const label=target?(target.getAttribute('aria-label')||target.textContent||target.tagName).replace(/\s+/g,' ').trim().slice(0,100):'Area halaman ujian';
+     recordExamActivity('context_menu',label,'contextmenu','Menu konteks diminta pada halaman ujian');
+   };
+   const onFullscreenChange=()=>{
+     if(!document.fullscreenElement){
+       recordExamActivity('fullscreen_exit','Keluar dari fullscreen','document','Browser melaporkan mode layar penuh ditutup');
+     }
+   };
+   const onClick=(event:MouseEvent)=>{
+     const raw=event.target;
+     if(!(raw instanceof Element))return;
+     const target=raw.closest('button,a[href],[role="button"]');
+     if(!target||!target.closest('.quiz-focus-exam'))return;
+     if(target.matches('button.answer')){
+       const letter=target.querySelector('.answer-letter')?.textContent?.trim()||'Pilihan jawaban';
+       recordExamActivity('answer_option_selected',letter,'answer','Pilihan jawaban diklik; teks jawaban tidak disalin ke laporan');
+       return;
+     }
+     const label=(target.getAttribute('aria-label')||target.getAttribute('title')||target.textContent||'Elemen halaman ujian').replace(/\s+/g,' ').trim().slice(0,100);
+     if(target instanceof HTMLAnchorElement){
+       if(target.hostname&&target.hostname!==window.location.hostname){
+         recordExamActivity('external_link',label,'link','Tautan diklik menuju domain '+target.hostname);
+       }else{
+         recordExamActivity('ui_click',label,'link','Tautan pada halaman ujian diklik');
+       }
+       return;
+     }
+     recordExamActivity('ui_click',label,target.tagName.toLowerCase(),'Tombol atau elemen pada halaman ujian diklik');
+   };
+   document.addEventListener('visibilitychange',onVisibility);
+   document.addEventListener('copy',onCopy,true);
+   document.addEventListener('paste',onPaste,true);
+   document.addEventListener('contextmenu',onContextMenu,true);
+   document.addEventListener('fullscreenchange',onFullscreenChange);
+   document.addEventListener('click',onClick,true);
+   window.addEventListener('blur',onBlur);
+   window.addEventListener('focus',onFocus);
+   return()=>{
+     document.removeEventListener('visibilitychange',onVisibility);
+     document.removeEventListener('copy',onCopy,true);
+     document.removeEventListener('paste',onPaste,true);
+     document.removeEventListener('contextmenu',onContextMenu,true);
+     document.removeEventListener('fullscreenchange',onFullscreenChange);
+     document.removeEventListener('click',onClick,true);
+     window.removeEventListener('blur',onBlur);
+     window.removeEventListener('focus',onFocus);
+   };
+ },[state?.session_id,state?.status,busy,recordExamActivity]);
 
  // Navigator verdicts come from a separate read-only, student-owned server RPC.
  // A refresh or another device never resets the monitoring counters.
@@ -393,7 +482,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
       <b>{feedback.correct?'✓ Jawaban kamu BENAR!':'✕ Jawaban kamu SALAH.'}</b><span>Soal berikutnya segera tampil…</span></div>}
     {error&&<div className="alert danger" role="alert">{error}<button className="btn secondary small" onClick={()=>void onServer()}><RefreshCw size={15}/> Sinkronkan</button></div>}
     </div>
-    <div className="quiz-footer"><span>Jawaban diperiksa server. Jawaban terkirim tidak bisa diubah.</span>
+    <div className="quiz-footer"><span>Jawaban diperiksa server. Aktivitas halaman yang terdeteksi dicatat untuk laporan admin; isi clipboard dan aplikasi lain tidak dibaca.</span>
       <button className="btn primary" disabled={selected===null||sending||!!feedback||remaining<=0} onClick={()=>void submit()}>
         {sending?'Memverifikasi...':'Kirim jawaban'} <ArrowRight size={16}/></button></div>
    </div>
