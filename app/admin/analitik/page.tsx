@@ -19,8 +19,8 @@ const average=(scores:number[])=>scores.length?Math.round(scores.reduce((a,b)=>a
 function buildStats(students:SchoolStudent[],attempts:AttemptSummary[],endDate:string,days:number) {
   const roster=new Map(students.filter(s=>s.authId).map(s=>[s.authId,s]));
   const byDate=new Map<string,Map<string,AttemptSummary>>();
-  // API returns newest completed session first. Keep only the latest per student and WIB day.
-  for(const attempt of attempts){
+  // First verified compulsory completion per WIB day is official. Later repeats are history only.
+  for(const attempt of [...attempts].sort((a,b)=>a.completed_at_ms-b.completed_at_ms)){
     if(!attempt.auth_user_id||!roster.has(attempt.auth_user_id)||!Number.isFinite(attempt.score)||attempt.score<0||attempt.score>100)continue;
     const day=wibDate(attempt.completed_at_ms);
     if(!byDate.has(day))byDate.set(day,new Map());
