@@ -129,7 +129,9 @@ export async function getHistoricalLeaderboard():Promise<LeaderboardEntry[]> {
 export function latestGrades(attempts:Attempt[], students:SchoolStudent[]): Map<string,Attempt> {
   const map=new Map<string,Attempt>();
   const userByAlias=new Map(students.filter(s=>s.username).map(s=>[s.username.trim().toLowerCase(),s.authId]));
-  for(const attempt of [...attempts].sort((a,b)=>b.completed_at_ms-a.completed_at_ms)) {
+  // For a date-scoped admin report, the earliest verified attempt is the official grade.
+  for(const attempt of [...attempts].sort((a,b)=>a.completed_at_ms-b.completed_at_ms||
+    a.session_key.localeCompare(b.session_key))) {
     const key=attempt.auth_user_id || userByAlias.get(attempt.username.trim().toLowerCase());
     if(key && !map.has(key)) map.set(key,attempt);
   }
