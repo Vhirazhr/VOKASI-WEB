@@ -1,4 +1,5 @@
 'use client';
+import { nativeRpc } from '@/lib/native-rpc';
 import Link from 'next/link';
 import {useEffect,useState} from 'react';
 import {ArrowLeft,ImagePlus,Plus,Save,Trash2,UploadCloud} from 'lucide-react';
@@ -106,7 +107,7 @@ export default function CreatePictureQuestion(){
      const values={source_number:no,category:category.trim(),question:question.trim(),question_image_path:imageLocation,
        options:saved,difficulty_code:group,correct_index:correct,time_limit_seconds:seconds,explanation:explanation.trim()};
      if(publishNow&&!editing){
-       const {error:publishError}=await supabase().rpc('vokasi_admin_import_questions',{
+       const {error:publishError}=await nativeRpc('vokasi_admin_import_questions',{
          p_questions:[values],p_mode:'append'
        });
        if(publishError)throw publishError;
