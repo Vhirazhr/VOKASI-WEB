@@ -14,7 +14,7 @@ Panduan ini untuk **uji publik/staging** di hosting sekolah berbasis cPanel Node
 ## 1. Pilih versi yang benar
 
 - Deploy dari `main` untuk versi yang sudah masuk branch utama dan lulus CI.
-- Pull request landing 3D #1 harus ditinjau/di-rebase dahulu sebelum merge: saat panduan ini dibuat GitHub melaporkan konflik (`mergeable_state: dirty`). Jangan force-push atau merge versi konflik.
+- Landing page 3D sudah ada di `main` melalui PR #2 dan #3. PR #1 adalah implementasi lama yang konflik dan tidak perlu di-merge. Deploy versi terbaru `main`.
 - Setelah landing yang diuji masuk ke `main`, gunakan `main` sebagai sumber deployment.
 
 ## 2. Buat aplikasi Node.js di cPanel
