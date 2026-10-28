@@ -105,7 +105,7 @@ export default function AdminExamActivityPage(){
   const selectedStudent:ExamActivityStudent|undefined=students.find(student=>student.auth_user_id===selectedStudentId);
   const events=timeline?.items||[];
   const pageNumber=Math.floor(timelineOffset/PAGE_SIZE)+1;
-  const hasNext=events.length===PAGE_SIZE;
+  const hasNext=timelineOffset+events.length<(timeline?.total_events||0);
 
   function changeDays(value:number){
     setBusy(true);setTimelineBusy(true);setDays(value);setSelectedStudentId(null);setTimelineOffset(0);
@@ -160,7 +160,7 @@ export default function AdminExamActivityPage(){
           filteredStudents.length===0?<div className="exam-activity-empty"><Users size={22}/>{students.length===0?'Belum ada aktivitas ujian yang tercatat pada periode ini.':'Tidak ada siswa yang cocok dengan pencarian.'}</div>:
           <div className="exam-activity-table-wrap">
             <table className="exam-activity-table">
-              <thead><tr><th>Siswa</th><th>Kelas / Jurusan</th><th>Total catatan</th><th>Pindah tab</th><th>Copy/paste</th><th>Tautan</th><th>Detail</th></tr></thead>
+              <thead><tr><th>Siswa</th><th>Kelas / Jurusan</th><th>Total catatan</th><th>Pindah tab</th><th>Copy/paste</th><th>Tautan</th><th>Klik</th><th>Detail</th></tr></thead>
               <tbody>{filteredStudents.map(student=><tr key={student.auth_user_id} className={selectedStudentId===student.auth_user_id?'exam-activity-selected':''}>
                 <td><span className="exam-activity-student-name">{student.student_name}</span><span className="exam-activity-student-sub">{student.username||'Akun siswa'}</span></td>
                 <td>{student.class_name}<span className="exam-activity-student-sub">{student.major_name}</span></td>
@@ -168,6 +168,7 @@ export default function AdminExamActivityPage(){
                 <td><span className={'exam-activity-count '+(student.tab_switches?'warn':'')}>{student.tab_switches}</span></td>
                 <td><span className={'exam-activity-count '+(student.clipboard_events?'warn':'')}>{student.clipboard_events}</span></td>
                 <td><span className="exam-activity-count">{student.external_links}</span></td>
+                <td><span className="exam-activity-count">{student.click_events}</span></td>
                 <td><button type="button" className={'exam-activity-button '+(selectedStudentId===student.auth_user_id?'primary':'')} onClick={()=>selectStudent(student)}>{selectedStudentId===student.auth_user_id?'Sedang dilihat':'Lihat laporan'}</button></td>
               </tr>)}</tbody>
             </table>
