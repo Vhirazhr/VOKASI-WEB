@@ -14,6 +14,7 @@ DECLARE
  p jsonb; d jsonb; begun jsonb; response jsonb; reply jsonb; review jsonb;
  v_session_id uuid; i integer; bad integer; total_seconds integer; current_questions integer;
  answer_count integer; proof_count integer; unverified integer;
+ timeout_status text; timeout_selection jsonb;
 BEGIN
  -- Idempotent preparation and randomization rules.
  p:=public.vokasi_web_prepare_session(NULL);
@@ -67,6 +68,27 @@ BEGIN
  IF jsonb_array_length(review)<>10 OR NOT review->0 ? 'correct_index' THEN
    RAISE EXCEPTION 'Cross-device review incomplete';
  END IF;
+
+ -- A choice clicked but never submitted remains client-only. Once its timer
+ -- expires, server state must contain a TIMEOUT with no selected answer.
+ p:=public.vokasi_web_prepare_session('Pembagian');
+ v_session_id=(p->>'session_id')::uuid;
+ begun:=public.vokasi_web_begin_session(v_session_id);
+ UPDATE public.vokasi_web_exam_sessions
+ SET question_started_at=clock_timestamp()-interval '5 seconds',
+     question_deadline_at=clock_timestamp()-interval '1 second',
+     overall_deadline_at=clock_timestamp()+interval '30 minutes'
+ WHERE id=v_session_id;
+ response:=public.vokasi_web_get_quiz_state(v_session_id);
+ SELECT answers->0->>'status',answers->0->'selected_index'
+ INTO timeout_status,timeout_selection
+ FROM public.vokasi_web_exam_sessions WHERE id=v_session_id;
+ IF timeout_status IS DISTINCT FROM 'TIMEOUT'
+    OR timeout_selection IS DISTINCT FROM 'null'::jsonb THEN
+   RAISE EXCEPTION 'Unsubmitted choice was persisted: status %, selection %',
+     timeout_status,timeout_selection;
+ END IF;
+ PERFORM public.vokasi_web_cancel_session(v_session_id);
 
  IF has_table_privilege('authenticated','public.student_attempts','INSERT') THEN
    RAISE EXCEPTION 'Unverified client score insert path remains open';
