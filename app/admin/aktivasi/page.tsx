@@ -1,4 +1,5 @@
 'use client';
+import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
@@ -23,7 +24,7 @@ export default function AdminActivationPage(){
     if(!configured())throw new Error('Koneksi Supabase belum tersedia.');
     const {data,error}=await supabase().auth.getUser();
     if(error||!data.user)throw new Error('Tautan undangan tidak valid atau kedaluwarsa. Hubungi administrator sekolah.');
-    const {data:isAdmin,error:roleError}=await supabase().rpc('is_school_admin');
+    const {data:isAdmin,error:roleError}=await nativeRpc('is_school_admin');
     if(roleError||isAdmin!==true)throw new Error('Akun ini belum memiliki akses administrator sekolah.');
     if(mounted)setEmail(data.user.email||'');
    }catch(e){if(mounted)setIssue(e instanceof Error?e.message:'Undangan tidak dapat diproses.');}
