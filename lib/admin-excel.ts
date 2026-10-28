@@ -28,7 +28,7 @@ function zebra(sheet:import('exceljs').Worksheet){
 /** Keep every export deterministic: jurusan -> grade X/XI/XII -> kelas -> nama A-Z. */
 const academicSort=new Intl.Collator('id',{numeric:true,sensitivity:'base'});
 function classOrder(label:string):number{
- const grade=/^(XII|XI|X)(?:\\s|$)/i.exec(label.trim())?.[1]?.toUpperCase();
+ const grade=/^(XII|XI|X)(?:\s|$)/i.exec(label.trim())?.[1]?.toUpperCase();
  return grade==='X'?10:grade==='XI'?11:grade==='XII'?12:99;
 }
 export function sortedSchoolStudents(students:SchoolStudent[]):SchoolStudent[]{
@@ -52,8 +52,8 @@ function majorGroups(students:SchoolStudent[]){
  return [...majors.entries()].map(([name,classes])=>({name,classes:[...classes.entries()].map(([name,students])=>({name,students}))}));
 }
 function uniqueSheetName(major:string,firstClass:string,used:Set<string>){
- const code=/^(?:XII|XI|X)\\s+([A-Za-z0-9-]+)/i.exec(firstClass)?.[1]?.toUpperCase();
- const base=(code||major.replace(/[\\[\\]*?:/\\\\]/g,'').slice(0,28)||'Jurusan').slice(0,27);
+ const code=/^(?:XII|XI|X)\s+([A-Za-z0-9-]+)/i.exec(firstClass)?.[1]?.toUpperCase();
+ const base=(code||major.replace(/[^A-Za-z0-9 _-]/g,'').slice(0,28)||'Jurusan').slice(0,27);
  let candidate=base,number=2;
  while(used.has(candidate.toLowerCase())||candidate.toLowerCase()==='ringkasan'){
   candidate=base.slice(0,27)+ ' '+number++;
