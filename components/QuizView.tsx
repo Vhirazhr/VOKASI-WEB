@@ -1,7 +1,7 @@
 'use client';
 
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle,Grid2X2,ShieldCheck,ZoomIn,X} from 'lucide-react';
+import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle,Grid2X2,ShieldCheck,ZoomIn,X,LogOut} from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import StudentSessionReportDownload from '@/components/StudentSessionReportDownload';
 import type {Attempt,StudentProfile} from '@/lib/types';
@@ -74,7 +74,9 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const [xp,setXp]=useState<number|null>(null);
  const [liveProgress,setLiveProgress]=useState<LiveProgress|null>(null);
  const [restartCycle,setRestartCycle]=useState(0);
- const [timeoutReaction,setTimeoutReaction]=useState(false);
+ const [exitConfirmOpen,setExitConfirmOpen]=useState(false);
+ const [exiting,setExiting]=useState(false);
+ const [exitError,setExitError]=useState('');
  const [monitorOpen,setMonitorOpen]=useState(false);
  const [figureOpen,setFigureOpen]=useState(false);
  useEffect(()=>{
@@ -92,7 +94,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
 
  const accept=useCallback((next:State)=>{
    setState(next);setNow(Date.now());setClockBase(Date.now()-next.server_now_ms);
-   if(next.status==='active'){setSelected(null);setTimeoutReaction(false);setMonitorOpen(false);setFigureOpen(false);}
+   if(next.status==='active'){setSelected(null);setMonitorOpen(false);setFigureOpen(false);}
  },[]);
 
  useEffect(()=>{
@@ -214,16 +216,6 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    return()=>{cancelled=true;};
  },[state?.session_id,state?.status,state?.index]);
 
- // Timeout emotion is driven by a server-confirmed verdict, never browser guesses.
- // Show it briefly on the next question without overlaying its text or choices.
- useEffect(()=>{
-   if(state?.status!=='active'||state.index===undefined||!liveProgress)return;
-   if(liveProgress.statuses.length!==state.index||liveProgress.statuses.at(-1)!=='TIMEOUT')return;
-   const show=window.setTimeout(()=>setTimeoutReaction(true),0);
-   const hide=window.setTimeout(()=>setTimeoutReaction(false),2600);
-   return()=>{window.clearTimeout(show);window.clearTimeout(hide);};
- },[state?.status,state?.index,liveProgress]);
-
  async function submit(){
    if(!state||state.status!=='active'||selected===null||sending||feedback)return;
    const current=state.question;
@@ -271,8 +263,6 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const finishedStatuses=liveProgress?.statuses||[];
  const processed=Math.max(finishedStatuses.length,currentIndex);
  const monitorRemaining=state?Math.max(0,state.total-processed):0;
- const mascotMood=feedback?(feedback.correct?'happy':'sad'):timeoutReaction?'angry':'neutral';
- const mascotText=mascotMood==='happy'?'Jawaban benar, semangat!':mascotMood==='sad'?'Jawaban salah, coba lagi!':mascotMood==='angry'?'Yah, waktunya habis!':'Semangat mengerjakan!';
  const allRows=(review||[]).filter(r=>reviewFilter==='Semua'||(reviewFilter==='Benar'?r.status==='BENAR':reviewFilter==='Salah'?r.status==='SALAH':r.status==='TIMEOUT'));
  const pages=Math.max(1,Math.ceil(allRows.length/10));
  const page=Math.min(reviewPage,pages-1);
@@ -280,10 +270,30 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  function restart(){
    sessionStorage.removeItem(key(profile.authId));
    setReview(null);setReviewShown(false);setReviewPage(0);setReviewFilter('Semua');
-   setXp(null);setLiveProgress(null);setSelected(null);setFeedback(null);setFeedbackQuestion(null);setTimeoutReaction(false);
+   setXp(null);setLiveProgress(null);setSelected(null);setFeedback(null);setFeedbackQuestion(null);
    setImageUrls(new Map());setState(null);setError('');setMonitorOpen(false);setFigureOpen(false);setRestartCycle(v=>v+1);
  }
- function quit(){if(!window.confirm('Keluar dari latihan? Sesi tetap berjalan di server dan dapat dilanjutkan dari browser ini.'))return;onQuit();}
+ async function confirmExit(){
+   if(exiting||!state)return;
+   setExiting(true);setExitError('');
+   try{
+     // This is an explicit abandonment, not a pause. Server cancels only the
+     // authenticated student's unfinished session and never awards XP/grade.
+     const outcome=await rpc<{status:string}>('vokasi_web_cancel_session',{p_session:state.session_id});
+     if(outcome.status!=='cancelled'&&outcome.status!=='complete'){
+       throw new Error('Server belum dapat menutup sesi ini. Silakan coba lagi.');
+     }
+     if(feedbackTimer.current){clearTimeout(feedbackTimer.current);feedbackTimer.current=null;}
+     sessionStorage.removeItem(key(profile.authId));
+     setExitConfirmOpen(false);
+     onQuit();
+   }catch(e){
+     setExitError('Gagal menutup sesi: '+errText(e));
+   }finally{
+     if(live.current)setExiting(false);
+   }
+ }
+ function quit(){setExitError('');setExitConfirmOpen(true);}
  if(busy)return <section className="white-panel center-message">Menyiapkan soal dan gambar... Waktu belum berjalan.</section>;
  if(!state&&error)return <section className="white-panel center-message"><XCircle className="error-icon" size={34}/><h2>Latihan belum bisa dimulai</h2><p>{error}</p><button className="btn secondary" onClick={onQuit}>Kembali</button></section>;
  if(!state)return <section className="white-panel center-message">Memuat sesi aman dari Supabase...</section>;
@@ -331,12 +341,8 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  return <div className="quiz-focus-exam">
    <header className="quiz-focus-appbar">
      <div className="quiz-focus-appbrand">
-       <span className="quiz-focus-logo">V</span>
-       <div><small>VOKASI · MODE FOKUS</small><strong>{state.category||'Latihan Wajib'}</strong></div>
-     </div>
-     <div className={'quiz-focus-session-time '+(totalRemaining<=60?'is-critical':'')}>
-       <Clock3 size={24}/>
-       <div><small>SISA WAKTU SESI</small><strong role="timer">{textClock(totalRemaining)}</strong></div>
+       <img className="quiz-focus-school-logo" src="/assets/smkn1sgs-166x166-1.png" width="42" height="42" alt="Logo sekolah VOKASI"/>
+       <strong>VOKASI</strong>
      </div>
      <div className="quiz-focus-appbar-actions">
        <button type="button" className="quiz-focus-monitor-toggle" aria-controls="quiz-focus-monitor" aria-expanded={monitorOpen} onClick={()=>setMonitorOpen(value=>!value)}><Grid2X2 size={17}/><span>Daftar soal</span></button>
@@ -348,24 +354,17 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    </div>
    <div className="quiz-focus-columns">
     <main className="quiz-focus-workspace">
-     <section className={'quiz-focus-timer-banner '+(timerCritical?'is-critical':timerWarning?'is-warning':'')} aria-label="Waktu berjalan untuk soal saat ini">
+     <section className={'quiz-focus-timer-banner '+(timerCritical?'is-critical':timerWarning?'is-warning':'')} aria-label="Waktu mengerjakan soal">
        <div className="quiz-focus-timer-ring" style={{background:'conic-gradient('+ (feedback?'#20af89':timerCritical?'#f05b69':timerWarning?'#f6aa39':'#2883f3')+' '+timePercent+'%, #e4edfa '+timePercent+'% 100%)'}}>
          <div className="quiz-focus-timer-inner"><Clock3 size={19}/><strong role="timer">{feedback?'✓':textClock(remaining)}</strong><small>{feedback?'TERKIRIM':'WAKTU SOAL'}</small></div>
        </div>
        <div className="quiz-focus-timer-copy">
-         <span className="quiz-focus-live-dot"><i/> TIMER BERJALAN</span>
-         <h2>{feedback?'Jawaban sudah terkirim!':timerCritical?'Waktunya hampir habis!':'Fokus pada soal ini'}</h2>
-         <p>{feedback?'Jawaban sudah diperiksa server, lanjut ke soal berikutnya.':'Pilih jawaban sebelum waktu soal habis. Waktu terus berjalan otomatis.'}</p>
-         <div className="quiz-focus-inline-stats"><span>SOAL <b>{currentIndex+1}/{state.total}</b></span><span>SELESAI <b>{progress}%</b></span></div>
+         <h2>Soal {currentIndex+1} dari {state.total}</h2>
+         <div className="quiz-focus-inline-stats"><span>Progres <b>{progress}%</b></span></div>
        </div>
-       <div className={'quiz-focus-mascot quiz-focus-mascot-'+mascotMood} role="img" aria-label={mascotText}>
-         <span className="quiz-focus-mascot-halo" aria-hidden="true"/>
-         <span className="quiz-focus-mascot-face" aria-hidden="true">
-           <i className="quiz-focus-mascot-eye"/><i className="quiz-focus-mascot-eye"/>
-           <span className="quiz-focus-mascot-mouth"/>
-           <span className="quiz-focus-mascot-cheek left"/><span className="quiz-focus-mascot-cheek right"/>
-         </span>
-         <span className="quiz-focus-mascot-caption">{mascotMood==='happy'?'HEBAT!':mascotMood==='sad'?'SEMANGAT!':mascotMood==='angry'?'TIMEOUT!':'AYO BISA!'}</span>
+       <div className={'quiz-focus-session-time '+(totalRemaining<=60?'is-critical':'')} aria-label="Sisa waktu seluruh sesi">
+         <Clock3 size={22}/>
+         <div><small>SISA WAKTU SESI</small><strong role="timer">{textClock(totalRemaining)}</strong></div>
        </div>
        <div className="quiz-focus-timer-track" aria-hidden="true"><span style={{width:timePercent+'%'}}/></div>
      </section>
@@ -419,6 +418,19 @@ export default function QuizView({profile,category,onDone,onQuit}:{
       <div className="quiz-focus-monitor-assurance"><ShieldCheck size={15}/><span>Jawaban dan waktu dikendalikan server. Nomor yang selesai tidak dapat diubah.</span></div>
     </aside>
    </div>
+   {exitConfirmOpen&&<div className="quiz-focus-exit-overlay">
+     <button type="button" className="quiz-focus-exit-backdrop" aria-label="Kembali mengerjakan" onClick={()=>{if(!exiting)setExitConfirmOpen(false);}}/>
+     <section className="quiz-focus-exit-dialog" role="alertdialog" aria-modal="true" aria-labelledby="quiz-exit-title" aria-describedby="quiz-exit-description">
+       <span className="quiz-focus-exit-icon"><LogOut size={24}/></span>
+       <h2 id="quiz-exit-title">Yakin keluar dari latihan?</h2>
+       <p id="quiz-exit-description">Sesi yang sedang dikerjakan akan <b>diakhiri</b> dan tidak dapat dilanjutkan. Jawaban pada sesi ini tidak menghasilkan nilai atau XP. Kamu bisa memulai sesi baru nanti.</p>
+       {exitError&&<p className="quiz-focus-exit-error" role="alert">{exitError}</p>}
+       <div className="quiz-focus-exit-actions">
+         <button type="button" className="quiz-focus-stay" disabled={exiting} onClick={()=>setExitConfirmOpen(false)}>Tetap mengerjakan</button>
+         <button type="button" className="quiz-focus-confirm-exit" disabled={exiting} onClick={()=>void confirmExit()}>{exiting?'Menutup sesi...':'Ya, keluar latihan'}</button>
+       </div>
+     </section>
+   </div>}
    {figureOpen&&question.image_path&&imageUrls.get(question.image_path)&&<div className="quiz-focus-image-modal" role="dialog" aria-modal="true" aria-label="Gambar soal diperbesar">
      <button type="button" className="quiz-focus-image-modal-backdrop" onClick={()=>setFigureOpen(false)} aria-label="Tutup gambar soal yang diperbesar"/>
      <button type="button" className="quiz-focus-image-modal-close" onClick={()=>setFigureOpen(false)} aria-label="Tutup gambar"><X size={23}/></button>
