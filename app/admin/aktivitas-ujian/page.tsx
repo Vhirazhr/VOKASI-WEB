@@ -71,7 +71,6 @@ export default function AdminExamActivityPage(){
   useEffect(()=>{
     if(loading||error)return;
     let active=true;
-    setBusy(true);
     void getExamActivityReport(days,1,0,null)
       .then(result=>{if(active){setOverview(result);setNotice('');}})
       .catch(e=>{if(active){setOverview(null);setNotice(e instanceof Error?e.message:'Gagal memuat ringkasan aktivitas ujian.');}})
@@ -82,7 +81,6 @@ export default function AdminExamActivityPage(){
   useEffect(()=>{
     if(loading||error)return;
     let active=true;
-    setTimelineBusy(true);
     void getExamActivityReport(days,PAGE_SIZE,timelineOffset,selectedStudentId)
       .then(result=>{if(active){setTimeline(result);setTimelineNotice('');}})
       .catch(e=>{if(active){setTimeline(null);setTimelineNotice(e instanceof Error?e.message:'Gagal memuat detail aktivitas.');}})
@@ -90,7 +88,7 @@ export default function AdminExamActivityPage(){
     return()=>{active=false;};
   },[loading,error,days,timelineOffset,selectedStudentId,revision]);
 
-  const students=overview?.students||[];
+  const students=useMemo(()=>overview?.students||[],[overview]);
   const filteredStudents=useMemo(()=>{
     const term=search.trim().toLocaleLowerCase('id-ID');
     if(!term)return students;
@@ -110,10 +108,13 @@ export default function AdminExamActivityPage(){
   const hasNext=events.length===PAGE_SIZE;
 
   function changeDays(value:number){
-    setDays(value);setSelectedStudentId(null);setTimelineOffset(0);
+    setBusy(true);setTimelineBusy(true);setDays(value);setSelectedStudentId(null);setTimelineOffset(0);
   }
   function selectStudent(student:ExamActivityStudent){
-    setSelectedStudentId(student.auth_user_id);setTimelineOffset(0);
+    setTimelineBusy(true);setSelectedStudentId(student.auth_user_id);setTimelineOffset(0);
+  }
+  function changeTimelinePage(nextOffset:number){
+    setTimelineBusy(true);setTimelineOffset(Math.max(0,nextOffset));
   }
   function refresh(){
     setNotice('');setTimelineNotice('');setBusy(true);setTimelineBusy(true);setRevision(value=>value+1);
@@ -180,7 +181,7 @@ export default function AdminExamActivityPage(){
             <h2>{selectedStudent?'Laporan detail: '+selectedStudent.student_name:'Riwayat aktivitas terbaru'}</h2>
             <p>{selectedStudent?'Urutan aktivitas siswa ini selama '+days+' hari terakhir.':'Pilih siswa di ringkasan untuk menyaring kronologi berdasarkan akun tertentu.'}</p>
           </div>
-          {selectedStudent&&<button type="button" className="exam-activity-button" onClick={()=>{setSelectedStudentId(null);setTimelineOffset(0);}}><ArrowLeft size={15}/> Semua siswa</button>}
+          {selectedStudent&&<button type="button" className="exam-activity-button" onClick={()=>{setTimelineBusy(true);setSelectedStudentId(null);setTimelineOffset(0);}}><ArrowLeft size={15}/> Semua siswa</button>}
         </header>
         {timelineNotice&&<div className="exam-activity-alert" role="alert" style={{margin:14}}>{timelineNotice}</div>}
         {timelineBusy?<div className="exam-activity-empty"><RefreshCw size={20}/> Memuat kronologi aktivitas...</div>:
@@ -203,8 +204,8 @@ export default function AdminExamActivityPage(){
         <div className="exam-activity-pagination">
           <span>Halaman {pageNumber} · {events.length} kejadian ditampilkan</span>
           <div>
-            <button type="button" className="exam-activity-button" disabled={timelineBusy||timelineOffset===0} onClick={()=>setTimelineOffset(value=>Math.max(0,value-PAGE_SIZE))}><ChevronLeft size={15}/> Sebelumnya</button>
-            <button type="button" className="exam-activity-button" disabled={timelineBusy||!hasNext} onClick={()=>setTimelineOffset(value=>value+PAGE_SIZE)}>Berikutnya <ChevronRight size={15}/></button>
+            <button type="button" className="exam-activity-button" disabled={timelineBusy||timelineOffset===0} onClick={()=>changeTimelinePage(timelineOffset-PAGE_SIZE)}><ChevronLeft size={15}/> Sebelumnya</button>
+            <button type="button" className="exam-activity-button" disabled={timelineBusy||!hasNext} onClick={()=>changeTimelinePage(timelineOffset+PAGE_SIZE)}>Berikutnya <ChevronRight size={15}/></button>
           </div>
         </div>
         <div className="exam-activity-report-note">Catatan ini adalah laporan indikatif dari browser, bukan bukti otomatis kecurangan. VOKASI tidak membaca isi clipboard, isi pencarian, URL tab lain, atau nama aplikasi di luar halaman ujian. Detail klik yang dilaporkan terbatas pada elemen di halaman VOKASI.</div>
