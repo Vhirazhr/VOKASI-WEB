@@ -1,0 +1,431 @@
+/* One-viewport exam layout: normal questions require no document scrolling.
+ * Long text, extra options and big graphics scroll ONLY inside the question;
+ * the submit action and both countdowns stay in view.
+ * This stylesheet is intentionally loaded after quiz-focus.css.
+ */
+.school-shell.student-shell.quiz-focus-mode,
+.school-shell.student-shell.quiz-focus-mode .shell-main,
+.school-shell.student-shell.quiz-focus-mode .shell-body{
+  height:100dvh;min-height:0;overflow:hidden;
+}
+.school-shell.student-shell .quiz-focus-exam{
+  display:grid;grid-template-rows:auto 4px minmax(0,1fr);
+  height:100dvh;min-height:0;overflow:hidden;
+}
+.school-shell.student-shell .quiz-focus-appbar{
+  position:relative;top:auto;z-index:75;
+  min-height:62px;padding:7px clamp(13px,2vw,30px);gap:12px;
+}
+.school-shell.student-shell .quiz-focus-logo{
+  width:37px;height:37px;border-radius:11px;font-size:19px;
+}
+.school-shell.student-shell .quiz-focus-appbrand{gap:10px}
+.school-shell.student-shell .quiz-focus-appbrand strong{font-size:13px}
+.school-shell.student-shell .quiz-focus-appbrand small{font-size:8px}
+.school-shell.student-shell .quiz-focus-session-time{
+  min-height:46px;min-width:157px;padding:7px 15px;
+  gap:9px;border-radius:12px;
+}
+.school-shell.student-shell .quiz-focus-session-time svg{width:19px;height:19px}
+.school-shell.student-shell .quiz-focus-session-time strong{font-size:21px}
+.school-shell.student-shell .quiz-focus-session-time small{font-size:8px}
+.school-shell.student-shell .quiz-focus-appbar-actions{
+  display:flex;justify-content:flex-end;align-items:center;gap:8px;min-width:0;
+}
+.school-shell.student-shell .quiz-focus-leave{
+  justify-self:auto;min-height:40px;padding:8px 11px;
+}
+.school-shell.student-shell .quiz-focus-monitor-toggle{
+  display:none;align-items:center;justify-content:center;gap:6px;
+  min-height:40px;padding:9px 12px;
+  border:1px solid #c8def8;border-radius:10px;
+  background:#e9f3ff;color:#296fca;font-size:11px;font-weight:850;
+}
+.school-shell.student-shell .quiz-focus-monitor-close,
+.school-shell.student-shell .quiz-focus-monitor-backdrop{display:none}
+.school-shell.student-shell .quiz-focus-session-track{height:4px}
+.school-shell.student-shell .quiz-focus-columns{
+  display:grid;grid-template-columns:minmax(0,1fr) clamp(245px,22vw,332px);
+  gap:12px;align-items:stretch;
+  width:100%;height:100%;min-height:0;max-width:1750px;
+  margin:0 auto;padding:10px clamp(11px,1.4vw,25px);
+  overflow:hidden;
+}
+.school-shell.student-shell .quiz-focus-workspace{
+  display:grid;grid-template-rows:auto minmax(0,1fr);
+  align-content:stretch;gap:10px;min-width:0;min-height:0;overflow:hidden;
+}
+.school-shell.student-shell .quiz-focus-timer-banner{
+  min-height:0;height:clamp(92px,13dvh,116px);flex:none;
+  gap:19px;padding:10px 18px 14px;border-radius:17px;
+  box-shadow:0 6px 20px #1a5b9910;
+}
+.school-shell.student-shell .quiz-focus-timer-banner:after{
+  right:-100px;top:-270px;opacity:.55;
+}
+.school-shell.student-shell .quiz-focus-timer-ring{
+  width:clamp(74px,11dvh,93px);height:clamp(74px,11dvh,93px);
+  padding:6px;box-shadow:0 4px 13px #2a71d122,0 0 0 4px #e3efff;
+}
+.school-shell.student-shell .quiz-focus-timer-inner{gap:1px}
+.school-shell.student-shell .quiz-focus-timer-inner svg{width:15px;height:15px}
+.school-shell.student-shell .quiz-focus-timer-inner strong{font-size:clamp(20px,2.25vw,27px)}
+.school-shell.student-shell .quiz-focus-timer-inner small{font-size:7px}
+.school-shell.student-shell .quiz-focus-timer-copy{
+  flex:1;min-width:0;align-self:center;
+}
+.school-shell.student-shell .quiz-focus-live-dot{font-size:9px}
+.school-shell.student-shell .quiz-focus-timer-copy h2{
+  font-size:clamp(17px,2vw,23px);line-height:1.15;margin:6px 0 3px;
+}
+.school-shell.student-shell .quiz-focus-timer-copy p{
+  font-size:10px;line-height:1.4;max-width:none;
+}
+.school-shell.student-shell .quiz-focus-inline-stats{
+  gap:5px;margin-top:6px;
+}
+.school-shell.student-shell .quiz-focus-inline-stats span{
+  gap:4px;padding:4px 7px;border-radius:7px;font-size:8px;
+}
+.school-shell.student-shell .quiz-focus-inline-stats b{font-size:9px}
+.school-shell.student-shell .quiz-focus-timer-track{height:4px}
+.school-shell.student-shell .quiz-focus-mascot{
+  width:76px;min-height:82px;max-height:84px;
+  gap:0;margin:0;flex:none;padding:0;
+}
+.school-shell.student-shell .quiz-focus-mascot-halo{
+  width:70px;height:70px;top:0;left:2px;
+}
+.school-shell.student-shell .quiz-focus-mascot-face{
+  width:66px;height:62px;border-radius:34% 41% 39% 39%;
+  transform-origin:center;scale:.77;
+  margin-bottom:-8px;
+}
+.school-shell.student-shell .quiz-focus-mascot-caption{
+  font-size:8px;margin:0;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-layout.quiz-playful{
+  display:block;width:100%;max-width:none;height:100%;
+  min-width:0;min-height:0;margin:0;padding:0!important;
+  background:transparent;overflow:hidden;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-card{
+  display:flex;flex-direction:column;
+  width:100%;height:100%;min-height:0;max-height:100%;
+  overflow:hidden;padding:clamp(13px,1.8vw,23px)!important;
+  border-radius:18px;
+  box-shadow:0 8px 24px #133d8310;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-question-scroll{
+  position:relative;z-index:1;flex:1;min-height:0;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  padding:2px 5px 9px 2px;scrollbar-width:thin;
+  scrollbar-color:#b5cceb transparent;
+}
+.school-shell.student-shell .quiz-question-scroll::-webkit-scrollbar{width:5px}
+.school-shell.student-shell .quiz-question-scroll::-webkit-scrollbar-thumb{
+  background:#bdd0e9;border-radius:10px;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-playful-question{
+  display:block;margin:0;min-width:0;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-playful-question h2,
+.school-shell.student-shell .quiz-focus-workspace .quiz-card h2{
+  max-width:none;font-size:clamp(19px,2vw,28px);
+  line-height:1.3;margin:0 0 6px;
+}
+.school-shell.student-shell .quiz-focus-workspace .question-hint{
+  font-size:10px;line-height:1.35;margin:0;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:100%;height:auto;min-height:0;max-height:min(19dvh,170px);
+  margin:10px 0 7px;padding:7px 9px 4px;border-radius:12px;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure img{
+  width:auto;height:auto;max-height:min(15.5dvh,138px);
+  max-width:100%;object-fit:contain;
+}
+.school-shell.student-shell .quiz-focus-figure-zoom{
+  position:relative;cursor:zoom-in;border:1px solid #dbe7f8;background:#fafcff;
+}
+.school-shell.student-shell .quiz-focus-figure-zoom:focus-visible{outline:3px solid #559af2;outline-offset:2px}
+.school-shell.student-shell .quiz-focus-zoom-label{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  flex:none;margin-top:2px;color:#3c7dca;
+  font-size:9px;font-weight:750;line-height:1.2;
+}
+.school-shell.student-shell .quiz-focus-workspace .answers{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;margin:12px 0 9px;
+}
+.school-shell.student-shell .quiz-focus-workspace .answer{
+  gap:10px;min-height:clamp(54px,7.8dvh,72px);
+  padding:9px 13px;border-radius:12px;
+  font-size:clamp(12px,1.2vw,15px);
+  box-shadow:0 3px 0 color-mix(in srgb,var(--quiz-answer-border) 55%,transparent);
+}
+.school-shell.student-shell .quiz-focus-workspace .answer-letter{
+  width:34px;height:34px;flex:none;border-radius:10px;font-size:13px;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-choice-content>img{
+  max-height:min(13dvh,95px);
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-answer-feedback{
+  margin-top:8px;padding:8px 12px;border-radius:10px;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-answer-feedback b{font-size:11px}
+.school-shell.student-shell .quiz-focus-workspace .quiz-answer-feedback span{font-size:10px}
+.school-shell.student-shell .quiz-focus-workspace .quiz-footer{
+  position:relative;z-index:4;display:flex;align-items:center;justify-content:space-between;
+  flex:none;min-height:58px;margin:0!important;padding:10px 0 1px!important;
+  gap:10px;border-top:1px solid #e2eafa;
+  background:#fff;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-footer>span{
+  max-width:none;font-size:9px;line-height:1.35;color:#849ab5;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-footer .btn.primary{
+  flex:none;min-height:43px;width:auto;
+  padding:9px 17px;border-radius:10px;font-size:12px;
+  box-shadow:0 3px 0 #1b49a2,0 6px 12px #2253b819;
+}
+.school-shell.student-shell .quiz-focus-monitor{
+  position:relative;top:auto;z-index:2;
+  display:flex;flex-direction:column;align-items:stretch;
+  height:100%;max-height:100%;min-height:0;overflow:hidden;
+  border-radius:17px;
+  box-shadow:0 8px 23px #163d7210;
+}
+.school-shell.student-shell .quiz-focus-monitor-heading{
+  flex:none;min-height:60px;padding:12px 14px;gap:9px;
+}
+.school-shell.student-shell .quiz-focus-monitor-heading>div>span{font-size:8px}
+.school-shell.student-shell .quiz-focus-monitor-counts{
+  flex:none;gap:7px;padding:10px 12px;
+}
+.school-shell.student-shell .quiz-focus-monitor-counts>div{
+  min-height:55px;gap:2px;border-radius:10px;
+}
+.school-shell.student-shell .quiz-focus-monitor-counts strong{font-size:19px}
+.school-shell.student-shell .quiz-focus-monitor-grid{
+  flex:1;min-height:0;max-height:none;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  align-content:start;align-items:start;
+  gap:6px;padding:9px 12px;
+  overflow-y:auto;overscroll-behavior:contain;
+}
+.school-shell.student-shell .quiz-focus-number{
+  min-height:36px;padding:3px;border-radius:8px;font-size:10px;
+}
+.school-shell.student-shell .quiz-focus-monitor-legend{
+  flex:none;gap:5px;padding:8px 12px;
+}
+.school-shell.student-shell .quiz-focus-monitor-legend span{font-size:9px}
+.school-shell.student-shell .quiz-focus-monitor-assurance{
+  flex:none;padding:9px 12px;font-size:9px;line-height:1.4;
+}
+/* Media enlargements are deliberate: small fitted images remain legible. */
+.school-shell.student-shell .quiz-focus-image-modal{
+  position:fixed;z-index:160;inset:0;
+  display:flex;align-items:center;justify-content:center;padding:45px 20px;
+}
+.school-shell.student-shell .quiz-focus-image-modal-backdrop{
+  position:absolute;inset:0;width:100%;height:100%;padding:0;
+  border:0;border-radius:0;background:#061c38c9;cursor:zoom-out;
+}
+.school-shell.student-shell .quiz-focus-image-modal img{
+  position:relative;z-index:1;display:block;max-width:min(1100px,95vw);max-height:88dvh;
+  width:auto;height:auto;object-fit:contain;
+  padding:12px;border-radius:14px;background:white;
+  box-shadow:0 24px 60px #020e2355;pointer-events:none;
+}
+.school-shell.student-shell .quiz-focus-image-modal-close{
+  position:absolute;z-index:2;right:20px;top:17px;
+  display:grid;place-items:center;width:45px;height:45px;
+  border:1px solid #ffffff88;border-radius:13px;
+  background:#2656a5;color:#fff;
+}
+/* Tablet/phone: the monitoring panel stays one tap away in a separate drawer.
+   This makes the question, choices and submit button the only scrolling focus. */
+@media(max-width:800px){
+ .school-shell.student-shell .quiz-focus-appbar{
+   grid-template-columns:minmax(0,1fr) auto auto;
+   min-height:60px;gap:7px;padding:6px 12px;
+ }
+ .school-shell.student-shell .quiz-focus-appbrand{gap:7px}
+ .school-shell.student-shell .quiz-focus-appbrand strong{
+   max-width:115px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+ }
+ .school-shell.student-shell .quiz-focus-appbrand small{font-size:7px}
+ .school-shell.student-shell .quiz-focus-logo{
+   width:31px;height:31px;border-radius:9px;font-size:17px;
+ }
+ .school-shell.student-shell .quiz-focus-session-time{
+   min-width:94px;min-height:42px;padding:5px 9px;border-radius:10px;gap:5px;
+ }
+ .school-shell.student-shell .quiz-focus-session-time svg{display:none}
+ .school-shell.student-shell .quiz-focus-session-time strong{font-size:18px}
+ .school-shell.student-shell .quiz-focus-session-time small{font-size:7px}
+ .school-shell.student-shell .quiz-focus-appbar-actions{gap:4px}
+ .school-shell.student-shell .quiz-focus-monitor-toggle{display:flex;min-height:40px;padding:9px 8px}
+ .school-shell.student-shell .quiz-focus-monitor-toggle span{display:none}
+ .school-shell.student-shell .quiz-focus-leave{
+   min-height:40px;padding:8px;border-radius:10px;
+ }
+ .school-shell.student-shell .quiz-focus-leave span{display:none}
+ .school-shell.student-shell .quiz-focus-columns{
+   grid-template-columns:minmax(0,1fr);gap:0;
+   height:100%;padding:9px 10px;
+ }
+ .school-shell.student-shell .quiz-focus-timer-banner{
+   display:flex;min-height:0;height:clamp(88px,13dvh,108px);
+   padding:9px 12px 13px;gap:11px;border-radius:14px;
+ }
+ .school-shell.student-shell .quiz-focus-timer-ring{
+   width:76px;height:76px;padding:5px;box-shadow:0 0 0 3px #e3efff;
+ }
+ .school-shell.student-shell .quiz-focus-timer-inner strong{font-size:20px}
+ .school-shell.student-shell .quiz-focus-timer-inner small{font-size:7px}
+ .school-shell.student-shell .quiz-focus-timer-copy h2{
+   font-size:clamp(15px,3.8vw,20px);margin:4px 0 3px;
+ }
+ .school-shell.student-shell .quiz-focus-timer-copy p{display:none}
+ .school-shell.student-shell .quiz-focus-inline-stats{margin-top:5px}
+ .school-shell.student-shell .quiz-focus-mascot{
+   width:57px;min-height:65px;max-height:70px;
+ }
+ .school-shell.student-shell .quiz-focus-mascot-halo{width:55px;height:55px}
+ .school-shell.student-shell .quiz-focus-mascot-face{
+   width:66px;height:62px;scale:.62;margin:-9px -5px -10px;
+ }
+ .school-shell.student-shell .quiz-focus-mascot-caption{font-size:7px}
+ .school-shell.student-shell .quiz-focus-workspace .quiz-layout.quiz-playful{
+   height:100%;padding:0!important;overflow:hidden;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-card{
+   min-height:0;height:100%;padding:13px!important;border-radius:14px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-card h2{font-size:clamp(18px,4.3vw,23px)}
+ .school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure{
+   max-height:min(20dvh,160px);margin:9px 0 5px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure img{
+   max-height:min(16dvh,126px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answers{
+   grid-template-columns:1fr;gap:7px;margin:10px 0;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answer{
+   min-height:clamp(46px,6.6dvh,60px);
+   padding:7px 10px;font-size:13px;gap:9px;border-radius:11px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answer-letter{
+   width:31px;height:31px;font-size:12px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer{
+   flex-direction:row;align-items:center;
+   min-height:55px;padding:8px 0 0!important;margin:0!important;gap:7px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer>span{
+   flex:1;max-width:165px;min-width:0;text-align:left;order:0;font-size:8px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer .btn.primary{
+   min-height:43px;width:auto;max-width:62%;padding:8px 12px;
+   order:0;font-size:11px;white-space:nowrap;
+ }
+ .school-shell.student-shell .quiz-focus-monitor{
+   position:fixed;z-index:110;top:60px;right:0;bottom:0;
+   display:flex;width:min(340px,90vw);height:auto;max-height:none;
+   border-radius:17px 0 0 0;border-right:0;transform:translateX(103%);
+   box-shadow:0 20px 65px #10284c3a;
+   visibility:hidden;pointer-events:none;
+   transition:transform .2s ease,visibility .2s;
+ }
+ .school-shell.student-shell .quiz-focus-monitor.is-open{
+   transform:translateX(0);visibility:visible;pointer-events:auto;
+ }
+ .school-shell.student-shell .quiz-focus-monitor-grid{
+   max-height:none;grid-template-columns:repeat(5,minmax(0,1fr));
+   padding:12px;gap:8px;
+ }
+ .school-shell.student-shell .quiz-focus-monitor-close{
+   position:absolute;z-index:5;right:10px;top:12px;
+   display:grid;place-items:center;width:35px;height:35px;
+   border:1px solid #d1e2f7;border-radius:10px;
+   background:#fff;color:#2f6fb6;
+ }
+ .school-shell.student-shell .quiz-focus-monitor-backdrop{
+   position:fixed;z-index:100;inset:60px 0 0;
+   display:block;width:100%;height:auto;
+   padding:0;border:0;border-radius:0;background:#0d305b64;
+ }
+}
+@media(max-width:430px){
+ .school-shell.student-shell .quiz-focus-appbar{
+   grid-template-columns:minmax(0,1fr) auto auto;gap:5px;padding:6px 7px;
+ }
+ .school-shell.student-shell .quiz-focus-appbrand strong{
+   max-width:90px;font-size:10px;
+ }
+ .school-shell.student-shell .quiz-focus-session-time{min-width:83px;padding:5px 7px}
+ .school-shell.student-shell .quiz-focus-session-time strong{font-size:17px}
+ .school-shell.student-shell .quiz-focus-monitor-toggle,
+ .school-shell.student-shell .quiz-focus-leave{min-height:39px;padding:7px}
+ .school-shell.student-shell .quiz-focus-timer-ring{width:65px;height:65px}
+ .school-shell.student-shell .quiz-focus-timer-inner strong{font-size:17px}
+ .school-shell.student-shell .quiz-focus-timer-inner svg{width:12px;height:12px}
+ .school-shell.student-shell .quiz-focus-timer-inner small{font-size:6px}
+ .school-shell.student-shell .quiz-focus-mascot{width:45px}
+ .school-shell.student-shell .quiz-focus-mascot-caption{display:none}
+ .school-shell.student-shell .quiz-focus-timer-copy h2{font-size:16px}
+ .school-shell.student-shell .quiz-focus-timer-banner{gap:8px}
+}
+/* Compact screens and landscape phones: squeeze decoration, never the submit. */
+@media(max-height:675px){
+ .school-shell.student-shell .quiz-focus-appbar{min-height:50px;padding-top:4px;padding-bottom:4px}
+ .school-shell.student-shell .quiz-focus-columns{padding-top:6px;padding-bottom:6px}
+ .school-shell.student-shell .quiz-focus-workspace{gap:6px}
+ .school-shell.student-shell .quiz-focus-timer-banner{
+   height:76px;min-height:0;padding-top:5px;padding-bottom:9px;
+ }
+ .school-shell.student-shell .quiz-focus-timer-ring{width:60px;height:60px}
+ .school-shell.student-shell .quiz-focus-timer-inner strong{font-size:17px}
+ .school-shell.student-shell .quiz-focus-timer-inner svg{display:none}
+ .school-shell.student-shell .quiz-focus-timer-copy p{display:none}
+ .school-shell.student-shell .quiz-focus-timer-copy h2{font-size:17px;margin:3px 0}
+ .school-shell.student-shell .quiz-focus-mascot{width:48px;min-height:53px}
+ .school-shell.student-shell .quiz-focus-mascot-halo{display:none}
+ .school-shell.student-shell .quiz-focus-mascot-caption{display:none}
+ .school-shell.student-shell .quiz-focus-workspace .quiz-card{padding:10px 13px!important}
+ .school-shell.student-shell .quiz-focus-workspace .quiz-card h2{
+   font-size:clamp(17px,2.6vw,22px);line-height:1.25;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure{
+   max-height:min(17dvh,108px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure img{
+   max-height:min(13dvh,88px);
+ }
+ .school-shell.student-shell .quiz-focus-workspace .answer{
+   min-height:45px;padding:6px 9px;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer{
+   min-height:49px;padding-top:5px!important;
+ }
+ .school-shell.student-shell .quiz-focus-workspace .quiz-footer .btn.primary{min-height:42px}
+}
+@media(max-height:430px) and (orientation:landscape){
+ .school-shell.student-shell .quiz-focus-timer-banner{height:57px}
+ .school-shell.student-shell .quiz-focus-timer-ring{width:43px;height:43px}
+ .school-shell.student-shell .quiz-focus-timer-inner strong{font-size:12px}
+ .school-shell.student-shell .quiz-focus-timer-inner small{font-size:6px}
+ .school-shell.student-shell .quiz-focus-timer-copy h2{font-size:13px}
+ .school-shell.student-shell .quiz-focus-inline-stats{display:none}
+ .school-shell.student-shell .quiz-focus-mascot{display:none}
+ .school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure{max-height:75px}
+ .school-shell.student-shell .quiz-focus-workspace .quiz-visual-figure img{max-height:53px}
+}
+@media(prefers-reduced-motion:reduce){
+ .school-shell.student-shell .quiz-focus-monitor{transition:none}
+}
