@@ -20,8 +20,25 @@ async function allRows<T>(table: string, select: string, options: RowQuery = {})
     for (const order of options.order || [{column:'id',ascending:true}]) {
       q = q.order(order.column, {ascending:order.ascending!==false});
     }
-    const {data,error} = await q.range(from, from + BATCH - 1);
-    if (error) throw error;
+    let {data,error} = await q.range(from, from + BATCH - 1);
+    // A stale browser session can produce 401/403 even while the school database is healthy.
+    // Refresh once, then rebuild the query with the new access token.
+    if (error && ['401','403','PGRST301'].includes(String(error.code ?? ''))) {
+      const refresh = await supabase().auth.refreshSession();
+      if (refresh.error || !refresh.data.session) {
+        throw new Error('Sesi login sudah kedaluwarsa. Keluar dan masuk kembali sebagai admin atau siswa.');
+      }
+      let retry = supabase().from(table).select(select);
+      if (options.equals) retry = retry.eq(options.equals.column,options.equals.value);
+      if (options.lowerBound) retry = retry.gte(options.lowerBound.column,options.lowerBound.value);
+      if (options.upperBound) retry = retry.lt(options.upperBound.column,options.upperBound.value);
+      if (options.nullColumn) retry = retry.is(options.nullColumn,null);
+      for (const order of options.order || [{column:'id',ascending:true}])
+        retry = retry.order(order.column,{ascending:order.ascending!==false});
+      const again = await retry.range(from,from+BATCH-1);
+      data=again.data;error=again.error;
+    }
+    if (error) throw new Error('Gagal mengambil '+table+': '+error.message+(error.code?' ('+error.code+')':''));
     const batch = (data || []) as T[];
     rows.push(...batch);
     if (batch.length < BATCH) break;
