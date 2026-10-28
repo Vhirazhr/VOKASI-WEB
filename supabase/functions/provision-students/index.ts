@@ -302,10 +302,11 @@ Deno.serve(async (req) => {
         major = data;
       }
 
-      let { data: classRow, error: classReadError } = await admin.from("classes")
+      const { data: existingClassRow, error: classReadError } = await admin.from("classes")
         .select("id").eq("major_id", major.id).eq("grade_level", parsed.gradeLevel)
         .eq("class_name", parsed.classLabel).eq("school_year", parsed.schoolYear).maybeSingle();
       if (classReadError) throw new Error("Gagal membaca daftar kelas.");
+      let classRow = existingClassRow;
       if (!classRow) {
         const { data, error } = await admin.from("classes").insert({
           major_id: major.id, grade_level: parsed.gradeLevel, class_name: parsed.classLabel,
