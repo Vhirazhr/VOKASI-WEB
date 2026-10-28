@@ -3,6 +3,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle,Grid2X2,ShieldCheck} from 'lucide-react';
 import {supabase} from '@/lib/supabase';
+import StudentSessionReportDownload from '@/components/StudentSessionReportDownload';
 import type {Attempt,StudentProfile} from '@/lib/types';
 import '@/app/quiz-playful.css';
 import '@/app/quiz-focus.css';
@@ -309,6 +310,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
     </section>}
    </div>
    <div className="result-actions">
+     <StudentSessionReportDownload profile={profile} sessionId={state.session_id} official={state.category===null&&liveProgress?.official_today===true}/>
      <button type="button" className="btn secondary" onClick={restart}><RefreshCw size={16}/> Kerjakan ulang</button>
      <button type="button" className="btn primary" onClick={()=>{sessionStorage.removeItem(key(profile.authId));onDone();}}>Kembali ke dashboard <ArrowRight size={16}/></button>
    </div>
