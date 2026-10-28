@@ -70,6 +70,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const [busy,setBusy]=useState(true);
  const [sending,setSending]=useState(false);
  const [savingSelection,setSavingSelection]=useState(false);
+ const [selectionSaved,setSelectionSaved]=useState(false);
  const [error,setError]=useState('');
  const [now,setNow]=useState(0);
  const [clockBase,setClockBase]=useState(0);
@@ -95,6 +96,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const live=useRef(true);
  const inFlight=useRef(false);
  const selectionQueue=useRef<Promise<void>>(Promise.resolve());
+ const selectionPending=useRef(false);
  const selectionVersion=useRef(0);
  const feedbackTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const lastActivityAt=useRef<Map<string,number>>(new Map());
@@ -124,6 +126,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    setState(next);setNow(Date.now());setClockBase(Date.now()-next.server_now_ms);
    // Restore the server-persisted choice on refresh or session recovery.
    setSelected(typeof next.pending_choice==='number'?next.pending_choice:null);
+   setSelectionSaved(typeof next.pending_choice==='number');
    if(next.status==='active'){setMonitorOpen(false);setFigureOpen(false);}
  },[]);
 
@@ -191,7 +194,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  // Browser clock is display only; server timestamps are authoritative.
  const onServer=useCallback(async()=>{
    const id=state?.session_id;
-   if(!id||inFlight.current||feedback||busy||sending||savingSelection)return;
+   if(!id||inFlight.current||feedback||busy||sending||savingSelection||selectionPending.current)return;
    inFlight.current=true;
    try{
      const next=await rpc<State>('vokasi_web_get_quiz_state',{p_session:id});
@@ -320,7 +323,9 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    const questionIndex=state.index;
    const version=++selectionVersion.current;
    setSelected(choice);
+   setSelectionSaved(false);
    setError('');
+   selectionPending.current=true;
    setSavingSelection(true);
 
    // Serialize writes so a rapid A -> B change cannot let a slower A request
@@ -336,6 +341,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
        setClockBase(Date.now()-result.server_now_ms);
        if(version===selectionVersion.current){
          setSelected(typeof result.pending_choice==='number'?result.pending_choice:choice);
+         setSelectionSaved(typeof result.pending_choice==='number');
        }
        return;
      }
@@ -360,12 +366,15 @@ export default function QuizView({profile,category,onDone,onQuit}:{
        setError('Pilihan belum tersimpan otomatis. Coba pilih kembali. '+errText(cause));
      }
    }finally{
-     if(live.current&&version===selectionVersion.current)setSavingSelection(false);
+     if(live.current&&version===selectionVersion.current){
+       selectionPending.current=false;
+       setSavingSelection(false);
+     }
    }
  }
 
  async function submit(){
-   if(!state||state.status!=='active'||selected===null||sending||savingSelection||feedback)return;
+   if(!state||state.status!=='active'||selected===null||sending||savingSelection||selectionPending.current||feedback)return;
    const current=state.question;
    if(!current||state.index===undefined)return;
    setSending(true);setError('');
@@ -376,6 +385,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      if(result.feedback){
        setFeedback(result.feedback);setFeedbackQuestion(current);
        setSelected(result.feedback.selected_index);
+       setSelectionSaved(false);
        feedbackTimer.current=setTimeout(()=>{
          if(!live.current)return;
          accept(result);setFeedback(null);setFeedbackQuestion(null);
@@ -538,7 +548,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
       <b>{feedback.correct?'✓ Jawaban kamu BENAR!':'✕ Jawaban kamu SALAH.'}</b><span>Soal berikutnya segera tampil…</span></div>}
     {error&&<div className="alert danger" role="alert">{error}<button className="btn secondary small" onClick={()=>void onServer()}><RefreshCw size={15}/> Sinkronkan</button></div>}
     </div>
-    <div className="quiz-footer"><span>{savingSelection?'Menyimpan pilihan ke database…':selected!==null?'Pilihan tersimpan otomatis. Kamu masih bisa menggantinya sampai waktu habis.':'Pilih salah satu opsi; pilihan akan otomatis tersimpan dan bisa diubah sampai waktu habis.'} Aktivitas halaman yang terdeteksi dicatat untuk laporan admin; isi clipboard dan aplikasi lain tidak dibaca.</span>
+    <div className="quiz-footer"><span>{feedback?'Jawaban sudah dikirim.':savingSelection?'Menyimpan pilihan ke database…':selectionSaved?'Pilihan tersimpan otomatis. Kamu masih bisa menggantinya sampai waktu habis.':selected!==null?'Pilihan belum tersimpan. Coba pilih kembali.':'Pilih salah satu opsi; pilihan akan otomatis tersimpan dan bisa diubah sampai waktu habis.'} Aktivitas halaman yang terdeteksi dicatat untuk laporan admin; isi clipboard dan aplikasi lain tidak dibaca.</span>
       <button className="btn primary" disabled={selected===null||sending||savingSelection||!!feedback||remaining<=0} onClick={()=>void submit()}>
         {savingSelection?'Menyimpan pilihan...':sending?'Memverifikasi...':'Kirim jawaban'} <ArrowRight size={16}/></button></div>
    </div>
