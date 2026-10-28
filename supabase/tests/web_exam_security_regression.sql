@@ -14,7 +14,7 @@ DECLARE
  p jsonb; d jsonb; begun jsonb; response jsonb; reply jsonb; review jsonb;
  v_session_id uuid; i integer; bad integer; total_seconds integer; current_questions integer;
  answer_count integer; proof_count integer; unverified integer;
- timeout_status text; timeout_selection jsonb;
+ timeout_status text; timeout_selection jsonb; expected_status text; saved_choice integer;
 BEGIN
  -- Idempotent preparation and randomization rules.
  p:=public.vokasi_web_prepare_session(NULL);
@@ -69,14 +69,51 @@ BEGIN
    RAISE EXCEPTION 'Cross-device review incomplete';
  END IF;
 
- -- A choice clicked but never submitted remains client-only. Once its timer
- -- expires, server state must contain a TIMEOUT with no selected answer.
+ -- Autosave and editing: the last selected option is retained and scored at expiry.
  p:=public.vokasi_web_prepare_session('Pembagian');
  v_session_id=(p->>'session_id')::uuid;
  begun:=public.vokasi_web_begin_session(v_session_id);
  UPDATE public.vokasi_web_exam_sessions
  SET question_started_at=clock_timestamp()-interval '5 seconds',
-     question_deadline_at=clock_timestamp()-interval '1 second',
+     question_deadline_at=clock_timestamp()+interval '45 seconds',
+     overall_deadline_at=clock_timestamp()+interval '30 minutes'
+ WHERE id=v_session_id;
+ response:=public.vokasi_web_select_answer(v_session_id,0,0);
+ SELECT pending_choice INTO saved_choice
+ FROM public.vokasi_web_exam_sessions WHERE id=v_session_id;
+ IF saved_choice IS DISTINCT FROM 0 THEN
+   RAISE EXCEPTION 'First option was not autosaved: %',saved_choice;
+ END IF;
+
+ response:=public.vokasi_web_select_answer(v_session_id,0,1);
+ SELECT pending_choice INTO saved_choice
+ FROM public.vokasi_web_exam_sessions WHERE id=v_session_id;
+ IF saved_choice IS DISTINCT FROM 1 THEN
+   RAISE EXCEPTION 'Edited option was not saved: %',saved_choice;
+ END IF;
+
+ UPDATE public.vokasi_web_exam_sessions
+ SET question_deadline_at=clock_timestamp()-interval '1 second',
+     overall_deadline_at=clock_timestamp()+interval '30 minutes'
+ WHERE id=v_session_id;
+ response:=public.vokasi_web_get_quiz_state(v_session_id);
+ SELECT answers->0->>'status',answers->0->'selected_index',
+   CASE WHEN (questions->0->>'answer_index')::integer=1 THEN 'BENAR' ELSE 'SALAH' END
+ INTO timeout_status,timeout_selection,expected_status
+ FROM public.vokasi_web_exam_sessions WHERE id=v_session_id;
+ IF timeout_status IS DISTINCT FROM expected_status
+    OR timeout_selection IS DISTINCT FROM '1'::jsonb THEN
+   RAISE EXCEPTION 'Latest autosaved choice was not scored at expiry: status %, selection %',
+     timeout_status,timeout_selection;
+ END IF;
+ PERFORM public.vokasi_web_cancel_session(v_session_id);
+
+ -- A genuinely unanswered expired question still becomes TIMEOUT.
+ p:=public.vokasi_web_prepare_session('Pembagian');
+ v_session_id=(p->>'session_id')::uuid;
+ begun:=public.vokasi_web_begin_session(v_session_id);
+ UPDATE public.vokasi_web_exam_sessions
+ SET question_deadline_at=clock_timestamp()-interval '1 second',
      overall_deadline_at=clock_timestamp()+interval '30 minutes'
  WHERE id=v_session_id;
  response:=public.vokasi_web_get_quiz_state(v_session_id);
@@ -85,7 +122,7 @@ BEGIN
  FROM public.vokasi_web_exam_sessions WHERE id=v_session_id;
  IF timeout_status IS DISTINCT FROM 'TIMEOUT'
     OR timeout_selection IS DISTINCT FROM 'null'::jsonb THEN
-   RAISE EXCEPTION 'Unsubmitted choice was persisted: status %, selection %',
+   RAISE EXCEPTION 'Unanswered question was not marked TIMEOUT: status %, selection %',
      timeout_status,timeout_selection;
  END IF;
  PERFORM public.vokasi_web_cancel_session(v_session_id);
