@@ -1,4 +1,5 @@
 'use client';
+import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useMemo,useState} from 'react';
 import {BookOpen,CheckCircle2,ChevronLeft,ChevronRight,RefreshCw,X,XCircle,TrendingUp,Target,Clock3} from 'lucide-react';
 import {supabase} from '@/lib/supabase';
@@ -16,7 +17,7 @@ export default function AdminAnswerReview({student,attempt,onClose}:{student:str
   let active=true;
   async function load(){
    try{
-    const {data,error}=await supabase().rpc('vokasi_admin_completed_review',{p_session:attempt.session_key});
+    const {data,error}=await nativeRpc('vokasi_admin_completed_review',{p_session:attempt.session_key});
     if(error)throw error;
     if(!Array.isArray(data))throw new Error('Rincian jawaban tidak tersedia.');
     const items=data as Answer[];
