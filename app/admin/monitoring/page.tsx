@@ -60,7 +60,10 @@ export default function AdminMonitoringPage(){
  async function download(){
   if(busy||issue||exporting||!scoped.length)return;
   setExporting(true);
-  try{await exportAdminGrades(scoped,grades,date,major,klass);}
+  try{const freshAttempts=await getAdminAttempts(date);
+   const freshGrades=latestGrades(freshAttempts,students);
+   if(!freshGrades.size&&!window.confirm('Tidak ada nilai wajib terverifikasi pada '+date+'. Unduh laporan dengan status belum tercatat?'))return;
+   await exportAdminGrades(scoped,freshGrades,date,major,klass);}
   catch(e){setIssue('Gagal ekspor Excel: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}
   finally{setExporting(false);}
  }
