@@ -8,13 +8,13 @@ const require=createRequire(import.meta.url);
 function compile(path){
  const source=fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
  const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText;
- const module={exports:{}};
+ const compiledModule={exports:{}};
  const imports=name=>{
   if(name==='./supabase')return {supabase:()=>{throw new Error('Network should not be used by pure report tests.')}};
   return require(name);
  };
- new Function('module','exports','require',js)(module,module.exports,imports);
- return module.exports;
+ new Function('module','exports','require',js)(compiledModule,compiledModule.exports,imports);
+ return compiledModule.exports;
 }
 const {latestGrades}=compile('lib/school.ts');
 const {exportAdminGrades}=compile('lib/admin-excel.ts');
