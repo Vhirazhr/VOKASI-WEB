@@ -83,18 +83,19 @@ export async function downloadAdminRosterTemplate(){
  const sheet=book.addWorksheet('Template Siswa');
  sheet.columns=[
   {header:'Nama lengkap',key:'name',width:36},{header:'Username',key:'username',width:25},
-  {header:'Jurusan',key:'major',width:38},{header:'Kelas',key:'klass',width:22}
+  {header:'Jurusan',key:'major',width:38},{header:'Kelas',key:'klass',width:22},{header:'Angkatan',key:'year',width:15}
  ];
  decorateHeader(sheet);
  const guide=book.addWorksheet('Petunjuk');
  guide.columns=[{header:'Ketentuan',key:'label',width:30},{header:'Keterangan',key:'value',width:105}];
  guide.addRows([
-  {label:'Tujuan',value:'Template pendataan dan pemeriksaan administrasi sekolah, tidak mengubah database otomatis.'},
+  {label:'Tujuan',value:'Template untuk impor siswa baru melalui Admin > Kelola Data Sekolah. Data yang ada tidak ditimpa.'},
   {label:'Nama lengkap',value:'Nama siswa sesuai data sekolah.'},
   {label:'Username',value:'Identitas unik siswa, jika sudah ditentukan admin.'},
-  {label:'Jurusan / Kelas',value:'Gunakan penulisan resmi jurusan dan kelas sekolah.'},
+  {label:'Jurusan / Kelas',value:'Isi persis nama jurusan dan kelas aktif di database sekolah.'},
+  {label:'Angkatan',value:'Opsional: tahun mulai bersekolah, contoh 2026. Kosong mengikuti tingkat kelas pada tahun ajaran.'},
   {label:'Keamanan',value:'Jangan masukkan kata sandi atau data sensitif lain ke file ini.'},
-  {label:'Impor',value:'Impor data sekolah membutuhkan validasi, pratinjau perubahan dan otorisasi server tersendiri. Template tidak otomatis dapat diunggah.'}
+  {label:'Impor',value:'Buka Admin > Kelola Data Sekolah, unggah file ini, cek pratinjau validasi, kemudian konfirmasi impor. Maksimal 5.000 baris per file; siswa baru berstatus belum terdaftar.'}
  ]);
  decorateHeader(guide);zebra(guide);
  await saveExcel(book,'VOKASI_Template_Data_Siswa.xlsx');
