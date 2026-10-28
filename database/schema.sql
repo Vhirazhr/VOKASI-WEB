@@ -5,6 +5,10 @@
 -- data calls and exam/admin operations have been moved to the native API.
 BEGIN;
 
+CREATE SCHEMA auth;
+CREATE SCHEMA storage;
+CREATE SCHEMA vokasi_private;
+
 CREATE TABLE public.schema_migrations (
   version text PRIMARY KEY,
   applied_at timestamptz NOT NULL DEFAULT now()
@@ -15,6 +19,7 @@ CREATE TABLE public.app_users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   username text NOT NULL,
   email text,
+  email_verified_at timestamptz,
   display_name text NOT NULL DEFAULT '',
   password_hash text NOT NULL,
   is_active boolean NOT NULL DEFAULT true,
@@ -26,6 +31,45 @@ CREATE TABLE public.app_users (
 );
 CREATE UNIQUE INDEX app_users_username_unique_ci ON public.app_users (lower(btrim(username)));
 CREATE UNIQUE INDEX app_users_email_unique_ci ON public.app_users (lower(btrim(email))) WHERE email IS NOT NULL AND btrim(email) <> '';
+
+-- Minimal compatibility surface for existing SQL business functions; this is not hosted Auth.
+CREATE OR REPLACE FUNCTION auth.uid()
+RETURNS uuid
+LANGUAGE sql
+STABLE
+SET search_path TO 'pg_catalog'
+AS $function$
+  SELECT NULLIF(current_setting('app.user_id', true), '')::uuid;
+$function$;
+
+CREATE VIEW auth.users AS
+SELECT
+  id,
+  email,
+  created_at,
+  last_login_at AS last_sign_in_at,
+  email_verified_at AS email_confirmed_at,
+  NULL::timestamptz AS deleted_at,
+  NULL::timestamptz AS banned_until,
+  NULL::timestamptz AS invited_at,
+  is_active
+FROM public.app_users;
+
+-- File metadata only. Actual bytes live under a private STORAGE_ROOT on the app server.
+CREATE TABLE storage.objects (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  bucket_id text NOT NULL CHECK (bucket_id IN ('vokasi-question-figures', 'vokasi-avatars')),
+  name text NOT NULL CHECK (btrim(name) <> ''),
+  owner_id uuid REFERENCES public.app_users(id) ON DELETE SET NULL,
+  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+  mimetype text NOT NULL,
+  size_bytes bigint NOT NULL CHECK (size_bytes >= 0),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (bucket_id, name)
+);
+CREATE INDEX storage_objects_owner_idx ON storage.objects (owner_id, created_at DESC);
+CREATE INDEX storage_objects_bucket_idx ON storage.objects (bucket_id, created_at DESC);
 
 CREATE TABLE public.app_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -490,6 +534,32 @@ CREATE INDEX vokasi_web_exam_owner ON public.vokasi_web_exam_sessions USING btre
 CREATE INDEX vokasi_web_verified_owner ON public.vokasi_web_verified_results USING btree (auth_user_id, verified_at DESC);
 
 
+-- Private audit tables referenced by bank import/edit business functions.
+CREATE TABLE vokasi_private.vokasi_question_edit_audit (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  actor_id uuid NOT NULL,
+  source_number integer NOT NULL,
+  before_row jsonb NOT NULL,
+  after_row jsonb NOT NULL,
+  changed_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  CONSTRAINT vokasi_question_edit_audit_pkey PRIMARY KEY (id)
+);
+CREATE INDEX vokasi_question_edits_monitor_recent_idx
+  ON vokasi_private.vokasi_question_edit_audit (changed_at DESC);
+
+CREATE TABLE vokasi_private.vokasi_question_import_audit (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  imported_by uuid NOT NULL,
+  mode text NOT NULL,
+  before_count integer NOT NULL,
+  after_count integer NOT NULL,
+  previous_bank jsonb NOT NULL,
+  imported_count integer NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT vokasi_question_import_audit_mode_check CHECK (mode = ANY (ARRAY['append'::text, 'replace'::text])),
+  CONSTRAINT vokasi_question_import_audit_pkey PRIMARY KEY (id)
+);
+
 -- Server-side integrity triggers retained from the current schema.
 
 CREATE OR REPLACE FUNCTION public.vokasi_guard_super_admin()
@@ -655,6 +725,12 @@ CREATE VIEW public.vokasi_verified_attempts AS
 
 INSERT INTO public.schema_migrations(version)
 VALUES ('20261029_self_hosted_postgres_bootstrap');
+
+REVOKE ALL ON SCHEMA auth, storage, vokasi_private FROM PUBLIC;
+REVOKE ALL ON ALL TABLES IN SCHEMA auth, storage, vokasi_private FROM PUBLIC;
+REVOKE ALL ON ALL FUNCTIONS IN SCHEMA auth FROM PUBLIC;
+
+INSERT INTO public.schema_migrations(version) VALUES ('20261029_self_hosted_compatibility');
 
 COMMIT;
 
