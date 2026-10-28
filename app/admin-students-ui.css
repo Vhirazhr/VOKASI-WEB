@@ -214,3 +214,87 @@
 @supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))) {
   .admin-students-page .admin-mini-stats>div {background:#245a9d;}
 }
+
+
+/* Android parity: school roster Excel tools and recent verified student history. */
+.school-shell.admin-shell .admin-roster-export-actions{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+ gap:16px;padding:22px 23px;border-bottom:1px solid #e4eefa;
+}
+.school-shell.admin-shell .admin-roster-export-actions>div:first-child{min-width:0;flex:1}
+.school-shell.admin-shell .admin-roster-export-actions .section-kicker{
+ color:#3179d4;font-size:10px;font-weight:850;letter-spacing:.08em;
+}
+.school-shell.admin-shell .admin-roster-export-actions h2{
+ margin:6px 0;color:#24496e;font-size:19px;
+}
+.school-shell.admin-shell .admin-roster-export-actions p{
+ margin:0;color:#8198b1;font-size:11px;line-height:1.5;
+}
+.school-shell.admin-shell .admin-roster-export-buttons{
+ display:flex;align-items:center;flex-wrap:wrap;gap:9px;
+}
+.school-shell.admin-shell .admin-roster-export-buttons button{
+ display:inline-flex;justify-content:center;align-items:center;gap:9px;
+ min-height:42px;padding:10px 14px;border-radius:10px;
+ font-size:11px;font-weight:850;
+}
+.school-shell.admin-shell .admin-roster-template{
+ color:#2a70c5;border:1px solid #cfe1f8;background:#f2f8ff;
+}
+.school-shell.admin-shell .admin-roster-export{
+ color:#fff;border:1px solid #276cd1;background:#2877da;
+}
+.school-shell.admin-shell .admin-roster-export-buttons button:disabled{opacity:.5;cursor:not-allowed}
+.school-shell.admin-shell .admin-student-history{
+ display:grid;gap:12px;padding:15px 0 18px;margin-top:15px;
+ border-top:1px solid #dfebf9;border-bottom:1px solid #dfebf9;
+}
+.school-shell.admin-shell .admin-student-history>header{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ color:#3874b7;
+}
+.school-shell.admin-shell .admin-student-history>header>div{display:grid;gap:5px}
+.school-shell.admin-shell .admin-student-history>header strong{color:#264e7e;font-size:12px}
+.school-shell.admin-shell .admin-student-history>header small{color:#859bb4;font-size:9px}
+.school-shell.admin-shell .admin-student-history-list{
+ display:grid;gap:0;max-height:260px;overflow:auto;
+ border:1px solid #e0eaf8;border-radius:11px;background:#fff;
+}
+.school-shell.admin-shell .admin-student-history-list>div{
+ display:flex;align-items:center;gap:9px;justify-content:space-between;
+ padding:11px;border-bottom:1px solid #e6eef9;
+}
+.school-shell.admin-shell .admin-student-history-list>div:last-child{border-bottom:0}
+.school-shell.admin-shell .admin-student-history-list>div>span:first-child{
+ display:grid;flex:1;gap:4px;min-width:0;
+}
+.school-shell.admin-shell .admin-student-history-list>div b{
+ color:#34587a;font-size:10px;font-weight:800;
+}
+.school-shell.admin-shell .admin-student-history-list>div>span:first-child small{
+ display:flex;align-items:center;gap:4px;color:#7c9ab7;font-size:9px;line-height:1.5;
+}
+.school-shell.admin-shell .admin-student-history-list>div>strong{
+ font-size:19px;color:#278c78;white-space:nowrap;
+}
+.school-shell.admin-shell .admin-student-history-list>div>strong small{font-size:9px;color:#8ba0b8}
+.school-shell.admin-shell .admin-student-history-correct{
+ font-size:9px;color:#829bb6;white-space:nowrap;
+}
+.school-shell.admin-shell .admin-student-history-empty{
+ display:flex;align-items:center;gap:8px;color:#8196af;font-size:10px;line-height:1.5;
+}
+.school-shell.admin-shell .admin-student-history-more{
+ min-height:34px;padding:9px;border:1px solid #d8e7fa;border-radius:8px;
+ background:#f0f7ff;color:#3174c5;font-size:10px;font-weight:800;
+}
+@media(max-width:760px){
+ .school-shell.admin-shell .admin-roster-export-actions{align-items:stretch;flex-direction:column;padding:16px}
+ .school-shell.admin-shell .admin-roster-export-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .school-shell.admin-shell .admin-roster-export-buttons button{font-size:10px;padding:9px 6px}
+}
+@media(max-width:400px){
+ .school-shell.admin-shell .admin-roster-export-buttons{grid-template-columns:1fr}
+ .school-shell.admin-shell .admin-student-history-correct{display:none}
+}
