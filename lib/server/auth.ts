@@ -3,6 +3,7 @@ import { createHash, createHmac, randomBytes } from 'node:crypto';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { getDatabase } from '@/lib/server/db';
+import type { StudentProfile } from '@/lib/types';
 
 export const SESSION_COOKIE_NAME = 'vokasi_session';
 export const SESSION_TTL_SECONDS = 8 * 60 * 60;
@@ -13,8 +14,10 @@ export type NativeRole = 'student' | 'admin' | 'super_admin';
 export type NativeSessionUser = {
   id: string;
   username: string;
+  email: string | null;
   displayName: string;
   role: NativeRole;
+  profile: StudentProfile | null;
 };
 
 let dummyPasswordHash: Promise<string> | undefined;
@@ -130,6 +133,7 @@ export async function getCurrentNativeUser(): Promise<NativeSessionUser | null> 
     SELECT
       u.id::text AS id,
       u.username,
+      u.email,
       COALESCE(NULLIF(u.display_name, ''), r.full_name, sa.display_name, u.username) AS display_name,
       CASE
         WHEN sa.access_role = 'super_admin' THEN 'super_admin'
@@ -137,12 +141,20 @@ export async function getCurrentNativeUser(): Promise<NativeSessionUser | null> 
         WHEN r.auth_user_id IS NOT NULL THEN 'student'
         ELSE NULL
       END AS role,
-      s.id::text AS session_id
+      s.id::text AS session_id,
+      r.username AS roster_username,
+      r.full_name,
+      r.class_id::text AS class_id,
+      c.class_name,
+      COALESCE(r.major_id, c.major_id)::text AS major_id,
+      m.name AS major_name
     FROM public.app_sessions AS s
     JOIN public.app_users AS u ON u.id = s.user_id
     LEFT JOIN public.school_admins AS sa ON sa.user_id = u.id AND sa.is_active = true
     LEFT JOIN public.student_roster AS r
       ON r.auth_user_id = u.id AND r.registration_status = 'registered'
+    LEFT JOIN public.classes AS c ON c.id = r.class_id
+    LEFT JOIN public.majors AS m ON m.id = COALESCE(r.major_id, c.major_id)
     WHERE s.token_hash = ${tokenHash}
       AND s.revoked_at IS NULL
       AND s.expires_at > now()
@@ -153,9 +165,16 @@ export async function getCurrentNativeUser(): Promise<NativeSessionUser | null> 
   const row = rows[0] as {
     id: string;
     username: string;
+    email: string | null;
     display_name: string;
     role: NativeRole | null;
     session_id: string;
+    roster_username: string | null;
+    full_name: string | null;
+    class_id: string | null;
+    class_name: string | null;
+    major_id: string | null;
+    major_name: string | null;
   } | undefined;
 
   if (!row?.role) return null;
@@ -167,11 +186,25 @@ export async function getCurrentNativeUser(): Promise<NativeSessionUser | null> 
       AND last_seen_at < now() - interval '5 minutes'
   `;
 
+  const profile = row.role === 'student' && row.class_id && row.class_name && row.major_id && row.major_name
+    ? {
+        authId: row.id,
+        username: row.roster_username || row.username,
+        fullName: row.full_name || row.display_name,
+        classId: row.class_id,
+        className: row.class_name,
+        majorId: row.major_id,
+        majorName: row.major_name,
+      } satisfies StudentProfile
+    : null;
+
   return {
     id: row.id,
     username: row.username,
+    email: row.email,
     displayName: row.display_name,
     role: row.role,
+    profile,
   };
 }
 
