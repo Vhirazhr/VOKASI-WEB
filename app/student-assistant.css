@@ -45,26 +45,52 @@
 }
 
 
-/* Navbar chatbot: compact Messenger-like overlay instead of a separate page. */
-.school-shell.student-shell .side-menu button.vokasi-chatbot-nav{
- display:flex;align-items:center;gap:12px;width:100%;min-height:44px;
- border:0;text-align:left;font:inherit;cursor:pointer;
+/* Floating chatbot widget: outside navigation, always above page content. */
+.school-shell.student-shell .vokasi-chatbot-fab{
+ position:fixed;z-index:210;right:max(21px,env(safe-area-inset-right,0px));
+ bottom:calc(22px + env(safe-area-inset-bottom,0px));
+ display:grid;place-items:center;width:62px;height:62px;
+ padding:0;border:3px solid #fff;border-radius:50%;
+ background:linear-gradient(145deg,#3a92ff,#1757c1);color:#fff;
+ box-shadow:0 9px 28px #174d9d4c,0 3px 8px #153e8060;
+ cursor:pointer;transition:transform .18s ease,box-shadow .18s ease;
 }
-.school-shell.student-shell .side-menu button.vokasi-chatbot-nav:not(.selected){background:transparent}
-.school-shell.student-shell .side-menu button.vokasi-chatbot-nav:hover{background:#eef5ff}
+.school-shell.student-shell .vokasi-chatbot-fab:hover{
+ transform:translateY(-3px);box-shadow:0 13px 34px #174d9d60;
+}
+.school-shell.student-shell .vokasi-chatbot-fab:active{transform:translateY(1px)}
+.school-shell.student-shell .vokasi-chatbot-fab:focus-visible{
+ outline:3px solid #65aaff;outline-offset:3px;
+}
+.school-shell.student-shell .vokasi-chatbot-fab-status{
+ position:absolute;right:2px;top:2px;width:14px;height:14px;
+ border:3px solid #fff;border-radius:50%;background:#2dcc92;
+}
+.school-shell.student-shell .vokasi-chatbot-fab-tooltip{
+ position:absolute;right:calc(100% + 13px);top:50%;transform:translateY(-50%);
+ padding:9px 13px;border-radius:10px;background:#fff;color:#224b7e;
+ border:1px solid #d9e7f9;box-shadow:0 6px 20px #14468520;
+ font-size:12px;font-weight:850;white-space:nowrap;
+ opacity:0;visibility:hidden;pointer-events:none;
+ transition:opacity .16s ease,visibility .16s;
+}
+.school-shell.student-shell .vokasi-chatbot-fab:hover .vokasi-chatbot-fab-tooltip,
+.school-shell.student-shell .vokasi-chatbot-fab:focus-visible .vokasi-chatbot-fab-tooltip{
+ opacity:1;visibility:visible;
+}
 .school-shell.student-shell .vokasi-chatbot-layer{
- position:fixed;inset:0;z-index:180;isolation:isolate;
+ position:fixed;inset:0;z-index:195;isolation:isolate;
 }
 .school-shell.student-shell .vokasi-chatbot-backdrop{
  position:absolute;inset:0;width:100%;height:100%;padding:0;
- border:0;border-radius:0;background:rgba(22,48,89,.19);
+ border:0;border-radius:0;background:transparent;
  cursor:default;
 }
 .school-shell.student-shell .vokasi-chatbot-dialog{
- position:absolute;right:22px;bottom:23px;
+ position:absolute;right:20px;bottom:99px;
  display:flex;flex-direction:column;overflow:hidden;
  width:min(420px,calc(100vw - 32px));
- height:min(655px,calc(100dvh - 60px));min-height:300px;
+ height:min(610px,calc(100dvh - 116px));min-height:0;
  border:1px solid #d0def4;border-radius:21px;
  background:#fff;box-shadow:0 22px 70px rgba(24,64,125,.32);
 }
@@ -141,7 +167,7 @@
  width:12px;height:12px;
 }
 .school-shell.student-shell .student-bottom-nav{
- grid-template-columns:repeat(5,minmax(0,1fr));
+ grid-template-columns:repeat(4,minmax(0,1fr));
 }
 .school-shell.student-shell .student-bottom-nav button{
  display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -158,33 +184,28 @@
 .school-shell.student-shell .embed-shortcuts button.active{
  color:#2872d0;background:#eaf3ff;
 }
-@media(max-width:860px){
- .school-shell.student-shell:not(.shell-embed) .side-menu button.vokasi-chatbot-nav{
-   justify-content:center;padding-left:0;padding-right:0;
- }
- .school-shell.student-shell:not(.shell-embed) .side-menu button.vokasi-chatbot-nav span{display:none}
-}
 @media(max-width:600px){
- .school-shell.student-shell .vokasi-chatbot-backdrop{background:rgba(17,41,80,.23)}
+ .school-shell.student-shell .vokasi-chatbot-fab{
+   right:calc(14px + env(safe-area-inset-right,0px));
+   bottom:calc(86px + env(safe-area-inset-bottom,0px));
+   width:55px;height:55px;border-width:2px;
+ }
+ .school-shell.student-shell .vokasi-chatbot-fab svg{width:24px;height:24px}
+ .school-shell.student-shell .vokasi-chatbot-fab-tooltip{display:none}
  .school-shell.student-shell .vokasi-chatbot-dialog{
-   right:0;left:0;bottom:calc(71px + env(safe-area-inset-bottom,0px));
-   width:100%;height:min(72dvh,670px);min-height:285px;
-   border:0;border-top:1px solid #d0def4;border-radius:23px 23px 0 0;
+   right:10px;left:10px;bottom:calc(158px + env(safe-area-inset-bottom,0px));
+   width:auto;height:min(68dvh,calc(100dvh - 180px));min-height:0;
+   border:1px solid #d0def4;border-radius:18px;
  }
- .school-shell.student-shell .vokasi-chatbot-dialog-header{min-height:67px;padding:11px 14px}
+ .school-shell.student-shell .vokasi-chatbot-dialog-header{min-height:63px;padding:10px 13px}
  .school-shell.student-shell .vokasi-chatbot-conversation .vokasi-assistant-title{padding:9px 11px}
- .school-shell.student-shell .vokasi-chatbot-conversation .vokasi-assistant-feed{min-height:0;max-height:none;padding:13px}
- .school-shell.student-shell .student-bottom-nav{z-index:185}
- .school-shell.student-shell .student-bottom-nav button{
-   min-width:0;font-size:9px;padding:6px 2px;
- }
- .school-shell.student-shell .student-bottom-nav button svg{width:20px;height:20px}
+ .school-shell.student-shell .vokasi-chatbot-conversation .vokasi-assistant-feed{min-height:0;max-height:none;padding:12px}
 }
 @media(max-width:360px){
  .school-shell.student-shell .vokasi-chatbot-online{display:none}
- .school-shell.student-shell .student-bottom-nav button{font-size:8px}
  .school-shell.student-shell .vokasi-chatbot-conversation .vokasi-assistant-prompts button{font-size:8px}
 }
 @media(prefers-reduced-motion:reduce){
- .school-shell.student-shell .vokasi-chatbot-dialog{scroll-behavior:auto}
+ .school-shell.student-shell .vokasi-chatbot-fab{transition:none}
+ .school-shell.student-shell .vokasi-chatbot-fab-tooltip{transition:none}
 }
