@@ -185,3 +185,6 @@ Yang dicatat selama sesi web aktif: halaman menjadi tidak terlihat/kembali aktif
 
 **Batasan privasi browser:** website tidak bisa mengetahui nama aplikasi lain yang dibuka, membaca isi clipboard, isi pencarian, atau URL tab lain. Jangan gunakan catatan ini sebagai bukti otomatis kecurangan atau dasar hukuman otomatis. Jika backend nanti dipindahkan dari Supabase ke MySQL cPanel, migrasi tabel dan RPC monitoring ini juga harus dipindahkan ke backend baru.
 
+## Self-hosted PostgreSQL migration
+
+The migration is staged on the `feat/self-hosted-postgres` branch. See [`docs/SELF-HOSTED-POSTGRES.md`](docs/SELF-HOSTED-POSTGRES.md) for current scope and safe setup. This is a foundation only; do not deploy as a completed Supabase-free app until all student/admin UI data calls are migrated and CI/smoke tests pass.
