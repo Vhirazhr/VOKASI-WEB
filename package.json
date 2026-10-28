@@ -20,10 +20,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "jszip": "^3.10.2",
-    "pdfjs-dist": "6.4.299",
-    "@fontsource-variable/plus-jakarta-sans": "5.3.0",
-    "@fontsource-variable/sora": "5.3.0",
-    "three": "^0.186.1"
+    "pdfjs-dist": "6.4.299"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
@@ -31,8 +28,7 @@
     "@types/react-dom": "^19.2.0",
     "eslint": "^9.30.0",
     "eslint-config-next": "^16.0.0",
-    "typescript": "^5.9.0",
-    "@types/three": "^0.186.0"
+    "typescript": "^5.9.0"
   },
   "engines": {
     "node": ">=20.9.0"
