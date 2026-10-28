@@ -173,7 +173,22 @@ function RankingView({leaders,profile,busy,failed,avatarUrls}:{leaders:Leaderboa
   </div>;
 }
 
-function ProfileView({profile,attempts,busy}:{profile:StudentProfile;attempts:Attempt[];busy:boolean}) {
+function ProfileView({profile,attempts,busy,avatarUrl,onAvatarUploaded}:{profile:StudentProfile;attempts:Attempt[];busy:boolean;avatarUrl?:string;onAvatarUploaded:(url:string)=>void}) {
+  const [photoBusy,setPhotoBusy]=useState(false);
+  const [photoMessage,setPhotoMessage]=useState('');
+  const [photoError,setPhotoError]=useState(false);
+  const handlePhoto=async(file:File|undefined)=>{
+    if(!file)return;
+    setPhotoBusy(true);setPhotoError(false);setPhotoMessage('');
+    try{
+      const url=await uploadOwnAvatar(profile,file);
+      onAvatarUploaded(url);
+      setPhotoMessage('Foto profil berhasil disimpan.');
+    }catch(error){
+      setPhotoError(true);
+      setPhotoMessage(error instanceof Error?error.message:'Gagal mengunggah foto profil.');
+    }finally{setPhotoBusy(false);}
+  };
   const compulsory=attempts.filter(a=>a.practice_category===null);
   const average=compulsory.length?Math.round(compulsory.reduce((s,a)=>s+a.score,0)/compulsory.length):null;
   const highest=compulsory.length?Math.max(...compulsory.map(a=>a.score)):null;
@@ -182,7 +197,14 @@ function ProfileView({profile,attempts,busy}:{profile:StudentProfile;attempts:At
   return <div className="student-experience">
     <StudentHeading kicker="AKUN BELAJAR" title="Profil siswa" description="Informasi akun, aktivitas, dan ringkasan capaian pribadimu."/>
     <div className="student-profile-grid">
-      <section className="student-panel student-profile-card"><span className="student-profile-avatar">{profile.fullName.slice(0,1).toUpperCase()}</span><h2>{profile.fullName}</h2><p>@{profile.username}</p><span className="student-profile-pill"><GraduationCap size={16}/> Siswa VOKASI</span><div className="student-profile-divider"/><dl><div><dt>Nama lengkap</dt><dd>{profile.fullName}</dd></div><div><dt>Kelas</dt><dd>{profile.className}</dd></div><div><dt>Jurusan</dt><dd>{profile.majorName}</dd></div></dl><div className="student-profile-safe"><ShieldCheck size={17}/> Profil dibaca dari akun sekolah.</div></section>
+      <section className="student-panel student-profile-card">
+        <StudentAvatar className="student-profile-avatar" name={profile.fullName} url={avatarUrl} size={100}/>
+        <label className="vokasi-photo-upload"><ImageIcon size={16}/>{photoBusy?'Mengunggah foto...':avatarUrl?'Ganti foto profil':'Pasang foto profil'}
+          <input type="file" accept="image/jpeg" disabled={photoBusy} onChange={event=>{const file=event.target.files?.[0];event.target.value='';void handlePhoto(file);}}/>
+        </label>
+        <small className="vokasi-photo-help">Foto JPG/JPEG maksimal 1 MB. Foto bisa tampil di peringkat sekolah.</small>
+        {photoMessage&&<p className={'vokasi-photo-message '+(photoError?'error':'success')} role="status">{photoMessage}</p>}
+        <h2>{profile.fullName}</h2><p>@{profile.username}</p><span className="student-profile-pill"><GraduationCap size={16}/> Siswa VOKASI</span><div className="student-profile-divider"/><dl><div><dt>Nama lengkap</dt><dd>{profile.fullName}</dd></div><div><dt>Kelas</dt><dd>{profile.className}</dd></div><div><dt>Jurusan</dt><dd>{profile.majorName}</dd></div></dl><div className="student-profile-safe"><ShieldCheck size={17}/> Profil dibaca dari akun sekolah.</div></section>
       <div className="student-profile-side"><section className="student-panel"><div className="student-panel-heading"><div><span className="section-kicker">PERKEMBANGANMU</span><h2>Statistik belajar</h2></div><TrendingUp size={24}/></div><div className="student-profile-stats">
         <div><small>Rata-rata nilai</small><strong>{busy?'—':average??'—'}</strong></div><div><small>Nilai tertinggi</small><strong>{busy?'—':highest??'—'}</strong></div><div><small>Total sesi wajib</small><strong>{busy?'—':compulsory.length}</strong></div><div><small>Hari aktif latihan</small><strong>{busy?'—':days}</strong></div>
       </div></section>
@@ -223,6 +245,7 @@ export default function StudentPage(){
   const {profile,loading,error,logout}=useSchoolAuth('student');
   const [attempts,setAttempts]=useState<Attempt[]>([]);
   const [leaders,setLeaders]=useState<LeaderboardEntry[]>([]);
+  const [avatarUrls,setAvatarUrls]=useState<Record<string,string>>({});
   const [busy,setBusy]=useState(true);
   const [warning,setWarning]=useState('');
   const [rankFailed,setRankFailed]=useState(false);
@@ -252,6 +275,13 @@ export default function StudentPage(){
     else setWarning('Gagal membaca riwayat nilai dari Supabase.');
     if(rank.status==='fulfilled')setLeaders(rank.value);
     else {setLeaders([]);setRankFailed(true);}
+    try{
+      const usernames=[profile.username,...(rank.status==='fulfilled'?rank.value.map(student=>student.username):[])];
+      setAvatarUrls(await getSchoolAvatarUrls(usernames));
+    }catch{
+      // Missing images must never stop displaying real grades or the leaderboard.
+      setAvatarUrls({});
+    }
     setBusy(false);
   },[profile]);
   useEffect(()=>{queueMicrotask(()=>void refresh());},[refresh]);
@@ -260,13 +290,13 @@ export default function StudentPage(){
   const latest=compulsory[0];
   const today=compulsory.find(a=>wibDate(a.completed_at_ms)===wibDate());
   const average=compulsory.length?Math.round(compulsory.reduce((s,a)=>s+a.score,0)/compulsory.length):null;
-  return <AppShell role="student" onLogout={()=>void logout()} displayName={profile.fullName} embed={embed} navigationBlocked={category!==undefined}>
+  return <AppShell role="student" onLogout={()=>void logout()} displayName={profile.fullName} studentAvatarUrl={avatarUrls[profile.username.toLowerCase()]} embed={embed} navigationBlocked={category!==undefined}>
     {category!==undefined?<QuizView profile={profile} category={category} history={attempts} onQuit={()=>setCategory(undefined)} onDone={()=>{setCategory(undefined);void refresh();}}/>:
     <>
       {warning&&<div className="alert danger">{warning} <button type="button" className="link-action" onClick={()=>void refresh()}>Coba lagi</button></div>}
       {view==='history'?<HistoryView attempts={attempts} busy={busy}/>:
-       view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed}/>:
-       view==='profile'?<ProfileView profile={profile} attempts={attempts} busy={busy}/>:
+       view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed} avatarUrls={avatarUrls}/>:
+       view==='profile'?<ProfileView profile={profile} attempts={attempts} busy={busy} avatarUrl={avatarUrls[profile.username.toLowerCase()]} onAvatarUploaded={url=>setAvatarUrls(previous=>({...previous,[profile.username.toLowerCase()]:url}))}/>:
         <main className="student-home student-home-dashboard">
           <section className="student-featured-practice student-reference-hero" aria-labelledby="mandatory-practice-title">
             <div className="student-featured-copy">
