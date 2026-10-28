@@ -36,3 +36,5 @@ jobs:
         run: node scripts/check-student-report.mjs
       - name: Build Next.js
         run: npm run build
+      - name: Production HTTP route smoke test
+        run: node scripts/check-route-smoke.mjs
