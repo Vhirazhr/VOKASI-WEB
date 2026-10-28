@@ -361,8 +361,9 @@ export default function QuizView({profile,category,onDone,onQuit}:{
          <div className="quiz-focus-timer-inner"><Clock3 size={19}/><strong role="timer">{feedback?'✓':textClock(remaining)}</strong><small>{feedback?'TERKIRIM':'WAKTU SOAL'}</small></div>
        </div>
        <div className="quiz-focus-timer-copy">
-         <h2>Soal {currentIndex+1} dari {state.total}</h2>
-         <div className="quiz-focus-inline-stats"><span>Progres <b>{progress}%</b></span></div>
+         <span className="quiz-focus-question-eyebrow">SOAL SAAT INI</span>
+         <h2>Soal {currentIndex+1} <span>dari {state.total}</span></h2>
+         <span className="quiz-focus-question-progress">{progress}% selesai</span>
        </div>
        <div className={'quiz-focus-session-time '+(totalRemaining<=60?'is-critical':'')} aria-label="Sisa waktu seluruh sesi">
          <Clock3 size={22}/>
