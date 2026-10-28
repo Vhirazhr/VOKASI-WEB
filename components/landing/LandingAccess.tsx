@@ -1,6 +1,7 @@
 "use client";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -15,9 +16,8 @@ import { configured } from "@/lib/supabase";
 import type { UserRole } from "@/lib/types";
 import SchoolMark from "./SchoolMark";
 type Intent = "dashboard" | "leaderboard";
-const AccessContext = createContext<(role: UserRole, intent: Intent) => void>(
-  () => {},
-);
+type OpenAccess = (role: UserRole, intent: Intent, forceLogin?: boolean) => void;
+const AccessContext = createContext<OpenAccess>(() => {});
 export function AccessLink({
   children,
   className,
@@ -36,7 +36,7 @@ export function AccessLink({
     open(role, intent);
   }
   return (
-    <a href={`/login?role=${role}`} className={className} onClick={activate}>
+    <a href={`/?login=1&role=${role}`} className={className} onClick={activate}>
       {children}
     </a>
   );
@@ -64,7 +64,7 @@ export default function LandingAccess({ children }: { children: ReactNode }) {
     },
     [],
   );
-  function close() {
+  const close = useCallback(() => {
     generation.current++;
     dialog.current?.close();
     if (overflow.current !== null) {
@@ -78,16 +78,16 @@ export default function LandingAccess({ children }: { children: ReactNode }) {
     setPending(false);
     setChecking(false);
     trigger.current?.focus();
-  }
-  function finish(accountRole: UserRole, destination: Intent) {
+  }, []);
+  const finish = useCallback((accountRole: UserRole, destination: Intent) => {
     close();
     if (destination === "leaderboard" && accountRole === "student")
       document
         .getElementById("leaderboard")
         ?.scrollIntoView({ behavior: "instant" });
     else router.push(accountRole === "admin" ? "/admin" : "/siswa");
-  }
-  function open(nextRole: UserRole, nextIntent: Intent) {
+  }, [close, router]);
+  const open = useCallback((nextRole: UserRole, nextIntent: Intent, forceLogin = false) => {
     if (dialog.current?.open) return;
     const request = ++generation.current;
     setRole(nextRole);
@@ -100,7 +100,9 @@ export default function LandingAccess({ children }: { children: ReactNode }) {
     document.body.style.overflow = "hidden";
     dialog.current?.showModal();
     input.current?.focus();
-    if (!configured()) return;
+    // Redirects caused by an expired session must show the login form, even if
+    // Supabase is still finishing a token refresh in the background.
+    if (forceLogin || !configured()) return;
     setChecking(true);
     void currentRole()
       .then((account) => {
@@ -111,7 +113,23 @@ export default function LandingAccess({ children }: { children: ReactNode }) {
       .finally(() => {
         if (request === generation.current) setChecking(false);
       });
-  }
+  }, [finish]);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("login") !== "1") return;
+    const nextRole: UserRole = url.searchParams.get("role") === "admin" ? "admin" : "student";
+    const nextIntent: Intent = url.searchParams.get("intent") === "leaderboard" ? "leaderboard" : "dashboard";
+    // Defer until the landing page is mounted, and cancel the first pass in
+    // React Strict Mode so the dialog is opened exactly once in development.
+    const timer = window.setTimeout(() => {
+      url.searchParams.delete("login");
+      url.searchParams.delete("role");
+      url.searchParams.delete("intent");
+      window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+      open(nextRole, nextIntent, true);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [open]);
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (pending || checking) return;
