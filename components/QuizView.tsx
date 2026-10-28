@@ -228,7 +228,9 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const currentIndex=feedback&&state?.index!==undefined?Math.max(0,state.index-1):state?.index||0;
  const progress=state?Math.round(currentIndex/state.total*100):0;
  const questionDuration=Math.max(1,Number(state?.question?.seconds||1));
- const timePercent=Math.max(0,Math.min(100,Math.round(100*remaining/questionDuration)));
+ const timePercent=feedback?100:Math.max(0,Math.min(100,Math.round(100*remaining/questionDuration)));
+ const timerCritical=!feedback&&remaining<=5;
+ const timerWarning=!feedback&&remaining>5&&remaining<=10;
  const finishedStatuses=liveProgress?.statuses||[];
  const processed=Math.max(finishedStatuses.length,currentIndex);
  const monitorRemaining=state?Math.max(0,state.total-processed):0;
@@ -291,13 +293,13 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    </div>
    <div className="quiz-focus-columns">
     <main className="quiz-focus-workspace">
-     <section className={'quiz-focus-timer-banner '+(remaining<=5?'is-critical':remaining<=10?'is-warning':'')} aria-label="Waktu berjalan untuk soal saat ini">
-       <div className="quiz-focus-timer-ring" style={{background:'conic-gradient('+ (remaining<=5?'#f05b69':remaining<=10?'#f6aa39':'#2883f3')+' '+timePercent+'%, #e4edfa '+timePercent+'% 100%)'}}>
+     <section className={'quiz-focus-timer-banner '+(timerCritical?'is-critical':timerWarning?'is-warning':'')} aria-label="Waktu berjalan untuk soal saat ini">
+       <div className="quiz-focus-timer-ring" style={{background:'conic-gradient('+ (feedback?'#20af89':timerCritical?'#f05b69':timerWarning?'#f6aa39':'#2883f3')+' '+timePercent+'%, #e4edfa '+timePercent+'% 100%)'}}>
          <div className="quiz-focus-timer-inner"><Clock3 size={19}/><strong role="timer">{feedback?'✓':textClock(remaining)}</strong><small>{feedback?'TERKIRIM':'WAKTU SOAL'}</small></div>
        </div>
        <div className="quiz-focus-timer-copy">
          <span className="quiz-focus-live-dot"><i/> TIMER BERJALAN</span>
-         <h2>{remaining<=5?'Waktunya hampir habis!':'Fokus pada soal ini'}</h2>
+         <h2>{feedback?'Jawaban sudah terkirim!':timerCritical?'Waktunya hampir habis!':'Fokus pada soal ini'}</h2>
          <p>{feedback?'Jawaban sudah diperiksa server, lanjut ke soal berikutnya.':'Pilih jawaban sebelum waktu soal habis. Waktu terus berjalan otomatis.'}</p>
          <div className="quiz-focus-inline-stats"><span>SOAL <b>{currentIndex+1}/{state.total}</b></span><span>SELESAI <b>{progress}%</b></span></div>
        </div>
