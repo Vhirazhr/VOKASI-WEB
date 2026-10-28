@@ -1,0 +1,76 @@
+/* Android-style student notices, only for information available within the app. */
+.school-shell.student-shell .vokasi-notices-page{
+ display:grid;gap:18px;width:100%;max-width:1060px;min-width:0;margin:0 auto;
+}
+.school-shell.student-shell .vokasi-notices-hero{
+ display:grid;gap:10px;min-height:175px;padding:30px 35px;border-radius:23px;
+ background:linear-gradient(112deg,#194b97,#2777da);color:#fff;
+}
+.school-shell.student-shell .vokasi-notices-hero>span{
+ display:inline-flex;align-items:center;gap:8px;color:#d5e6ff;font-size:10px;font-weight:850;letter-spacing:.1em;
+}
+.school-shell.student-shell .vokasi-notices-hero h1{margin:0;color:#fff;font-size:clamp(25px,3.5vw,39px)}
+.school-shell.student-shell .vokasi-notices-hero p{margin:0;color:#dce9fb;font-size:12px;line-height:1.6}
+.school-shell.student-shell .vokasi-notices-panel,
+.school-shell.student-shell .vokasi-notices-settings{
+ overflow:hidden;border:1px solid #dbe7f6;border-radius:18px;background:#fff;box-shadow:0 10px 25px #28528a0b;
+}
+.school-shell.student-shell .vokasi-notices-toolbar{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid #e2ebf8;
+}
+.school-shell.student-shell .vokasi-notices-toolbar>div{display:grid;gap:4px}
+.school-shell.student-shell .vokasi-notices-toolbar strong{color:#22476f;font-size:14px}
+.school-shell.student-shell .vokasi-notices-toolbar small{color:#879fb9;font-size:10px}
+.school-shell.student-shell .vokasi-notices-toolbar>button{
+ display:inline-flex;align-items:center;gap:7px;padding:10px 12px;border:1px solid #d0e2fa;
+ border-radius:10px;background:#f3f8ff;color:#246fcf;font-size:10px;font-weight:800;
+}
+.school-shell.student-shell .vokasi-notices-toolbar>button:disabled{opacity:.5;cursor:not-allowed}
+.school-shell.student-shell .vokasi-notices-list{display:grid;gap:0}
+.school-shell.student-shell .vokasi-notice{
+ display:flex;align-items:flex-start;gap:15px;min-width:0;padding:19px 20px;border-bottom:1px solid #e7eef8;
+}
+.school-shell.student-shell .vokasi-notice:last-child{border-bottom:0}
+.school-shell.student-shell .vokasi-notice-icon{
+ display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:13px;background:#e8f2ff;color:#3477d4;
+}
+.school-shell.student-shell .vokasi-notice-icon.target{background:#fff0f3;color:#d84e66}
+.school-shell.student-shell .vokasi-notice-icon.flame{background:#fff3db;color:#ca8425}
+.school-shell.student-shell .vokasi-notice>div{min-width:0;flex:1}
+.school-shell.student-shell .vokasi-notice strong{display:block;color:#264a76;font-size:13px}
+.school-shell.student-shell .vokasi-notice p{margin:7px 0 10px;color:#8197b0;font-size:11px;line-height:1.65}
+.school-shell.student-shell .vokasi-notice-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.school-shell.student-shell .vokasi-notice-actions a{
+ display:inline-flex;padding:9px 11px;border-radius:9px;background:#eaf3ff;color:#2573d7;font-size:10px;font-weight:850;
+}
+.school-shell.student-shell .vokasi-notice-actions button{padding:9px 0;border:0;background:transparent;color:#7c99bb;font-size:10px;font-weight:750}
+.school-shell.student-shell .vokasi-notices-empty{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+ min-height:190px;margin:0;padding:25px;color:#7899c4;font-size:12px;text-align:center;
+}
+.school-shell.student-shell .vokasi-notices-empty strong{color:#2e5480;font-size:14px}
+.school-shell.student-shell .vokasi-notices-empty span{max-width:400px;color:#91a6bf;font-size:11px;line-height:1.6}
+.school-shell.student-shell .vokasi-notices-settings{
+ display:flex;align-items:center;justify-content:space-between;gap:18px;padding:19px 20px;
+}
+.school-shell.student-shell .vokasi-notices-settings>div{min-width:0}
+.school-shell.student-shell .vokasi-notices-settings strong{display:flex;align-items:center;gap:7px;color:#21476f;font-size:13px}
+.school-shell.student-shell .vokasi-notices-settings p{margin:7px 0 0;color:#879db7;font-size:11px;line-height:1.6}
+.school-shell.student-shell .vokasi-notices-switch{display:flex;align-items:center;gap:8px;color:#3273bd;font-size:11px;font-weight:800;white-space:nowrap}
+.school-shell.student-shell .vokasi-notices-switch input{width:18px;height:18px;accent-color:#3079df}
+.school-shell.student-shell .vokasi-notices-privacy{display:flex;align-items:center;gap:7px;color:#90a2ba;font-size:10px;line-height:1.5}
+.school-shell.student-shell .vokasi-notices-privacy svg{color:#3a9f91;flex:none}
+.school-shell.student-shell .student-header-bell{
+ display:grid;place-items:center;width:40px;height:40px;border:1px solid #d6e5f6;border-radius:12px;background:#f1f7ff;color:#2b73cb;
+}
+.school-shell.student-shell .student-header-bell:hover{background:#e2f0ff}
+@media(max-width:620px){
+ .school-shell.student-shell .vokasi-notices-page{gap:12px}
+ .school-shell.student-shell .vokasi-notices-hero{padding:23px 18px;min-height:145px;border-radius:18px}
+ .school-shell.student-shell .vokasi-notices-toolbar{flex-direction:column;align-items:stretch;padding:15px}
+ .school-shell.student-shell .vokasi-notices-toolbar>button{align-self:flex-start}
+ .school-shell.student-shell .vokasi-notice{padding:16px 13px;gap:11px}
+ .school-shell.student-shell .vokasi-notice-icon{width:36px;height:36px;border-radius:10px}
+ .school-shell.student-shell .vokasi-notices-settings{align-items:flex-start;flex-direction:column;padding:16px}
+ .school-shell.student-shell .student-header-bell{width:36px;height:36px}
+}
