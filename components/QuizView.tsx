@@ -14,7 +14,7 @@ type Option={text:string;image_path:string|null};
 type Question={id:number;category:string;text:string;image_path:string|null;options:Option[];seconds:number};
 type State={
  session_id:string;status:'prepared'|'active'|'complete';category:string|null;index?:number;total:number;
- question?:Question;question_deadline_ms?:number;overall_deadline_ms?:number;server_now_ms:number;
+ question?:Question;pending_choice?:number|null;question_deadline_ms?:number;overall_deadline_ms?:number;server_now_ms:number;
  score?:number;correct?:number;
  feedback?:{correct:boolean;selected_index:number};feedback_wait_ms?:number;late?:boolean;
 };
@@ -69,6 +69,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const [feedbackQuestion,setFeedbackQuestion]=useState<Question|null>(null);
  const [busy,setBusy]=useState(true);
  const [sending,setSending]=useState(false);
+ const [savingSelection,setSavingSelection]=useState(false);
  const [error,setError]=useState('');
  const [now,setNow]=useState(0);
  const [clockBase,setClockBase]=useState(0);
@@ -93,6 +94,8 @@ export default function QuizView({profile,category,onDone,onQuit}:{
 
  const live=useRef(true);
  const inFlight=useRef(false);
+ const selectionQueue=useRef<Promise<void>>(Promise.resolve());
+ const selectionVersion=useRef(0);
  const feedbackTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const lastActivityAt=useRef<Map<string,number>>(new Map());
  type ActivityEventType='tab_hidden'|'tab_visible'|'window_blur'|'window_focus'|'copy'|'paste'|'context_menu'|'fullscreen_exit'|'external_link'|'ui_click';
@@ -119,9 +122,9 @@ export default function QuizView({profile,category,onDone,onQuit}:{
 
  const accept=useCallback((next:State)=>{
    setState(next);setNow(Date.now());setClockBase(Date.now()-next.server_now_ms);
-   // A choice is pending client state only; discard it whenever the server advances or completes.
-    setSelected(null);
-    if(next.status==='active'){setMonitorOpen(false);setFigureOpen(false);}
+   // Restore the server-persisted choice on refresh or session recovery.
+   setSelected(typeof next.pending_choice==='number'?next.pending_choice:null);
+   if(next.status==='active'){setMonitorOpen(false);setFigureOpen(false);}
  },[]);
 
  useEffect(()=>{
@@ -188,7 +191,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  // Browser clock is display only; server timestamps are authoritative.
  const onServer=useCallback(async()=>{
    const id=state?.session_id;
-   if(!id||inFlight.current||feedback||busy||sending)return;
+   if(!id||inFlight.current||feedback||busy||sending||savingSelection)return;
    inFlight.current=true;
    try{
      const next=await rpc<State>('vokasi_web_get_quiz_state',{p_session:id});
@@ -204,7 +207,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      }
    }catch(e){if(live.current)setError('Gagal menyinkronkan timer: '+errText(e));}
    finally{inFlight.current=false;}
- },[state,feedback,busy,sending,accept,imageUrls]);
+ },[state,feedback,busy,sending,savingSelection,accept,imageUrls]);
 
  useEffect(()=>{
    if(!state||state.status!=='active'||busy||feedback)return;
@@ -213,8 +216,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      setNow(tick);
      const deadline=state.question_deadline_ms||0;
      if(tick-clockBase>=deadline||tick-clockBase>=Number(state.overall_deadline_ms||0)){
-       // An unsubmitted selection is discarded at expiry; only submit() sends choices.
-       if(!sending)setSelected(null);
+       // Server finalizes the latest autosaved choice, or TIMEOUT if none exists.
        void onServer();
      }
    },300);
@@ -312,8 +314,58 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    return()=>{cancelled=true;};
  },[state?.session_id,state?.status,state?.index]);
 
+ async function selectAnswer(choice:number){
+   if(!state||state.status!=='active'||state.index===undefined||feedback||sending||remaining<=0)return;
+   const sessionId=state.session_id;
+   const questionIndex=state.index;
+   const version=++selectionVersion.current;
+   setSelected(choice);
+   setError('');
+   setSavingSelection(true);
+
+   // Serialize writes so a rapid A -> B change cannot let a slower A request
+   // overwrite the latest B choice in the database.
+   const request=selectionQueue.current.catch(()=>undefined).then(async()=>{
+     const result=await rpc<State>('vokasi_web_select_answer',{
+       p_session:sessionId,p_question_index:questionIndex,p_choice:choice
+     });
+     if(!live.current)return;
+     if(result.status==='active'&&result.index===questionIndex){
+       setState(result);
+       setNow(Date.now());
+       setClockBase(Date.now()-result.server_now_ms);
+       if(version===selectionVersion.current){
+         setSelected(typeof result.pending_choice==='number'?result.pending_choice:choice);
+       }
+       return;
+     }
+
+     // The server deadline may have elapsed while the save was in transit.
+     // Adopt the authoritative next state rather than leaving a stale option selected.
+     accept(result);
+     if(result.question&&!imageUrls.has(result.question.image_path||'')){
+       try{
+         const urls=await signedImages(visualPaths(result.question));
+         if(live.current)setImageUrls(current=>new Map([...current,...urls]));
+       }catch(cause){
+         if(live.current)setError('Soal berikutnya belum dapat dimuat: '+errText(cause));
+       }
+     }
+   });
+   selectionQueue.current=request.then(()=>undefined,()=>undefined);
+   try{
+     await request;
+   }catch(cause){
+     if(live.current&&version===selectionVersion.current){
+       setError('Pilihan belum tersimpan otomatis. Coba pilih kembali. '+errText(cause));
+     }
+   }finally{
+     if(live.current&&version===selectionVersion.current)setSavingSelection(false);
+   }
+ }
+
  async function submit(){
-   if(!state||state.status!=='active'||selected===null||sending||feedback)return;
+   if(!state||state.status!=='active'||selected===null||sending||savingSelection||feedback)return;
    const current=state.question;
    if(!current||state.index===undefined)return;
    setSending(true);setError('');
@@ -476,7 +528,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
     <div className="answers">{question.options.map((option,i)=><button type="button" key={i}
        aria-pressed={selected===i} disabled={sending||!!feedback||remaining<=0}
        className={'answer '+(selected===i?'chosen ':'')+(feedback&&selected===i?(feedback.correct?'feedback-correct':'feedback-wrong'):'')}
-       onClick={()=>setSelected(i)}>
+       onClick={()=>void selectAnswer(i)}>
        <span className="answer-letter">{String.fromCharCode(65+i)}</span>
        <span className="quiz-choice-content">{option.text&&<span>{option.text}</span>}
          {option.image_path&&imageUrls.get(option.image_path)&&<img src={imageUrls.get(option.image_path)} alt={'Gambar pilihan '+String.fromCharCode(65+i)}/>}</span>
@@ -486,9 +538,9 @@ export default function QuizView({profile,category,onDone,onQuit}:{
       <b>{feedback.correct?'✓ Jawaban kamu BENAR!':'✕ Jawaban kamu SALAH.'}</b><span>Soal berikutnya segera tampil…</span></div>}
     {error&&<div className="alert danger" role="alert">{error}<button className="btn secondary small" onClick={()=>void onServer()}><RefreshCw size={15}/> Sinkronkan</button></div>}
     </div>
-    <div className="quiz-footer"><span>Pilihan hanya dikirim ke server saat tombol Kirim jawaban ditekan. Jika waktu habis lebih dulu, pilihan dibuang dan soal menjadi TIMEOUT. Aktivitas halaman yang terdeteksi dicatat untuk laporan admin; isi clipboard dan aplikasi lain tidak dibaca.</span>
-      <button className="btn primary" disabled={selected===null||sending||!!feedback||remaining<=0} onClick={()=>void submit()}>
-        {sending?'Memverifikasi...':'Kirim jawaban'} <ArrowRight size={16}/></button></div>
+    <div className="quiz-footer"><span>{savingSelection?'Menyimpan pilihan ke database…':selected!==null?'Pilihan tersimpan otomatis. Kamu masih bisa menggantinya sampai waktu habis.':'Pilih salah satu opsi; pilihan akan otomatis tersimpan dan bisa diubah sampai waktu habis.'} Aktivitas halaman yang terdeteksi dicatat untuk laporan admin; isi clipboard dan aplikasi lain tidak dibaca.</span>
+      <button className="btn primary" disabled={selected===null||sending||savingSelection||!!feedback||remaining<=0} onClick={()=>void submit()}>
+        {savingSelection?'Menyimpan pilihan...':sending?'Memverifikasi...':'Kirim jawaban'} <ArrowRight size={16}/></button></div>
    </div>
      </div>
     </main>
