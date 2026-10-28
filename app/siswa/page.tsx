@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Atom, BookOpen, Brain, Calculator, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Divide, GraduationCap, History, Image as ImageIcon, Lightbulb, Medal, Megaphone, Play, RefreshCw, Search, Shapes, ShieldCheck, Sigma, Star, Target, TrendingUp, Trophy } from 'lucide-react';
+import { ArrowRight, Atom, BookOpen, Brain, Calculator, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Divide, GraduationCap, History, Image as ImageIcon, Lightbulb, Medal, Megaphone, Play, RefreshCw, Search, Shapes, ShieldCheck, Sigma, Star, Target, TrendingUp, Trophy, Clock3, SlidersHorizontal } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import StudentAvatar from '@/components/StudentAvatar';
 import StudentProfileDashboard from '@/components/StudentProfileDashboard';
@@ -23,6 +23,7 @@ import '@/app/student-unified-ui.css';
 import '@/app/student-ranking-reference.css';
 import '@/app/student-learning-extras.css';
 import '@/app/student-notices.css';
+import '@/app/student-history-reference.css';
 
 const categories=[...PRACTICE_CATEGORIES];
 const toDay=(ms:number)=>new Intl.DateTimeFormat('id-ID',{dateStyle:'long',timeZone:'Asia/Jakarta'}).format(new Date(ms));
@@ -37,41 +38,104 @@ function StudentHeading({kicker,title,description}:{kicker:string;title:string;d
 }
 
 function HistoryView({attempts,busy,profile}:{attempts:Attempt[];busy:boolean;profile:StudentProfile}) {
-  const [kind,setKind]=useState('all');
+  const [kind,setKind]=useState<'all'|'mandatory'|'practice'>('all');
+  const [month,setMonth]=useState('');
   const [date,setDate]=useState('');
   const [query,setQuery]=useState('');
+  const [showMoreFilters,setShowMoreFilters]=useState(false);
+  const [expandedId,setExpandedId]=useState<string|null>(null);
   const [page,setPage]=useState(0);
   const officialKeys=useMemo(()=>new Set(officialMandatoryAttempts(attempts).map(a=>a.session_key)),[attempts]);
   const filtered=useMemo(()=>attempts
-    .filter(a=>(kind==='all'||(kind==='mandatory'?a.practice_category===null:a.practice_category!==null))&&(!date||wibDate(a.completed_at_ms)===date))
-    .filter(a=>!query||(a.practice_category||'Latihan wajib').toLowerCase().includes(query.trim().toLowerCase()))
-    .sort((a,b)=>b.completed_at_ms-a.completed_at_ms),[attempts,kind,date,query]);
-  const perPage=10;
+    .filter(a=>(kind==='all'||(kind==='mandatory'?a.practice_category===null:a.practice_category!==null))
+      &&(!month||wibDate(a.completed_at_ms).startsWith(month))
+      &&(!date||wibDate(a.completed_at_ms)===date))
+    .filter(a=>!query||[a.practice_category||'Latihan wajib',a.class_snapshot,a.major_snapshot].some(v=>v?.toLowerCase().includes(query.trim().toLowerCase())))
+    .sort((a,b)=>b.completed_at_ms-a.completed_at_ms),[attempts,kind,month,date,query]);
+  const perPage=8;
   const pages=Math.max(1,Math.ceil(filtered.length/perPage));
   const currentPage=Math.min(page,pages-1);
   const rows=filtered.slice(currentPage*perPage,(currentPage+1)*perPage);
-  return <div className="student-experience">
-    <StudentHeading kicker="JEJAK BELAJAR" title="Riwayat latihan" description="Semua sesi yang tersimpan di akunmu, lengkap dengan nilai dan waktu pengerjaannya."/>
-    <div className="student-panel student-history-panel">
-      <div className="student-filter-bar">
-        <label>Jenis latihan<select value={kind} onChange={e=>{setKind(e.target.value);setPage(0);}}><option value="all">Semua jenis</option><option value="mandatory">Latihan wajib</option><option value="practice">Latihan mandiri</option></select></label>
-        <label>Tanggal<input type="date" value={date} onChange={e=>{setDate(e.target.value);setPage(0);}}/></label>
-        <label>Cari materi<input placeholder="Contoh: Perkalian" value={query} onChange={e=>{setQuery(e.target.value);setPage(0);}}/></label>
-        <button type="button" className="student-clear-btn" onClick={()=>{setKind('all');setDate('');setQuery('');setPage(0);}}>Reset filter</button>
+  const totalSessions=attempts.length;
+  const averageScore=totalSessions?Math.round(attempts.reduce((sum,a)=>sum+a.score,0)/totalSessions):0;
+  const totalXp=attempts.reduce((sum,a)=>sum+Math.max(0,a.earned_xp),0);
+  const num=new Intl.NumberFormat('id-ID');
+  function reset(){setKind('all');setMonth('');setDate('');setQuery('');setPage(0);}
+  function toggle(id:string){setExpandedId(previous=>previous===id?null:id);}
+  return <main className="student-history-reference">
+    <section className="student-history-hero" aria-label="Ringkasan riwayat belajar">
+      <div className="student-history-hero-copy"><span>PERJALANAN BELAJARMU</span><h1>Riwayat latihan</h1><p>Lihat kembali hasil latihan dan temukan bagian yang masih perlu ditingkatkan.</p></div>
+      <div className="student-history-hero-metrics">
+        <div><span className="student-history-hero-metric-icon"><BookOpen size={22}/></span><span><small>Total sesi</small><strong>{busy?'—':num.format(totalSessions)}</strong></span></div>
+        <div><span className="student-history-hero-metric-icon"><Target size={22}/></span><span><small>Rata-rata nilai</small><strong>{busy?'—':averageScore}</strong></span></div>
+        <div><span className="student-history-hero-metric-icon"><TrendingUp size={22}/></span><span><small>Total XP tercatat</small><strong>{busy?'—':num.format(totalXp)}</strong></span></div>
       </div>
-      <div className="student-list-caption">{busy?'Memuat riwayat...':filtered.length+' sesi ditemukan'}</div>
-      {busy?<div className="student-blank"><RefreshCw size={23}/> Memuat hasil dari Supabase...</div>:
-       rows.length===0?<div className="student-blank"><History size={34}/><b>Belum ada sesi untuk filter ini</b><span>Kerjakan latihan atau ubah filter untuk melihat sesi lain.</span></div>:
-       <div className="student-session-list">{rows.map((a)=><details key={a.session_key} className="student-session-card">
-         <summary><span className="student-session-icon"><BookOpen size={20}/></span><span className="student-session-main"><b>{a.practice_category||'Latihan wajib'}</b><small>{toDay(a.completed_at_ms)} • {toTime(a.seconds_spent)} • {a.question_count} soal</small></span><span className="student-session-score">{a.score}<small>/100</small><small>{a.signature?.startsWith('WEB-SERVER-v1:')?'Terverifikasi':'Riwayat lama · belum terverifikasi'}</small>{a.practice_category===null&&a.signature?.startsWith('WEB-SERVER-v1:')&&<small>{officialKeys.has(a.session_key)?'Nilai resmi harian':'Pengulangan · tidak mengubah nilai resmi'}</small>}</span><span className="student-session-open">Detail <ArrowRight size={15}/></span></summary>
-         <div className="student-session-detail"><div><span>Jawaban benar</span><strong>{a.correct}</strong></div><div><span>Jumlah terjawab</span><strong>{a.answered}</strong></div><div><span>XP sesi</span><strong>+{a.earned_xp}</strong></div><div><span>Durasi</span><strong>{toTime(a.seconds_spent)}</strong></div></div>
-         <div className="student-history-download"><StudentReportDownload profile={profile} attempt={a} official={a.practice_category===null&&officialKeys.has(a.session_key)}/></div>
-         {a.signature?.startsWith('WEB-SERVER-v1:')&&<ReviewHistory sessionId={a.session_key}/>}
-         {a.review_summary?.length>0&&<div className="student-answer-summary"><b>Ringkasan status jawaban</b><p>Status diambil dari catatan sesi yang sudah selesai.</p><div>{a.review_summary.slice(0,100).map((answer,j)=><span key={j} title={'Soal '+(j+1)+': '+answer.status} className={'student-answer-dot '+(/^(BENAR|CORRECT|RIGHT)$/i.test(answer.status)?'is-correct':/^(TIMEOUT)$/i.test(answer.status)?'is-timeout': 'is-other')}>{j+1}</span>)}</div></div>}
-       </details>)}</div>}
-      <div className="student-list-footer"><span>Halaman {currentPage+1} dari {pages}</span><div><button type="button" className="btn secondary small" disabled={currentPage===0} onClick={()=>setPage(p=>Math.max(0,p-1))}>Sebelumnya</button><button type="button" className="btn secondary small" disabled={currentPage>=pages-1} onClick={()=>setPage(p=>p+1)}>Berikutnya</button></div></div>
+    </section>
+    <section className="student-history-toolbar" aria-label="Filter riwayat">
+      <div className="student-history-tabs" role="group" aria-label="Jenis latihan">
+        {([{id:'all',label:'Semua'},{id:'mandatory',label:'Wajib'},{id:'practice',label:'Mandiri'}] as const).map(tab=><button type="button" key={tab.id} className={kind===tab.id?'active':''} aria-pressed={kind===tab.id} onClick={()=>{setKind(tab.id);setPage(0);}}>{tab.label}</button>)}
+      </div>
+      <div className="student-history-filter-controls">
+        <label className="student-history-search"><Search size={17}/><input type="search" value={query} onChange={e=>{setQuery(e.target.value);setPage(0);}} placeholder="Cari materi latihan..." aria-label="Cari materi atau kelas"/></label>
+        <label className="student-history-month"><CalendarDays size={18}/><input type="month" value={month} onChange={e=>{setMonth(e.target.value);setPage(0);}} aria-label="Filter bulan latihan" title="Kosongkan untuk semua bulan"/></label>
+        <button type="button" className={'student-history-filter-more '+(showMoreFilters?'active':'')} onClick={()=>setShowMoreFilters(v=>!v)} aria-expanded={showMoreFilters} aria-label="Pengaturan filter lanjutan"><SlidersHorizontal size={19}/></button>
+      </div>
+      {showMoreFilters&&<div className="student-history-extra-filters">
+        <label>Filter tanggal tertentu <input type="date" value={date} onChange={e=>{setDate(e.target.value);setPage(0);}}/></label>
+        <button type="button" onClick={reset}>Reset semua filter</button>
+      </div>}
+    </section>
+    <div className="student-history-section-heading"><div><span>AKTIVITAS TERBARU</span><h2>{busy?'Memuat riwayat...':num.format(filtered.length)+' sesi ditemukan'}</h2></div>
+      {(month||date||query||kind!=='all')&&<button type="button" onClick={reset}>Hapus filter</button>}
     </div>
-  </div>;
+    {busy?<div className="student-history-empty"><RefreshCw size={25}/> Memuat hasil dari Supabase...</div>:
+      rows.length===0?<div className="student-history-empty"><History size={33}/><strong>Belum ada sesi untuk filter ini</strong><span>Kerjakan latihan atau ubah filter untuk melihat sesi lain.</span></div>:
+      <div className="student-history-cards">{rows.map(a=>{
+        const expanded=expandedId===a.session_key;
+        const verified=a.signature?.startsWith('WEB-SERVER-v1:');
+        const official=a.practice_category===null&&officialKeys.has(a.session_key);
+        const accuracy=a.answered>0?Math.round(a.correct/a.answered*100):0;
+        const validAnswers=a.review_summary||[];
+        const answerClass=(status:string)=>/^(BENAR|CORRECT|RIGHT)$/i.test(status)?'is-correct':/^(TIMEOUT)$/i.test(status)?'is-timeout':/^(SALAH|WRONG|INCORRECT)$/i.test(status)?'is-wrong':'is-other';
+        return <article key={a.session_key} className={'student-history-card '+(expanded?'is-expanded':'')}>
+          <div className="student-history-card-header">
+            <button type="button" className="student-history-card-toggle" onClick={()=>toggle(a.session_key)} aria-expanded={expanded} aria-controls={'history-detail-'+a.session_key}>
+              <span className="student-history-card-icon"><BookOpen size={21}/></span>
+              <span className="student-history-card-title">
+                <span className="student-history-card-tag">{a.practice_category===null?'LATIHAN WAJIB':'LATIHAN MANDIRI'}</span>
+                <strong>{a.practice_category||'Latihan wajib'}</strong>
+                <small>{toDay(a.completed_at_ms)} · {a.question_count} soal</small>
+              </span>
+            </button>
+            <div className="student-history-card-trailing">
+              <span className={'student-history-card-score '+(a.score>=70?'is-good':'is-low')}>{a.score}<small>/100</small></span>
+              <button type="button" onClick={()=>toggle(a.session_key)} aria-label={expanded?'Tutup rincian latihan':'Buka rincian latihan'} aria-expanded={expanded} aria-controls={'history-detail-'+a.session_key} className="student-history-card-chevron"><ChevronRight size={21}/></button>
+            </div>
+          </div>
+          {expanded&&<div id={'history-detail-'+a.session_key} className="student-history-card-expanded">
+            <div className="student-history-card-stats">
+              <div><span className="student-history-stat-icon green"><CheckCircle2 size={20}/></span><span><small>Jawaban benar</small><strong>{a.correct} dari {a.question_count}</strong></span></div>
+              <div><span className="student-history-stat-icon blue"><Target size={20}/></span><span><small>Akurasi terjawab</small><strong>{accuracy}%</strong></span></div>
+              <div><span className="student-history-stat-icon purple"><TrendingUp size={20}/></span><span><small>XP diperoleh</small><strong>+{a.earned_xp} XP</strong></span></div>
+              <div><span className="student-history-stat-icon amber"><Clock3 size={20}/></span><span><small>Durasi</small><strong>{toTime(a.seconds_spent)}</strong></span></div>
+            </div>
+            {validAnswers.length>0&&<div className="student-history-answer-summary">
+              <div className="student-history-answer-top"><div><strong>Ringkasan jawaban</strong><small>Hijau benar, merah salah, oranye timeout.</small></div><div className="student-history-answer-legend"><span><i className="good"/>Benar</span><span><i className="bad"/>Salah</span><span><i className="timed"/>Timeout</span></div></div>
+              <div className="student-history-answer-numbers">{validAnswers.slice(0,100).map((ans,i)=><span key={i} title={'Soal '+(i+1)+': '+ans.status} className={answerClass(ans.status)}>{i+1}</span>)}</div>
+            </div>}
+            {verified&&<div className="student-history-review-content"><ReviewHistory sessionId={a.session_key}/></div>}
+          </div>}
+          <footer className="student-history-card-footer">
+            <span className="student-history-card-verification"><ShieldCheck size={15}/>{verified?(official?'Nilai resmi terverifikasi':a.practice_category===null?'Pengulangan · nilai resmi tidak berubah':'Hasil sesi terverifikasi'):'Riwayat lama · laporan ringkasan'}</span>
+            <div className="student-history-card-actions">
+              <StudentReportDownload profile={profile} attempt={a} official={official}/>
+              <button type="button" className="student-history-details-btn" onClick={()=>toggle(a.session_key)}>{expanded?'Tutup detail':'Lihat detail'} <ChevronRight size={17}/></button>
+            </div>
+          </footer>
+        </article>;
+      })}</div>}
+    <div className="student-history-pagination"><span>Halaman {currentPage+1} dari {pages}</span><div><button type="button" disabled={currentPage===0} onClick={()=>setPage(p=>Math.max(0,p-1))}>Sebelumnya</button><button type="button" disabled={currentPage>=pages-1} onClick={()=>setPage(p=>p+1)}>Berikutnya</button></div></div>
+  </main>;
 }
 
 function RankingView({leaders,profile,busy,failed,avatarUrls}:{leaders:LeaderboardEntry[];profile:StudentProfile;busy:boolean;failed:boolean;avatarUrls:Record<string,string>}) {
