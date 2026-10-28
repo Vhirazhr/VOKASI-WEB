@@ -1,5 +1,6 @@
 'use client';
 
+import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useMemo,useState} from 'react';
 import {CheckCircle2,GraduationCap,Search,Users,UserRound,RefreshCw,FileSpreadsheet,Download} from 'lucide-react';
 import AppShell from '@/components/AppShell';
@@ -39,7 +40,7 @@ export default function AdminStudentsPage(){
   if(!selected||!targetClass||targetClass===selected.classId)return;
   if(!window.confirm('Pindahkan '+selected.fullName+' ke kelas tujuan? Perubahan ini akan dicatat.'))return;
   setSavingMove(true);setEditInfo('');
-  const {error:e}=await supabase().rpc('vokasi_admin_move_student',{p_roster_id:selected.id,p_new_class_id:targetClass});
+  const {error:e}=await nativeRpc('vokasi_admin_move_student',{p_roster_id:selected.id,p_new_class_id:targetClass});
   if(e)setEditInfo('Gagal memindahkan siswa: '+e.message);
   else{setSelected(null);setTargetClass('');setRefreshKey(i=>i+1);}
   setSavingMove(false);
