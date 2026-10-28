@@ -1,5 +1,6 @@
 'use client';
 
+import { nativeRpc } from '@/lib/native-rpc';
 import Link from 'next/link';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowLeft,BookOpen,CheckCircle2,ChevronDown,FileUp,ImagePlus,Plus,RefreshCw,Save,ShieldAlert,Trash2,UploadCloud,XCircle} from 'lucide-react';
@@ -133,7 +134,7 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
   setSaving(true);setNotice('');
   try{
    const data=await withStorageUploads();
-   const {data:result,error:rpcError}=await supabase().rpc('vokasi_admin_import_questions',{p_questions:data,p_mode:mode});
+   const {data:result,error:rpcError}=await nativeRpc('vokasi_admin_import_questions',{p_questions:data,p_mode:mode});
    if(rpcError)throw rpcError;
     setNotice('Berhasil! '+data.length+' soal '+(mode==='replace'?'menggantikan bank lama':'ditambahkan ke bank aktif')+'. Jumlah soal aktif: '+String((result as {after?:number})?.after??'tersinkron')+'.');
    if(savedId)await supabase().from('vokasi_web_import_drafts').delete().eq('id',savedId);
