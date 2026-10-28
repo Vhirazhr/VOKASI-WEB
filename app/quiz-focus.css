@@ -351,3 +351,311 @@
     animation:none!important;transition:none!important;scroll-behavior:auto!important;
   }
 }
+
+
+/* Classroom focus revision: make the question the only content inside its card.
+   The mascot now lives in the timer header, reacting to server verdicts. */
+.school-shell.student-shell .quiz-focus-columns{
+  max-width:1750px;
+  grid-template-columns:minmax(0,1fr) 355px;
+  gap:22px;
+  padding-left:clamp(12px,1.65vw,28px);
+  padding-right:clamp(12px,1.65vw,28px);
+}
+.school-shell.student-shell .quiz-focus-monitor{
+  border-radius:21px;
+}
+.school-shell.student-shell .quiz-focus-monitor-grid{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:9px;
+  max-height:min(550px,54vh);
+  padding:17px 16px;
+}
+.school-shell.student-shell .quiz-focus-monitor-counts{
+  gap:11px;
+  padding:17px 16px;
+}
+.school-shell.student-shell .quiz-focus-number{
+  min-height:46px;
+  border-radius:11px;
+  font-size:12px;
+}
+.school-shell.student-shell .quiz-focus-timer-banner{
+  gap:23px;
+}
+.school-shell.student-shell .quiz-focus-timer-copy{
+  flex:1;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-layout.quiz-playful{
+  padding-top:0;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-card{
+  padding-top:clamp(25px,3vw,38px);
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-playful-question{
+  display:block;
+  margin-top:0;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-playful-question>div:first-child{
+  max-width:none;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-playful-question h2{
+  margin:0 0 12px;
+  max-width:none;
+}
+.school-shell.student-shell .quiz-focus-workspace .quiz-playful-question .question-hint{
+  margin:0;
+}
+.school-shell.student-shell .quiz-focus-workspace .answers{
+  margin-top:25px;
+}
+.school-shell.student-shell .quiz-focus-mascot{
+  --mood-main:#86e3d1;
+  --mood-light:#c9f8ef;
+  --mood-shadow:#58bbab;
+  --mood-ink:#185e60;
+  --mood-caption:#207e73;
+  position:relative;
+  z-index:3;
+  display:flex;
+  flex:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:116px;
+  min-height:123px;
+  padding:8px 6px 5px;
+  isolation:isolate;
+  pointer-events:none;
+  user-select:none;
+}
+.school-shell.student-shell .quiz-focus-mascot-halo{
+  position:absolute;
+  z-index:-1;
+  top:-8px;
+  left:0;
+  width:115px;
+  height:115px;
+  border:1px dashed color-mix(in srgb,var(--mood-main) 68%,transparent);
+  border-radius:50%;
+  background:radial-gradient(circle,var(--mood-light) 0%,transparent 71%);
+  opacity:.72;
+  animation:quiz-mood-halo 4.5s ease-in-out infinite;
+}
+.school-shell.student-shell .quiz-focus-mascot-face{
+  position:relative;
+  display:block;
+  width:85px;
+  height:78px;
+  border:2px solid var(--mood-shadow);
+  border-radius:37% 45% 39% 41%;
+  background:linear-gradient(145deg,var(--mood-light),var(--mood-main));
+  box-shadow:0 8px 0 var(--mood-shadow),0 14px 22px color-mix(in srgb,var(--mood-main) 38%,transparent);
+  transform:rotate(5deg);
+  animation:quiz-mood-float 3.8s ease-in-out infinite;
+}
+.school-shell.student-shell .quiz-focus-mascot-eye{
+  position:absolute;
+  top:25px;
+  width:7px;
+  height:10px;
+  border-radius:50%;
+  background:var(--mood-ink);
+}
+.school-shell.student-shell .quiz-focus-mascot-eye:first-child{left:24px}
+.school-shell.student-shell .quiz-focus-mascot-eye:nth-child(2){right:24px}
+.school-shell.student-shell .quiz-focus-mascot-mouth{
+  position:absolute;
+  left:50%;
+  top:43px;
+  width:19px;
+  height:9px;
+  border-bottom:3px solid var(--mood-ink);
+  border-radius:0 0 100% 100%;
+  transform:translateX(-50%);
+}
+.school-shell.student-shell .quiz-focus-mascot-cheek{
+  position:absolute;
+  top:40px;
+  width:12px;
+  height:6px;
+  border-radius:100%;
+  background:#f8adb7;
+  opacity:.4;
+}
+.school-shell.student-shell .quiz-focus-mascot-cheek.left{left:10px}
+.school-shell.student-shell .quiz-focus-mascot-cheek.right{right:10px}
+.school-shell.student-shell .quiz-focus-mascot-caption{
+  display:block;
+  color:var(--mood-caption);
+  font-size:9px;
+  line-height:1.3;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-align:center;
+}
+.school-shell.student-shell .quiz-focus-mascot-happy{
+  --mood-main:#58d6a5;
+  --mood-light:#b4f5cf;
+  --mood-shadow:#24a77c;
+  --mood-ink:#116748;
+  --mood-caption:#12996e;
+}
+.school-shell.student-shell .quiz-focus-mascot-happy .quiz-focus-mascot-face{
+  animation:quiz-mood-happy .55s ease-in-out infinite alternate;
+}
+.school-shell.student-shell .quiz-focus-mascot-happy .quiz-focus-mascot-eye{
+  top:27px;
+  height:6px;
+  border-top:3px solid var(--mood-ink);
+  background:transparent;
+  border-radius:50% 50% 0 0;
+}
+.school-shell.student-shell .quiz-focus-mascot-happy .quiz-focus-mascot-mouth{
+  top:39px;
+  width:26px;
+  height:17px;
+  border-bottom:4px solid var(--mood-ink);
+  border-radius:0 0 95% 95%;
+}
+.school-shell.student-shell .quiz-focus-mascot-happy .quiz-focus-mascot-cheek{opacity:.8}
+.school-shell.student-shell .quiz-focus-mascot-sad{
+  --mood-main:#8fb9f8;
+  --mood-light:#d5e7ff;
+  --mood-shadow:#6998d7;
+  --mood-ink:#2f598e;
+  --mood-caption:#3879c9;
+}
+.school-shell.student-shell .quiz-focus-mascot-sad .quiz-focus-mascot-face{
+  animation:quiz-mood-sad 1.5s ease-in-out infinite;
+}
+.school-shell.student-shell .quiz-focus-mascot-sad .quiz-focus-mascot-mouth{
+  top:48px;
+  width:21px;
+  height:11px;
+  border-bottom:0;
+  border-top:3px solid var(--mood-ink);
+  border-radius:65% 65% 0 0;
+}
+.school-shell.student-shell .quiz-focus-mascot-sad .quiz-focus-mascot-cheek{
+  width:7px;
+  height:13px;
+  top:40px;
+  border-radius:100% 10% 100% 100%;
+  background:#4c9aff;
+  opacity:.9;
+}
+.school-shell.student-shell .quiz-focus-mascot-sad .quiz-focus-mascot-cheek.left{left:21px}
+.school-shell.student-shell .quiz-focus-mascot-sad .quiz-focus-mascot-cheek.right{right:21px}
+.school-shell.student-shell .quiz-focus-mascot-angry{
+  --mood-main:#ffa183;
+  --mood-light:#ffe0ce;
+  --mood-shadow:#dc6b65;
+  --mood-ink:#9b3743;
+  --mood-caption:#c65357;
+}
+.school-shell.student-shell .quiz-focus-mascot-angry .quiz-focus-mascot-face{
+  animation:quiz-mood-angry .24s ease-in-out infinite alternate;
+}
+.school-shell.student-shell .quiz-focus-mascot-angry .quiz-focus-mascot-eye{
+  top:27px;
+  height:6px;
+  border-radius:0;
+  background:transparent;
+  border-top:3px solid var(--mood-ink);
+}
+.school-shell.student-shell .quiz-focus-mascot-angry .quiz-focus-mascot-eye:first-child{transform:rotate(25deg)}
+.school-shell.student-shell .quiz-focus-mascot-angry .quiz-focus-mascot-eye:nth-child(2){transform:rotate(-25deg)}
+.school-shell.student-shell .quiz-focus-mascot-angry .quiz-focus-mascot-mouth{
+  top:45px;
+  width:18px;
+  height:11px;
+  border-bottom:0;
+  border-top:3px solid var(--mood-ink);
+  border-radius:70% 70% 0 0;
+}
+.school-shell.student-shell .quiz-focus-mascot-angry .quiz-focus-mascot-cheek{background:#ef5d5f;opacity:.8}
+@keyframes quiz-mood-float{
+  0%,100%{transform:translateY(1px) rotate(5deg)}
+  50%{transform:translateY(-6px) rotate(-1deg)}
+}
+@keyframes quiz-mood-happy{
+  from{transform:translateY(2px) rotate(-5deg)}
+  to{transform:translateY(-9px) rotate(7deg)}
+}
+@keyframes quiz-mood-sad{
+  0%,100%{transform:translateY(1px) rotate(4deg)}
+  50%{transform:translateY(5px) rotate(-4deg)}
+}
+@keyframes quiz-mood-angry{
+  from{transform:translateX(-2px) rotate(-4deg)}
+  to{transform:translateX(2px) rotate(5deg)}
+}
+@keyframes quiz-mood-halo{
+  0%,100%{transform:scale(.92);opacity:.4}
+  50%{transform:scale(1.05);opacity:.85}
+}
+@media(max-width:1130px){
+  .school-shell.student-shell .quiz-focus-columns{
+    grid-template-columns:minmax(0,1fr) 304px;
+    gap:15px;
+    padding-left:18px;
+    padding-right:18px;
+  }
+  .school-shell.student-shell .quiz-focus-monitor-grid{gap:7px;padding:14px 12px}
+  .school-shell.student-shell .quiz-focus-number{min-height:42px}
+  .school-shell.student-shell .quiz-focus-mascot{width:90px;min-height:100px}
+  .school-shell.student-shell .quiz-focus-mascot-halo{width:90px;height:90px}
+  .school-shell.student-shell .quiz-focus-mascot-face{transform-origin:center;scale:.85}
+  .school-shell.student-shell .quiz-focus-timer-banner{gap:16px}
+}
+@media(max-width:800px){
+  .school-shell.student-shell .quiz-focus-columns{
+    grid-template-columns:minmax(0,1fr);
+    padding:17px 12px 35px;
+  }
+  .school-shell.student-shell .quiz-focus-monitor-grid{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    max-height:360px;
+    gap:9px;
+    padding:14px 16px;
+  }
+  .school-shell.student-shell .quiz-focus-monitor-counts{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+}
+@media(max-width:530px){
+  .school-shell.student-shell .quiz-focus-timer-banner{
+    display:grid;
+    grid-template-columns:105px minmax(0,1fr);
+    gap:12px;
+    padding:18px 13px 26px;
+  }
+  .school-shell.student-shell .quiz-focus-timer-copy{grid-column:2;grid-row:1}
+  .school-shell.student-shell .quiz-focus-timer-ring{grid-column:1;grid-row:1}
+  .school-shell.student-shell .quiz-focus-mascot{
+    grid-column:2;
+    grid-row:2;
+    justify-self:end;
+    align-self:end;
+    width:80px;
+    height:75px;
+    min-height:0;
+    margin-top:-6px;
+    padding:0;
+  }
+  .school-shell.student-shell .quiz-focus-mascot-halo{top:-7px;left:0;width:75px;height:75px}
+  .school-shell.student-shell .quiz-focus-mascot-face{scale:.72;transform-origin:center}
+  .school-shell.student-shell .quiz-focus-mascot-caption{font-size:8px;margin-top:-7px}
+  .school-shell.student-shell .quiz-focus-timer-copy p{font-size:10px}
+  .school-shell.student-shell .quiz-focus-monitor-grid{gap:7px;padding:12px 10px}
+  .school-shell.student-shell .quiz-focus-number{min-height:42px}
+  .school-shell.student-shell .quiz-focus-workspace .quiz-card{padding-top:23px}
+}
+@media(prefers-reduced-motion:reduce){
+  .school-shell.student-shell .quiz-focus-mascot-halo,
+  .school-shell.student-shell .quiz-focus-mascot-face{
+    animation:none!important;
+  }
+}
