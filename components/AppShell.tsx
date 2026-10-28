@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { BookOpen, BarChart3, CheckCircle2, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, Bot, Bell, X, MessageCircle } from 'lucide-react';
+import { BookOpen, BarChart3, CheckCircle2, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, Bot, Bell, X, MessageCircle, Menu } from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import AdminNotificationBell from '@/components/AdminNotificationBell';
 import StudentAvatar from '@/components/StudentAvatar';
@@ -30,11 +30,13 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
   const [urlEmbed,setUrlEmbed]=useState(false);
   const [adminEmail,setAdminEmail]=useState('');
   const [chatOpen,setChatOpen]=useState(false);
+  const [adminMenuOpen,setAdminMenuOpen]=useState(false);
   useEffect(()=>{
     queueMicrotask(()=>{
       const params=new URLSearchParams(window.location.search);
       setUrlEmbed(params.get('embed')==='1');
       setChatOpen(params.get('chatbot')==='1');
+      setAdminMenuOpen(false);
     });
   },[pathname]);
   useEffect(()=>{
@@ -95,6 +97,7 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
         <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':pathname==='/admin/logs'?'Log Aktivitas':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':pathname.endsWith('/notifikasi')?'Notifikasi Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
         <div className="top-actions">
           {isAdmin?<div className="admin-header-actions">
+            <button type="button" className="admin-mobile-menu-trigger" aria-label="Buka semua fitur admin" aria-controls="vokasi-admin-mobile-menu" aria-expanded={adminMenuOpen} onClick={()=>setAdminMenuOpen(v=>!v)}><Menu size={20}/><span>Menu</span></button>
             <AdminNotificationBell/>
             <div className="admin-header-account" aria-label="Akun admin yang sedang masuk">
               <span className="admin-header-avatar"><ShieldCheck size={19}/></span>
@@ -126,6 +129,15 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
       <section id="vokasi-chatbot-dialog" className="vokasi-chatbot-dialog" role="dialog" aria-modal="true" aria-label="Chatbot VOKASI">
         <header className="vokasi-chatbot-dialog-header"><span className="vokasi-chatbot-dialog-mark"><Bot size={23}/></span><span><strong>Chatbot VOKASI</strong><small>Tanya materi dan panduan aplikasi</small></span><button type="button" className="vokasi-chatbot-close" onClick={()=>setChatOpen(false)} aria-label="Tutup chatbot"><X size={20}/></button></header>
         <StudentAssistant isOpen={chatOpen}/>
+      </section>
+    </div>}
+    {isAdmin&&!navigationBlocked&&adminMenuOpen&&<div className="admin-mobile-menu-layer">
+      <button type="button" className="admin-mobile-menu-backdrop" aria-label="Tutup menu admin" onClick={()=>setAdminMenuOpen(false)}/>
+      <section id="vokasi-admin-mobile-menu" className="admin-mobile-menu-dialog" role="dialog" aria-modal="true" aria-label="Semua fitur administrator">
+        <header><div><span>VOKASI ADMIN</span><h2>Semua fitur sekolah</h2><p>Pilih fitur yang ingin dikelola.</p></div><button type="button" onClick={()=>setAdminMenuOpen(false)} aria-label="Tutup menu"><X size={21}/></button></header>
+        <nav aria-label="Semua fitur admin">
+          {adminLinks.map(({href,label,icon:Icon})=><Link key={href} href={linkTo(href)} onClick={()=>setAdminMenuOpen(false)} className={active(href)?'selected':''} aria-current={active(href)?'page':undefined}><Icon size={21}/><span>{label}</span></Link>)}
+        </nav>
       </section>
     </div>}
     {isAdmin&&!embedMode&&!navigationBlocked&&<nav className="admin-bottom-nav" aria-label="Menu admin seluler">
