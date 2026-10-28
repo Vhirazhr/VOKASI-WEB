@@ -5,7 +5,7 @@ import {FileSpreadsheet,Upload,Plus,CheckCircle2,AlertTriangle,RefreshCw,School2
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {supabase} from '@/lib/supabase';
-import {getSchoolStudents} from '@/lib/school';
+import {getAdminSchoolCatalog,getSchoolStudents} from '@/lib/school';
 import type {SchoolStudent} from '@/lib/types';
 import {downloadAdminRosterTemplate} from '@/lib/admin-excel';
 import '@/app/admin-workspace.css';
@@ -31,8 +31,8 @@ export default function AdminDataManagement(){
  const [draft,setDraft]=useState<Draft[]>([]),[fileName,setFileName]=useState(''),[showAll,setShowAll]=useState(false);
  const fileRef=useRef<HTMLInputElement>(null);
  useEffect(()=>{if(loading||error)return;let active=true;const load=async()=>{setBusy(true);try{
-  const [m,c,s]=await Promise.all([supabase().from('majors').select('id,name,code').eq('is_active',true).order('name'),supabase().from('classes').select('id,class_name,major_id,grade_level,school_year').eq('is_active',true).order('class_name'),getSchoolStudents()]);
-  if(m.error)throw m.error;if(c.error)throw c.error;if(active){setMajors(m.data||[]);setClasses(c.data||[]);setStudents(s);setProblem('');}
+  const [catalog,s]=await Promise.all([getAdminSchoolCatalog(),getSchoolStudents()]);
+  if(active){setMajors(catalog.majors);setClasses(catalog.classes);setStudents(s);setProblem('');}
  }catch(e){if(active)setProblem(e instanceof Error?e.message:'Gagal memuat data sekolah.');}
  finally{if(active)setBusy(false);}
  };void load();return()=>{active=false};},[loading,error,refresh]);
