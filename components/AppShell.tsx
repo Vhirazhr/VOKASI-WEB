@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { BookOpen, BarChart3, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, Bot, Bell, X, MessageCircle } from 'lucide-react';
+import { BookOpen, BarChart3, CheckCircle2, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, Bot, Bell, X, MessageCircle } from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import AdminNotificationBell from '@/components/AdminNotificationBell';
 import StudentAvatar from '@/components/StudentAvatar';
@@ -65,6 +65,7 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
     {href:'/admin/siswa',label:'Data siswa',icon:Users},
     {href:'/admin/kelas',label:'Kelas & jurusan',icon:School2},
     {href:'/admin/bank-soal',label:'Bank soal',icon:BookOpen},
+    {href:'/admin/monitoring',label:'Monitoring nilai',icon:CheckCircle2},
     {href:'/admin/analitik',label:'Analitik',icon:BarChart3},
     {href:'/admin/logs',label:'Log aktivitas',icon:ScrollText},
     {href:'/admin/pengaturan',label:'Pengaturan',icon:Settings}
