@@ -12,34 +12,49 @@ type RowQuery = {
 async function allRows<T>(table: string, select: string, options: RowQuery = {}): Promise<T[]> {
   const rows: T[] = [];
   for (let from = 0; ; from += BATCH) {
-    let q = supabase().from(table).select(select);
-    if (options.equals) q = q.eq(options.equals.column, options.equals.value);
-    if (options.lowerBound) q = q.gte(options.lowerBound.column, options.lowerBound.value);
-    if (options.upperBound) q = q.lt(options.upperBound.column, options.upperBound.value);
-    if (options.nullColumn) q = q.is(options.nullColumn, null);
-    for (const order of options.order || [{column:'id',ascending:true}]) {
-      q = q.order(order.column, {ascending:order.ascending!==false});
-    }
-    let {data,error} = await q.range(from, from + BATCH - 1);
-    // A stale browser session can produce 401/403 even while the school database is healthy.
-    // Refresh once, then rebuild the query with the new access token.
-    if (error && ['401','403','PGRST301'].includes(String(error.code ?? ''))) {
-      const refresh = await supabase().auth.refreshSession();
-      if (refresh.error || !refresh.data.session) {
-        throw new Error('Sesi login sudah kedaluwarsa. Keluar dan masuk kembali sebagai admin atau siswa.');
+    let batch: T[] | null = null;
+    // Read-only requests may fail transiently on weak school networks or during
+    // session-token refresh. Retry boundedly; never retry writes.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const db = supabase();
+      let q = db.from(table).select(select);
+      if (options.equals) q = q.eq(options.equals.column, options.equals.value);
+      if (options.lowerBound) q = q.gte(options.lowerBound.column, options.lowerBound.value);
+      if (options.upperBound) q = q.lt(options.upperBound.column, options.upperBound.value);
+      if (options.nullColumn) q = q.is(options.nullColumn, null);
+      for (const order of options.order || [{column:'id',ascending:true}]) {
+        q = q.order(order.column, {ascending:order.ascending!==false});
       }
-      let retry = supabase().from(table).select(select);
-      if (options.equals) retry = retry.eq(options.equals.column,options.equals.value);
-      if (options.lowerBound) retry = retry.gte(options.lowerBound.column,options.lowerBound.value);
-      if (options.upperBound) retry = retry.lt(options.upperBound.column,options.upperBound.value);
-      if (options.nullColumn) retry = retry.is(options.nullColumn,null);
-      for (const order of options.order || [{column:'id',ascending:true}])
-        retry = retry.order(order.column,{ascending:order.ascending!==false});
-      const again = await retry.range(from,from+BATCH-1);
-      data=again.data;error=again.error;
+      try {
+        const result = await q.abortSignal(AbortSignal.timeout(16000)).range(from, from + BATCH - 1);
+        if (!result.error) {
+          batch = (result.data || []) as T[];
+          break;
+        }
+        const unauthorized = result.status === 401 || result.status === 403;
+        if (unauthorized && attempt === 0) {
+          const {error: refreshError} = await db.auth.refreshSession();
+          if (!refreshError) continue;
+        }
+        const transient = result.status === 429 || result.status >= 500;
+        if (transient && attempt < 2) {
+          await new Promise<void>(resolve => setTimeout(resolve, 350 * (attempt + 1)));
+          continue;
+        }
+        throw new Error('Gagal memuat '+table+': '+result.error.message+
+          ' (HTTP '+result.status+').'+(unauthorized?' Sesi admin mungkin berakhir; keluar lalu masuk kembali.':''));
+      } catch (error) {
+        // Explicit REST errors are not transient and must be shown verbatim.
+        if (error instanceof Error && error.message.startsWith('Gagal memuat '+table+':')) throw error;
+        if (attempt >= 2) throw new Error(
+          'Tidak dapat menghubungi Supabase untuk '+table+
+          '. Cek internet, VPN/adblock, URL Supabase, lalu coba segarkan halaman. Detail: '+
+          (error instanceof Error ? error.message : 'jaringan terputus')
+        );
+        await new Promise<void>(resolve => setTimeout(resolve, 350 * (attempt + 1)));
+      }
     }
-    if (error) throw new Error('Gagal mengambil '+table+': '+error.message+(error.code?' ('+error.code+')':''));
-    const batch = (data || []) as T[];
+    if (batch === null) throw new Error('Pembacaan '+table+' belum berhasil setelah tiga percobaan.');
     rows.push(...batch);
     if (batch.length < BATCH) break;
   }
