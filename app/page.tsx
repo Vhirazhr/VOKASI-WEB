@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import {
   ArrowRight, ArrowUpRight, BookOpen, CalendarDays, ChartNoAxesCombined, CheckCircle2,
@@ -69,7 +70,7 @@ export default function Home() {
       <header className="vok-header">
         <nav className="vok-nav" aria-label="Navigasi utama">
           <Link className="vok-brand" href="/" aria-label="VOKASI — Beranda">
-            <span className="vok-brand-mark">V<span>.</span></span><span>VOKASI<span className="vok-brand-dot">.</span></span>
+            <span className="vok-brand-mark vok-brand-school-logo"><Image src="/assets/smkn1sgs-166x166-1.png" alt="Logo SMKN 1 Singosari" width={166} height={166} unoptimized className="vok-school-logo-image"/></span><span>VOKASI<span className="vok-brand-dot">.</span></span>
           </Link>
           <div className="vok-nav-links">
             {navigation.map(item => <a key={item.href} href={item.href}>{item.label}</a>)}
@@ -154,7 +155,7 @@ export default function Home() {
             <Link href="/login" className="vok-inline-link">Lihat dashboard siswa <ArrowUpRight size={18}/></Link>
           </div>
           <div className="vok-showcase-screen">
-            <div className="vok-showcase-head"><span className="vok-screen-logo">V.</span><div className="vok-showcase-tabs" role="group" aria-label="Pilihan preview dashboard">{(['Dashboard','Latihan','Hasil'] as PreviewTab[]).map(tab=><button key={tab} type="button" aria-pressed={previewTab===tab} className={previewTab===tab?'active':''} onClick={()=>setPreviewTab(tab)}>{tab}</button>)}</div></div>
+            <div className="vok-showcase-head"><span className="vok-screen-logo"><Image src="/assets/smkn1sgs-166x166-1.png" alt="Logo SMKN 1 Singosari" width={166} height={166} unoptimized className="vok-school-logo-image"/></span><div className="vok-showcase-tabs" role="group" aria-label="Pilihan preview dashboard">{(['Dashboard','Latihan','Hasil'] as PreviewTab[]).map(tab=><button key={tab} type="button" aria-pressed={previewTab===tab} className={previewTab===tab?'active':''} onClick={()=>setPreviewTab(tab)}>{tab}</button>)}</div></div>
             <div className="vok-showcase-body" key={previewTab}>
               {previewTab==='Dashboard'&&<><div className="vok-demo-greet"><span>HALO, SISWA VOKASI!</span><h3>Siap berkembang hari ini?</h3><p>Ayo lanjutkan perjalanan belajarmu.</p></div><div className="vok-demo-double"><div><small>LATIHAN WAJIB</small><strong>100 soal</strong><p>Waktu maksimal 30 menit</p></div><div><small>PROGRES BELAJAR</small><strong>4 materi</strong><p>Perkalian hingga konversi</p></div></div><div className="vok-demo-row"><span>Mulai latihan numerasi</span><span><ArrowRight size={17}/></span></div></>}
               {previewTab==='Latihan'&&<><div className="vok-demo-quiz-head"><span>CONTOH TAMPILAN SOAL</span><span>01 / 100</span></div><div className="vok-demo-quiz-progress"><i/></div><h3 className="vok-demo-question">Berapakah hasil dari 12 × 8?</h3><div className="vok-demo-choices"><span>A. 86</span><span className="selected">B. 96</span><span>C. 108</span><span>D. 112</span></div><p className="vok-demo-caption">Simulasi tampilan, bukan sesi ujian yang aktif.</p></>}
@@ -199,7 +200,7 @@ export default function Home() {
 
       <section className="vok-final-section"><div className="vok-container"><div className="vok-final-card"><div className="vok-final-decoration" aria-hidden="true"/><span className="vok-final-label"><Sparkles size={15}/> WAKTUNYA BERKEMBANG</span><h2>Potensi besar dimulai<br/>dari satu langkah.</h2><p>Jadikan setiap latihan sebagai kesempatan untuk belajar lebih baik hari ini.</p><Link href="/login" className="vok-action vok-action-light">Masuk ke VOKASI <ArrowRight size={19}/></Link></div></div></section>
 
-      <footer className="vok-footer"><div className="vok-container vok-footer-main"><div><Link className="vok-brand" href="/"><span className="vok-brand-mark">V<span>.</span></span><span>VOKASI<span className="vok-brand-dot">.</span></span></Link><p>Platform belajar numerasi dan pemantauan perkembangan untuk generasi vokasi.</p></div><div className="vok-footer-links"><a href="#fitur">Fitur</a><a href="#peringkat">Peringkat</a><a href="#sekolah">Untuk sekolah</a><a href="#bantuan">Bantuan</a><Link href="/login">Masuk</Link></div></div><div className="vok-container vok-footer-bottom"><span>© 2026 VOKASI. Belajar • Berlatih • Berkembang.</span><span>Dirancang untuk pengalaman belajar yang lebih baik.</span></div></footer>
+      <footer className="vok-footer"><div className="vok-container vok-footer-main"><div><Link className="vok-brand" href="/"><span className="vok-brand-mark vok-brand-school-logo"><Image src="/assets/smkn1sgs-166x166-1.png" alt="Logo SMKN 1 Singosari" width={166} height={166} unoptimized className="vok-school-logo-image"/></span><span>VOKASI<span className="vok-brand-dot">.</span></span></Link><p>Platform belajar numerasi dan pemantauan perkembangan untuk generasi vokasi.</p></div><div className="vok-footer-links"><a href="#fitur">Fitur</a><a href="#peringkat">Peringkat</a><a href="#sekolah">Untuk sekolah</a><a href="#bantuan">Bantuan</a><Link href="/login">Masuk</Link></div></div><div className="vok-container vok-footer-bottom"><span>© 2026 VOKASI. Belajar • Berlatih • Berkembang.</span><span>Dirancang untuk pengalaman belajar yang lebih baik.</span></div></footer>
     </main>
   );
 }
