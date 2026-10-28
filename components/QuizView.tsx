@@ -1,7 +1,7 @@
 'use client';
 
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle,Grid2X2,ShieldCheck} from 'lucide-react';
+import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle,Grid2X2,ShieldCheck,ZoomIn,X} from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import StudentSessionReportDownload from '@/components/StudentSessionReportDownload';
 import type {Attempt,StudentProfile} from '@/lib/types';
@@ -74,6 +74,8 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const [liveProgress,setLiveProgress]=useState<LiveProgress|null>(null);
  const [restartCycle,setRestartCycle]=useState(0);
  const [timeoutReaction,setTimeoutReaction]=useState(false);
+ const [monitorOpen,setMonitorOpen]=useState(false);
+ const [figureOpen,setFigureOpen]=useState(false);
  const live=useRef(true);
  const inFlight=useRef(false);
  const feedbackTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
@@ -269,7 +271,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    sessionStorage.removeItem(key(profile.authId));
    setReview(null);setReviewShown(false);setReviewPage(0);setReviewFilter('Semua');
    setXp(null);setLiveProgress(null);setSelected(null);setFeedback(null);setFeedbackQuestion(null);setTimeoutReaction(false);
-   setImageUrls(new Map());setState(null);setError('');setRestartCycle(v=>v+1);
+   setImageUrls(new Map());setState(null);setError('');setMonitorOpen(false);setFigureOpen(false);setRestartCycle(v=>v+1);
  }
  function quit(){if(!window.confirm('Keluar dari latihan? Sesi tetap berjalan di server dan dapat dilanjutkan dari browser ini.'))return;onQuit();}
  if(busy)return <section className="white-panel center-message">Menyiapkan soal dan gambar... Waktu belum berjalan.</section>;
@@ -326,7 +328,10 @@ export default function QuizView({profile,category,onDone,onQuit}:{
        <Clock3 size={24}/>
        <div><small>SISA WAKTU SESI</small><strong role="timer">{textClock(totalRemaining)}</strong></div>
      </div>
-     <button type="button" className="quiz-focus-leave" onClick={quit}><ArrowLeft size={16}/> Keluar latihan</button>
+     <div className="quiz-focus-appbar-actions">
+       <button type="button" className="quiz-focus-monitor-toggle" aria-controls="quiz-focus-monitor" aria-expanded={monitorOpen} onClick={()=>setMonitorOpen(value=>!value)}><Grid2X2 size={17}/><span>Daftar soal</span></button>
+       <button type="button" className="quiz-focus-leave" onClick={quit}><ArrowLeft size={16}/><span>Keluar latihan</span></button>
+     </div>
    </header>
    <div className="quiz-focus-session-track" aria-label={'Progres latihan '+progress+' persen'}>
      <div style={{width:progress+'%'}}/>
@@ -356,9 +361,12 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      </section>
      <div className="quiz-layout quiz-playful">
    <div className="quiz-card">
+    <div className="quiz-question-scroll" key={state.session_id+':'+state.index}>
     <div className="quiz-playful-question"><div><h2>{question.text}</h2><p className="question-hint">Pilih satu jawaban yang paling tepat.</p></div></div>
-    {question.image_path&&imageUrls.get(question.image_path)&&<div className="quiz-visual-figure">
-      <img src={imageUrls.get(question.image_path)} alt="Gambar soal numerasi" loading="eager"/></div>}
+    {question.image_path&&imageUrls.get(question.image_path)&&<button type="button" className="quiz-visual-figure quiz-focus-figure-zoom" onClick={()=>setFigureOpen(true)} aria-label="Perbesar gambar soal">
+      <img src={imageUrls.get(question.image_path)} alt="Gambar soal numerasi" loading="eager"/>
+      <span className="quiz-focus-zoom-label"><ZoomIn size={15}/> Perbesar gambar</span>
+    </button>}
     <div className="answers">{question.options.map((option,i)=><button type="button" key={i}
        aria-pressed={selected===i} disabled={sending||!!feedback||remaining<=0}
        className={'answer '+(selected===i?'chosen ':'')+(feedback&&selected===i?(feedback.correct?'feedback-correct':'feedback-wrong'):'')}
@@ -371,13 +379,16 @@ export default function QuizView({profile,category,onDone,onQuit}:{
     {feedback&&<div role="status" className={'quiz-answer-feedback '+(feedback.correct?'correct':'wrong')}>
       <b>{feedback.correct?'✓ Jawaban kamu BENAR!':'✕ Jawaban kamu SALAH.'}</b><span>Soal berikutnya segera tampil…</span></div>}
     {error&&<div className="alert danger" role="alert">{error}<button className="btn secondary small" onClick={()=>void onServer()}><RefreshCw size={15}/> Sinkronkan</button></div>}
+    </div>
     <div className="quiz-footer"><span>Jawaban diperiksa server. Jawaban terkirim tidak bisa diubah.</span>
       <button className="btn primary" disabled={selected===null||sending||!!feedback||remaining<=0} onClick={()=>void submit()}>
         {sending?'Memverifikasi...':'Kirim jawaban'} <ArrowRight size={16}/></button></div>
-   </div><p className="quiz-footnote">Waktu dikendalikan server. Saat habis, sistem otomatis lanjut dan menandai TIMEOUT.</p>
+   </div>
      </div>
     </main>
-    <aside className="quiz-focus-monitor" aria-label="Monitoring status soal">
+    {monitorOpen&&<button type="button" className="quiz-focus-monitor-backdrop" aria-label="Tutup daftar soal" onClick={()=>setMonitorOpen(false)}/>}
+    <aside id="quiz-focus-monitor" className={'quiz-focus-monitor '+(monitorOpen?'is-open':'')} aria-label="Monitoring status soal">
+      <button type="button" className="quiz-focus-monitor-close" onClick={()=>setMonitorOpen(false)} aria-label="Tutup daftar soal"><X size={19}/></button>
       <div className="quiz-focus-monitor-heading"><span className="quiz-focus-monitor-icon"><Grid2X2 size={21}/></span><div><small>NAVIGASI</small><strong>Daftar soal</strong><span>Monitoring, bukan untuk lompat soal</span></div></div>
       <div className="quiz-focus-monitor-counts">
         <div className="is-correct"><strong>{liveProgress?.correct??'—'}</strong><small>Benar</small></div>
@@ -398,5 +409,9 @@ export default function QuizView({profile,category,onDone,onQuit}:{
       <div className="quiz-focus-monitor-assurance"><ShieldCheck size={15}/><span>Jawaban dan waktu dikendalikan server. Nomor yang selesai tidak dapat diubah.</span></div>
     </aside>
    </div>
+   {figureOpen&&question.image_path&&imageUrls.get(question.image_path)&&<div className="quiz-focus-image-modal" role="dialog" aria-modal="true" aria-label="Gambar soal diperbesar" onClick={()=>setFigureOpen(false)}>
+     <button type="button" className="quiz-focus-image-modal-close" onClick={()=>setFigureOpen(false)} aria-label="Tutup gambar"><X size={23}/></button>
+     <img src={imageUrls.get(question.image_path)} alt="Gambar soal berukuran besar" onClick={event=>event.stopPropagation()}/>
+   </div>}
  </div>;
 }
