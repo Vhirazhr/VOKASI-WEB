@@ -26,6 +26,8 @@ jobs:
         run: npm run check:new-bank-blueprint
       - name: Verify exam security contract
         run: npm run check:security
+      - name: Verify self-hosted PostgreSQL security contract
+        run: npm run check:self-hosted-db
       - name: Lint source
         run: npm run lint
       - name: Typecheck
