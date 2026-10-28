@@ -7,6 +7,7 @@ import StudentSessionReportDownload from '@/components/StudentSessionReportDownl
 import type {Attempt,StudentProfile} from '@/lib/types';
 import '@/app/quiz-playful.css';
 import '@/app/quiz-focus.css';
+import '@/app/quiz-viewport.css';
 
 type Option={text:string;image_path:string|null};
 type Question={id:number;category:string;text:string;image_path:string|null;options:Option[];seconds:number};
