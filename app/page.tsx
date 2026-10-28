@@ -3,7 +3,6 @@ import {
   ChartNoAxesCombined,
   ClipboardCheck,
   Medal,
-  Trophy,
   ArrowUpRight,
   Mail,
   MapPin,
@@ -11,7 +10,6 @@ import {
 } from "lucide-react";
 import InteractiveLogo from "@/components/landing/InteractiveLogo";
 import SchoolMark from "@/components/landing/SchoolMark";
-import LandingRanking, { LeaderboardLink } from "@/components/landing/LandingRanking";
 import LandingAccess, { AccessLink } from "@/components/landing/LandingAccess";
 import MotionSettings from "@/components/landing/MotionSettings";
 import "@fontsource-variable/plus-jakarta-sans/wght.css";
@@ -57,7 +55,6 @@ const steps = [
 export default function Home() {
   return (
     <LandingAccess>
-      <LandingRanking>
       <main className="vkw-page" id="beranda">
         <a className="vkw-skip" href="#tentang">
           Lewati animasi
@@ -78,7 +75,6 @@ export default function Home() {
             <nav aria-label="Navigasi utama">
               <a href="#beranda" className="vkw-nav-home">Beranda</a>
               <a href="#tentang">Tentang</a>
-              <LeaderboardLink>Leaderboard</LeaderboardLink>
               <a href="#fitur">Fitur Unggulan</a>
             </nav>
             <AccessLink className="vkw-nav-login">
@@ -97,10 +93,6 @@ export default function Home() {
                 ))}
               </h1>
               <p>Platform Pembelajaran Numerasi</p>
-              <LeaderboardLink className="vkw-primary vkw-hero-ranking-cta">
-                <Trophy size={17} />
-                Lihat Peringkat Siswa
-              </LeaderboardLink>
             </div>
           </section>
           <section
@@ -203,7 +195,6 @@ export default function Home() {
             <h2>Tautan Cepat</h2>
             <a href="#beranda">Beranda</a>
             <a href="#tentang">Tentang VOKASI</a>
-            <LeaderboardLink>Leaderboard</LeaderboardLink>
             <a href="#fitur">Fitur Unggulan</a>
             <a href="#panduan">Panduan Penggunaan</a>
             <AccessLink role="admin">Login Admin ↗</AccessLink>
@@ -245,7 +236,6 @@ export default function Home() {
           </div>
         </footer>
       </main>
-      </LandingRanking>
     </LandingAccess>
   );
 }
