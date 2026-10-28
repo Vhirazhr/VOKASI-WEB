@@ -240,7 +240,7 @@
   position:relative;z-index:1;display:block;max-width:min(1100px,95vw);max-height:88dvh;
   width:auto;height:auto;object-fit:contain;
   padding:12px;border-radius:14px;background:white;
-  box-shadow:0 24px 60px #020e2355;pointer-events:none;
+  box-shadow:0 24px 60px #020e2355;
 }
 .school-shell.student-shell .quiz-focus-image-modal-close{
   position:absolute;z-index:2;right:20px;top:17px;
@@ -380,7 +380,8 @@
  .school-shell.student-shell .quiz-focus-timer-inner small{font-size:6px}
  .school-shell.student-shell .quiz-focus-mascot{width:45px}
  .school-shell.student-shell .quiz-focus-mascot-caption{display:none}
- .school-shell.student-shell .quiz-focus-timer-copy h2{font-size:16px}
+ .school-shell.student-shell .quiz-focus-timer-copy h2{font-size:15px;line-height:1.12}
+ .school-shell.student-shell .quiz-focus-inline-stats span:last-child{display:none}
  .school-shell.student-shell .quiz-focus-timer-banner{gap:8px}
 }
 /* Compact screens and landscape phones: squeeze decoration, never the submit. */
