@@ -20,6 +20,7 @@ import type {Attempt,LeaderboardEntry,StudentProfile} from '@/lib/types';
 import '@/app/student-experience.css';
 import '@/app/student-unified-ui.css';
 import '@/app/student-ranking-reference.css';
+import '@/app/student-learning-extras.css';
 
 const categories=[...PRACTICE_CATEGORIES];
 const toDay=(ms:number)=>new Intl.DateTimeFormat('id-ID',{dateStyle:'long',timeZone:'Asia/Jakarta'}).format(new Date(ms));
