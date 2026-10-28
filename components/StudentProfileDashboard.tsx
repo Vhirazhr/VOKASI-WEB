@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {ArrowRight,Award,BarChart3,BookOpen,Camera,Check,CheckCircle2,ChevronDown,Clock3,Eye,EyeOff,Flame,GraduationCap,History,KeyRound,LockKeyhole,LogOut,ShieldCheck,Sparkles,Target,Trophy,UserRound,Wallet} from 'lucide-react';
 import StudentAvatar from '@/components/StudentAvatar';
 import ReviewHistory from '@/components/ReviewHistory';
+import StudentReportDownload from '@/components/StudentReportDownload';
 import {uploadOwnAvatar} from '@/lib/student-avatar';
 import {officialMandatoryAttempts,wibDate} from '@/lib/school';
 import {supabase} from '@/lib/supabase';
@@ -50,7 +51,7 @@ function monthPerformance(official:Attempt[]):MonthPoint[]{
  });
 }
 
-function ActivityEntries({rows,busy,officialKeys}:{rows:Attempt[];busy:boolean;officialKeys:Set<string>}){
+function ActivityEntries({rows,busy,officialKeys,profile}:{rows:Attempt[];busy:boolean;officialKeys:Set<string>;profile:StudentProfile}){
   if(busy)return <div className="vprofile-activity-empty">Memuat aktivitas dari Supabase...</div>;
   if(!rows.length)return <div className="vprofile-activity-empty"><History size={23}/><strong>Belum ada sesi latihan</strong><span>Hasil latihan akan muncul setelah kamu menyelesaikan soal.</span></div>;
   return <div className="vprofile-activity-list">{rows.map(a=>{
@@ -69,6 +70,7 @@ function ActivityEntries({rows,busy,officialKeys}:{rows:Attempt[];busy:boolean;o
        <span><b>+{a.earned_xp||0}</b><small>XP sesi</small></span>
        <span><b>{Math.round((a.seconds_spent||0)/60)} m</b><small>Durasi</small></span>
       </div>
+      <div className="vprofile-report-toolbar"><StudentReportDownload profile={profile} attempt={a} official={officialResult}/><small>{hasProof(a)?'Laporan memuat jawaban dan pembahasan.':'Laporan ringkasan saja untuk riwayat lama.'}</small></div>
       {hasProof(a)?<ReviewHistory sessionId={a.session_key}/>:<p className="vprofile-attempt-note">Catatan lama belum memiliki pembahasan yang diverifikasi server.</p>}
     </details>;
    })}</div>;
@@ -247,7 +249,7 @@ export default function StudentProfileDashboard({profile,attempts,busy,avatarUrl
        </div>
        <section className="vprofile-panel vprofile-recent">
         <div className="vprofile-section-title"><span>TERAKHIR DIKERJAKAN</span><div className="vprofile-section-title-row"><h3>Aktivitas terbaru</h3><button type="button" onClick={()=>chooseTab('activity')}>Lihat semua <ArrowRight size={15}/></button></div></div>
-        <ActivityEntries rows={latest.slice(0,3)} busy={busy} officialKeys={officialKeys}/>
+        <ActivityEntries rows={latest.slice(0,3)} busy={busy} officialKeys={officialKeys} profile={profile}/>
        </section>
       </>}
       {tab==='activity'&&<section className="vprofile-panel vprofile-all-activity">
@@ -257,7 +259,7 @@ export default function StudentProfileDashboard({profile,attempts,busy,avatarUrl
         <label>Tanggal<input type="date" value={historyDate} onChange={e=>{setHistoryDate(e.target.value);setHistoryShown(5);}}/></label>
        </div>
        <p className="vprofile-history-count">{busy?'Memuat...':filtered.length+' sesi ditemukan · terbaru lebih dulu'}</p>
-       <ActivityEntries rows={filtered.slice(0,historyShown)} busy={busy} officialKeys={officialKeys}/>
+       <ActivityEntries rows={filtered.slice(0,historyShown)} busy={busy} officialKeys={officialKeys} profile={profile}/>
        {historyShown<filtered.length&&<button type="button" className="vprofile-show-more" onClick={()=>setHistoryShown(n=>n+5)}>Muat 5 lainnya ({filtered.length-historyShown} tersisa) <ArrowRight size={16}/></button>}
        <Link href="/siswa/riwayat" className="vprofile-full-history-link">Buka halaman Riwayat lengkap <ArrowRight size={16}/></Link>
       </section>}
