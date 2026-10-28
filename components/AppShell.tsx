@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { BookOpen, BarChart3, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, Bot, Bell, X } from 'lucide-react';
+import { BookOpen, BarChart3, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, Bot, Bell, X, MessageCircle } from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import AdminNotificationBell from '@/components/AdminNotificationBell';
 import StudentAvatar from '@/components/StudentAvatar';
@@ -58,7 +58,6 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
     {href:'/siswa/riwayat',label:'Riwayat',icon:History},
     {href:'/siswa/peringkat',label:'Peringkat',icon:Trophy},
     {href:'/siswa/profil',label:'Profil',icon:UserRound},
-    {href:'#chatbot',label:'Chatbot',icon:Bot},
     {href:'/siswa/notifikasi',label:'Notifikasi',icon:Bell}
   ];
   const adminLinks=[
@@ -81,9 +80,8 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
       <Link onClick={askBeforeLeave} href="/" className="brand"><span className="brand-mark">V</span><span>VOKASI<span className="brand-dot">.</span></span></Link>
       <div className="side-label">{isAdmin?'PANEL SEKOLAH':'RUANG BELAJAR'}</div>
       <nav className="side-menu" aria-label="Navigasi dashboard">
-        {items.map(({href,label,icon:Icon})=>href==='#chatbot'?
-          <button key={href} type="button" onClick={()=>setChatOpen(v=>!v)} aria-expanded={chatOpen} aria-controls="vokasi-chatbot-dialog" className={'side-link vokasi-chatbot-nav '+(chatOpen?'selected':'')}><Icon size={19}/><span>{label}</span></button>:
-          <Link key={href} onClick={askBeforeLeave} href={linkTo(href)} aria-current={active(href)?'page':undefined} className={'side-link '+(active(href)?'selected':'')}><Icon size={19}/><span>{label}</span></Link>)}
+        {items.map(({href,label,icon:Icon})=><Link key={href} onClick={askBeforeLeave} href={linkTo(href)} aria-current={active(href)?'page':undefined} className={'side-link '+(active(href)?'selected':'')}>
+          <Icon size={19}/><span>{label}</span></Link>)}
       </nav>
       {!isAdmin&&<div className="side-bottom">
         <div className="side-user"><StudentAvatar className="user-badge" name={displayName} url={studentAvatarUrl} size={48}/><span><b>{displayName}</b><small>Siswa VOKASI</small></span></div>
@@ -91,7 +89,7 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
       </div>}
     </aside>
     <div className="shell-main">
-      {embedMode&&!navigationBlocked&&<nav className="embed-shortcuts" aria-label="Menu VOKASI dalam website sekolah">{items.map(({href,label})=>href==='#chatbot'?<button key={href} type="button" onClick={()=>setChatOpen(v=>!v)} aria-expanded={chatOpen} className={chatOpen?'active':''}>Chatbot</button>:<Link key={href} href={linkTo(href)} className={active(href)?'active':''}>{label}</Link>)}</nav>}
+      {embedMode&&!navigationBlocked&&<nav className="embed-shortcuts" aria-label="Menu VOKASI dalam website sekolah">{items.map(({href,label})=><Link key={href} href={linkTo(href)} className={active(href)?'active':''}>{label}</Link>)}</nav>}
       <header className="topbar">
         <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':pathname==='/admin/logs'?'Log Aktivitas':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':pathname.endsWith('/notifikasi')?'Notifikasi Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
         <div className="top-actions">
@@ -114,11 +112,15 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
       <div className="shell-body">{children}</div>
     </div>
     {!isAdmin&&!embedMode&&!navigationBlocked&&<nav className="student-bottom-nav" aria-label="Navigasi siswa seluler">
-      {studentLinks.filter(item=>item.href!=='/siswa/notifikasi').map(({href,label,icon:Icon})=>href==='#chatbot'?
-        <button key={href} type="button" className={chatOpen?'active':''} aria-expanded={chatOpen} aria-controls="vokasi-chatbot-dialog" onClick={()=>setChatOpen(v=>!v)}><Icon size={21}/><span>{label}</span></button>:
+      {studentLinks.filter(item=>item.href!=='/siswa/notifikasi').map(({href,label,icon:Icon})=>
         <Link key={href} href={href} className={pathname===href?'active':''} aria-current={pathname===href?'page':undefined}><Icon size={21}/><span>{label}</span></Link>)}
     </nav>}
-    {!isAdmin&&!navigationBlocked&&chatOpen&&<div className="vokasi-chatbot-layer">
+    {!isAdmin&&!navigationBlocked&&!quizFocusMode&&<button type="button" className={'vokasi-chatbot-fab '+(chatOpen?'is-open':'')} onClick={()=>setChatOpen(open=>!open)} aria-label={chatOpen?'Tutup Chatbot VOKASI':'Buka Chatbot VOKASI'} title={chatOpen?'Tutup Chatbot':'Chatbot VOKASI'} aria-expanded={chatOpen} aria-controls="vokasi-chatbot-dialog">
+      {chatOpen?<X size={25} aria-hidden="true"/>:<MessageCircle size={27} strokeWidth={2.2} aria-hidden="true"/>}
+      {!chatOpen&&<span className="vokasi-chatbot-fab-status" aria-hidden="true"/>}
+      <span className="vokasi-chatbot-fab-tooltip" aria-hidden="true">{chatOpen?'Tutup chat':'Butuh bantuan?'}</span>
+    </button>}
+    {!isAdmin&&!navigationBlocked&&!quizFocusMode&&chatOpen&&<div className="vokasi-chatbot-layer">
       <button type="button" className="vokasi-chatbot-backdrop" onClick={()=>setChatOpen(false)} aria-label="Tutup chatbot"/>
       <section id="vokasi-chatbot-dialog" className="vokasi-chatbot-dialog" role="dialog" aria-modal="true" aria-label="Chatbot VOKASI">
         <header className="vokasi-chatbot-dialog-header"><span className="vokasi-chatbot-dialog-mark"><Bot size={23}/></span><span><strong>Chatbot VOKASI</strong><small>Tanya materi dan panduan aplikasi</small></span><button type="button" className="vokasi-chatbot-close" onClick={()=>setChatOpen(false)} aria-label="Tutup chatbot"><X size={20}/></button></header>
