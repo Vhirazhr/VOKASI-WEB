@@ -5,11 +5,13 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Atom, BookOpen, Brain, Calculator, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Divide, GraduationCap, History, Image as ImageIcon, Lightbulb, Medal, Megaphone, Play, RefreshCw, Search, Shapes, ShieldCheck, Sigma, Star, Target, TrendingUp, Trophy } from 'lucide-react';
 import AppShell from '@/components/AppShell';
+import StudentAvatar from '@/components/StudentAvatar';
 import QuizView from '@/components/QuizView';
 import ReviewHistory from '@/components/ReviewHistory';
 import {getPublishedBankVersion,PRACTICE_CATEGORIES} from '@/lib/quiz';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {getOwnAttempts,getLeaderboard,wibDate} from '@/lib/school';
+import {getSchoolAvatarUrls,uploadOwnAvatar} from '@/lib/student-avatar';
 import type {Attempt,LeaderboardEntry,StudentProfile} from '@/lib/types';
 import '@/app/student-experience.css';
 import '@/app/student-unified-ui.css';
@@ -62,49 +64,112 @@ function HistoryView({attempts,busy}:{attempts:Attempt[];busy:boolean}) {
   </div>;
 }
 
-function RankingView({leaders,profile,busy,failed}:{leaders:LeaderboardEntry[];profile:StudentProfile;busy:boolean;failed:boolean}) {
+function RankingView({leaders,profile,busy,failed,avatarUrls}:{leaders:LeaderboardEntry[];profile:StudentProfile;busy:boolean;failed:boolean;avatarUrls:Record<string,string>}) {
   const [scope,setScope]=useState('school');
   const [query,setQuery]=useState('');
+  const [selected,setSelected]=useState<{student:LeaderboardEntry;rank:number}|null>(null);
   const normalized=(value:string)=>value.trim().toLocaleLowerCase('id-ID');
   const visible=useMemo(()=>leaders.filter(a=>(scope==='school'||(scope==='class'?a.classroom===profile.className:a.major===profile.majorName))&&(query.trim()===''||[a.display_name,a.classroom,a.major].some(v=>normalized(v).includes(normalized(query))))),[leaders,scope,query,profile.className,profile.majorName]);
-  const podium=[visible[1],visible[0],visible[2]];
+  const podium=[{student:visible[1],rank:2},{student:visible[0],rank:1},{student:visible[2],rank:3}];
   const ownIndex=visible.findIndex(a=>normalized(a.username)===normalized(profile.username));
-  return <div className="student-experience student-ranking-experience">
-    <header className="student-ranking-masthead">
-      <span className="student-ranking-kicker">VOKASI · PERINGKAT SISWA</span>
-      <h1><span>TOP PERFORMERS</span><small>HASIL LATIHAN WAJIB</small></h1>
-      <p>Apresiasi untuk usaha dan hasil belajar terbaik. Peringkat dihitung dari rata-rata nilai latihan wajib terverifikasi, bukan XP.</p>
-    </header>
-    <div className="student-ranking-toolbar">
-      <div className="student-segments" role="group" aria-label="Lingkup peringkat">
-        {[{id:'school',label:'Sekolah'},{id:'major',label:'Jurusan'},{id:'class',label:'Kelas'}].map(item=><button key={item.id} type="button" className={scope===item.id?'active':''} aria-pressed={scope===item.id} onClick={()=>setScope(item.id)}>{item.label}</button>)}
+  const bestScore=leaders.length?Math.max(...leaders.map(row=>row.mandatory_average??0)):null;
+  const totalDays=leaders.reduce((sum,row)=>sum+row.mandatory_days,0);
+  const avatar=(entry:LeaderboardEntry)=>avatarUrls[normalized(entry.username)]||'';
+  useEffect(()=>{
+    if(!selected)return;
+    const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setSelected(null);};
+    window.addEventListener('keydown',close);
+    return()=>window.removeEventListener('keydown',close);
+  },[selected]);
+  return <div className="student-experience student-ranking-experience vokasi-leaderboard">
+    <header className="vokasi-ranking-hero">
+      <div className="vokasi-ranking-hero-copy">
+        <span className="vokasi-ranking-hero-kicker"><Star size={15}/> VOKASI LEADERBOARD</span>
+        <h1>Temukan posisi terbaikmu.</h1>
+        <p>Konsistensi kecil hari ini adalah prestasi besar esok hari. Lihat pencapaian siswa berdasarkan nilai latihan wajib yang terverifikasi.</p>
+        <div className="vokasi-ranking-hero-stats">
+          <div><strong>{busy?'—':leaders.length}</strong><small>SISWA TERPERINGKAT</small></div>
+          <div><strong>{busy?'—':totalDays}</strong><small>HARI LATIHAN TERCATAT</small></div>
+          <div><strong>{busy?'—':bestScore??'—'}</strong><small>NILAI TERTINGGI</small></div>
+        </div>
       </div>
-      <label className="student-ranking-search"><Search size={16}/><input aria-label="Cari nama atau kelas" placeholder="Cari nama / kelas..." value={query} onChange={e=>setQuery(e.target.value)}/></label>
+      <div className="vokasi-ranking-trophy" aria-hidden="true">
+        <div className="vokasi-ranking-trophy-glow"/>
+        <div className="vokasi-ranking-cup"><span className="vokasi-ranking-cup-star">★</span><span className="vokasi-ranking-cup-handle left"/><span className="vokasi-ranking-cup-handle right"/><span className="vokasi-ranking-cup-stem"/><span className="vokasi-ranking-cup-base"/></div>
+      </div>
+    </header>
+    <div className="vokasi-ranking-controls">
+      <div className="student-segments" role="group" aria-label="Lingkup peringkat">
+        {[{id:'school',label:'Sekolah'},{id:'major',label:'Jurusan'},{id:'class',label:'Kelas'}].map(item=><button key={item.id} type="button" className={scope===item.id?'active':''} aria-pressed={scope===item.id} onClick={()=>{setScope(item.id);setQuery('');}}>{item.label}</button>)}
+      </div>
+      <label className="student-ranking-search"><Search size={16}/><input aria-label="Cari nama siswa atau kelas" placeholder="Cari nama atau kelas..." value={query} onChange={e=>setQuery(e.target.value)}/></label>
     </div>
-    <div className="student-ranking-info"><ShieldCheck size={16}/> Hanya nilai latihan wajib yang dihitung server yang masuk peringkat. Riwayat lama tetap tersimpan dan bisa dilihat di menu Riwayat.</div>
-    {busy?<div className="student-panel student-blank student-rank-empty"><RefreshCw size={25}/><b>Memuat peringkat...</b><span>Sebentar, kami sedang mengambil hasil latihan.</span></div>:
-     failed?<div className="student-panel student-blank student-rank-empty"><Trophy size={38}/><b>Peringkat belum dapat dimuat</b><span>Data belum bisa diakses. Periksa koneksi lalu coba kembali.</span></div>:
-     !visible.length?<div className="student-panel student-blank student-rank-empty"><Trophy size={40}/><b>Belum ada hasil peringkat resmi</b><span>Kerjakan latihan wajib terbaru agar nilaimu dihitung server dan masuk peringkat sekolah.</span></div>:
-     <>
-      <div className="student-podium">{podium.map((a,i)=>a?<article className={'student-podium-item student-podium-'+(i===1?1:i===0?2:3)} key={a.username||i}>
-        <div className="student-rank-card-top"><span className="student-rank-medal"><Medal size={17}/><b>{i===1?1:i===0?2:3}</b></span><span className="student-rank-avatar">{a.display_name.trim().slice(0,1).toUpperCase()}</span></div>
-        <span className="student-rank-score-label">NILAI RATA-RATA</span><strong className="student-rank-score">{a.mandatory_average}<small>/100</small></strong>
-        <div className="student-rank-facts"><span><b>{a.mandatory_days}</b><small>HARI LATIHAN</small></span><span><b>{a.classroom||'—'}</b><small>KELAS</small></span></div>
-        <div className="student-rank-card-name"><b>{a.display_name}</b>{normalized(a.username)===normalized(profile.username)&&<span className="student-rank-you">INI KAMU</span>}<small>{a.major||'Siswa VOKASI'}</small></div>
-        <Trophy className="student-rank-watermark" size={90} strokeWidth={1.2} aria-hidden="true"/>
-      </article>:<div key={i} className={'student-podium-placeholder student-podium-placeholder-'+(i===1?1:i===0?2:3)}/>)}</div>
-      {visible.length>3&&<section className="student-ranking-list">
-        <div className="student-ranking-list-heading"><div><span>KLASEMEN AKADEMIK</span><h2>Peringkat berikutnya</h2></div><b>{visible.length} SISWA</b></div>
-        <div className="student-ranking-list-items">{visible.slice(3).map((a,index)=><article key={a.username+'-'+index} className={'student-rank-row '+(normalized(a.username)===normalized(profile.username)?'student-rank-row-self':'')}>
-          <span className="student-rank-row-number">{index+4}</span>
-          <span className="student-rank-row-avatar">{a.display_name.trim().slice(0,1).toUpperCase()}</span>
-          <div className="student-rank-row-name"><b>{a.display_name}</b><small>{a.classroom} · {a.major}</small>{normalized(a.username)===normalized(profile.username)&&<span>INI KAMU</span>}</div>
-          <div className="student-rank-row-stat"><b>{a.mandatory_days}</b><small>HARI LATIHAN</small></div>
-          <div className="student-rank-row-score"><b>{a.mandatory_average}</b><small>NILAI</small></div>
-        </article>)}</div>
-      </section>}
-      <div className="student-personal-rank"><Medal size={19}/><span>{ownIndex>=0?'Peringkatmu saat ini: #'+(ownIndex+1)+' dari '+visible.length+' siswa.':'Peringkatmu belum tersedia pada filter yang dipilih.'}</span></div>
-     </>}
+    <section className="vokasi-ranking-stage" aria-label="Papan peringkat">
+      <div className="vokasi-ranking-stage-heading">
+        <div><span>TOP PERFORMERS</span><h2>Podium terbaik <em>{scope==='school'?'sekolah':scope==='major'?'jurusan':'kelas'}</em></h2></div>
+        <span className="vokasi-ranking-verification"><CheckCircle2 size={14}/> Nilai diverifikasi server</span>
+      </div>
+      {busy?<div className="vokasi-ranking-stage-empty"><RefreshCw size={28}/><b>Memuat papan peringkat...</b></div>:
+       failed?<div className="vokasi-ranking-stage-empty"><Trophy size={36}/><b>Peringkat belum dapat dimuat</b><p>Data Supabase belum dapat diakses. Coba lagi saat koneksi membaik.</p></div>:
+       !visible.length?<div className="vokasi-ranking-stage-empty"><Trophy size={38}/><b>{query?'Siswa tidak ditemukan':'Belum ada peringkat resmi'}</b><p>{query?'Coba gunakan nama atau kelas lain.':'Peringkat akan muncul setelah siswa menyelesaikan latihan wajib yang nilainya dihitung server. Hasil lama tetap ada di Riwayat.'}</p></div>:
+       <>
+        <div className="vokasi-ranking-podium">
+          <div className="vokasi-ranking-podium-grid">
+            {podium.map(({student,rank})=>student?
+              <button type="button" className={'vokasi-ranking-podium-card vokasi-ranking-podium-'+rank} key={student.username} onClick={()=>setSelected({student,rank})} aria-label={'Lihat detail '+student.display_name+' peringkat '+rank}>
+                <span className="vokasi-ranking-card-rank"><Trophy size={15}/> #{rank}</span>
+                <span className="vokasi-ranking-photo-frame">
+                  <StudentAvatar name={student.display_name} url={avatar(student)} className="vokasi-ranking-photo" size={126}/>
+                  <span className="vokasi-ranking-photo-badge">{rank}</span>
+                </span>
+                <span className="vokasi-ranking-card-subtitle">{rank===1?'CHAMPION':'TOP PERFORMER'}</span>
+                <span className="vokasi-ranking-card-score-label">NILAI RATA-RATA</span>
+                <span className="vokasi-ranking-card-score">{student.mandatory_average}<small>/100</small></span>
+                <strong className="vokasi-ranking-card-name">{student.display_name}</strong>
+                <span className="vokasi-ranking-card-class">{student.classroom} · {student.major}</span>
+                <span className="vokasi-ranking-detail-button">Lihat detail</span>
+              </button>:
+              <div key={rank} className={'vokasi-ranking-podium-placeholder vokasi-ranking-placeholder-'+rank}><Trophy size={30}/><span>Belum ada juara {rank}</span></div>)}
+          </div>
+          <div className="vokasi-ranking-podium-base" aria-hidden="true"><span>02</span><span>01</span><span>03</span></div>
+        </div>
+        <div className="vokasi-ranking-list" aria-label="Peringkat siswa berikutnya">
+          <div className="vokasi-ranking-list-header"><span>POSISI</span><span>SISWA</span><span>KELAS</span><span>PROGRES NILAI</span><span>NILAI</span></div>
+          {visible.slice(3).length?visible.slice(3).map((student,index)=>{
+            const rank=index+4;const score=student.mandatory_average??0;
+            return <button key={student.username} type="button" className={'vokasi-ranking-list-row '+(normalized(student.username)===normalized(profile.username)?'is-self':'')} onClick={()=>setSelected({student,rank})}>
+              <strong className="vokasi-ranking-row-position">#{rank}</strong>
+              <span className="vokasi-ranking-row-student">
+                <StudentAvatar name={student.display_name} url={avatar(student)} className="vokasi-ranking-row-photo" size={44}/>
+                <span className="vokasi-ranking-row-identity"><b>{student.display_name}</b><small>{student.major}{normalized(student.username)===normalized(profile.username)?' · Kamu':''}</small></span>
+              </span>
+              <span className="vokasi-ranking-class-pill">{student.classroom}</span>
+              <span className="vokasi-ranking-progress"><progress value={Math.max(0,Math.min(100,score))} max={100}/><small>{score}/100</small></span>
+              <strong className="vokasi-ranking-row-score">{score}</strong>
+            </button>;
+          }):<div className="vokasi-ranking-list-empty">Belum ada siswa di luar tiga peringkat teratas.</div>}
+        </div>
+        <div className="vokasi-ranking-own-position"><Medal size={17}/>{ownIndex>=0?'Peringkatmu: #'+(ownIndex+1)+' dari '+visible.length+' siswa pada filter ini.':'Peringkatmu belum ada pada lingkup ini. Kerjakan latihan wajib untuk mulai mendapat peringkat.'}</div>
+       </>}
+    </section>
+    {selected&&<div className="vokasi-ranking-modal-backdrop" role="presentation" onMouseDown={()=>setSelected(null)}>
+      <section className="vokasi-ranking-modal" role="dialog" aria-modal="true" aria-labelledby="vokasi-ranking-modal-title" onMouseDown={event=>event.stopPropagation()}>
+        <button className="vokasi-ranking-modal-close" type="button" onClick={()=>setSelected(null)} aria-label="Tutup detail">×</button>
+        <div className="vokasi-ranking-modal-banner">
+          <span><Trophy size={16}/> Peringkat #{selected.rank}</span>
+          <StudentAvatar name={selected.student.display_name} url={avatar(selected.student)} className="vokasi-ranking-modal-photo" size={125}/>
+        </div>
+        <div className="vokasi-ranking-modal-content">
+          <small>PROFIL PERINGKAT SISWA</small><h2 id="vokasi-ranking-modal-title">{selected.student.display_name}</h2>
+          <p>{selected.student.classroom} · {selected.student.major}</p>
+          <div className="vokasi-ranking-modal-stats">
+            <span><small>Rata-rata nilai</small><b>{selected.student.mandatory_average}/100</b></span>
+            <span><small>Hari latihan wajib</small><b>{selected.student.mandatory_days}</b></span>
+          </div>
+          <p className="vokasi-ranking-modal-note"><ShieldCheck size={16}/> Nilai dari latihan wajib yang sudah diverifikasi server.</p>
+        </div>
+      </section>
+    </div>}
   </div>;
 }
 
