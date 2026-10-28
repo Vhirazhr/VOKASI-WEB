@@ -76,13 +76,22 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const [timeoutReaction,setTimeoutReaction]=useState(false);
  const [monitorOpen,setMonitorOpen]=useState(false);
  const [figureOpen,setFigureOpen]=useState(false);
+ useEffect(()=>{
+   if(!figureOpen&&!monitorOpen)return;
+   const escape=(event:KeyboardEvent)=>{
+     if(event.key==='Escape'){setFigureOpen(false);setMonitorOpen(false);}
+   };
+   window.addEventListener('keydown',escape);
+   return()=>window.removeEventListener('keydown',escape);
+ },[figureOpen,monitorOpen]);
+
  const live=useRef(true);
  const inFlight=useRef(false);
  const feedbackTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
 
  const accept=useCallback((next:State)=>{
    setState(next);setNow(Date.now());setClockBase(Date.now()-next.server_now_ms);
-   if(next.status==='active'){setSelected(null);setTimeoutReaction(false);}
+   if(next.status==='active'){setSelected(null);setTimeoutReaction(false);setMonitorOpen(false);setFigureOpen(false);}
  },[]);
 
  useEffect(()=>{
@@ -409,9 +418,10 @@ export default function QuizView({profile,category,onDone,onQuit}:{
       <div className="quiz-focus-monitor-assurance"><ShieldCheck size={15}/><span>Jawaban dan waktu dikendalikan server. Nomor yang selesai tidak dapat diubah.</span></div>
     </aside>
    </div>
-   {figureOpen&&question.image_path&&imageUrls.get(question.image_path)&&<div className="quiz-focus-image-modal" role="dialog" aria-modal="true" aria-label="Gambar soal diperbesar" onClick={()=>setFigureOpen(false)}>
+   {figureOpen&&question.image_path&&imageUrls.get(question.image_path)&&<div className="quiz-focus-image-modal" role="dialog" aria-modal="true" aria-label="Gambar soal diperbesar">
+     <button type="button" className="quiz-focus-image-modal-backdrop" onClick={()=>setFigureOpen(false)} aria-label="Tutup gambar soal yang diperbesar"/>
      <button type="button" className="quiz-focus-image-modal-close" onClick={()=>setFigureOpen(false)} aria-label="Tutup gambar"><X size={23}/></button>
-     <img src={imageUrls.get(question.image_path)} alt="Gambar soal berukuran besar" onClick={event=>event.stopPropagation()}/>
+     <img src={imageUrls.get(question.image_path)} alt="Gambar soal berukuran besar"/>
    </div>}
  </div>;
 }
