@@ -15,7 +15,7 @@ type State={
  score?:number;correct?:number;
  feedback?:{correct:boolean;selected_index:number};feedback_wait_ms?:number;late?:boolean;
 };
-type LiveProgress={correct:number;wrong:number;timeout:number;statuses:string[]};
+type LiveProgress={correct:number;wrong:number;timeout:number;statuses:string[];repeat_today?:boolean;official_today?:boolean};
 type Review={
  id:number;category:string;text:string;image_path:string|null;options:Option[];correct_index:number;
  selected_index:number|null;status:string;response_seconds:number;explanation?:string;
@@ -71,6 +71,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const [clockBase,setClockBase]=useState(0);
  const [xp,setXp]=useState<number|null>(null);
  const [liveProgress,setLiveProgress]=useState<LiveProgress|null>(null);
+ const [restartCycle,setRestartCycle]=useState(0);
  const live=useRef(true);
  const inFlight=useRef(false);
  const feedbackTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
@@ -93,7 +94,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
            if(saved.category===category&&saved.session_id){
              const recovered=await rpc<State>('vokasi_web_get_quiz_state',{p_session:saved.session_id});
              if(!active)return;
-             if(recovered.status==='active'||recovered.status==='complete'){
+             if(recovered.status==='active'){
                accept(recovered);
                if(recovered.question){
                  const urls=await signedImages(visualPaths(recovered.question));
@@ -107,9 +108,19 @@ export default function QuizView({profile,category,onDone,onQuit}:{
          }catch{/* Previous session was replaced, expired, or invalid. Create a fresh one. */}
          sessionStorage.removeItem(key(profile.authId));
        }
-       const prepared=await rpc<{session_id:string;image_paths:string[]}>(
-          'vokasi_web_prepare_session',{p_category:category});
+       type PreparedSession={session_id:string;image_paths:string[];reused?:boolean};
+       let prepared=await rpc<PreparedSession>('vokasi_web_prepare_session',{p_category:category});
        if(!active)return;
+       if(prepared.reused){
+         // An active server session can be stale after its deadline.
+         // Resolve it before we continue; a complete session is not a new attempt.
+         const current=await rpc<State>('vokasi_web_get_quiz_state',{p_session:prepared.session_id});
+         if(!active)return;
+         if(current.status==='complete'){
+           prepared=await rpc<PreparedSession>('vokasi_web_prepare_session',{p_category:category});
+           if(!active)return;
+         }
+       }
        sessionStorage.setItem(key(profile.authId),JSON.stringify({session_id:prepared.session_id,category}));
        const urls=await signedImages(prepared.image_paths||[]);
        await preloadImages(urls);
@@ -129,7 +140,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    }
    void prepare();
    return()=>{active=false;live.current=false;if(feedbackTimer.current)clearTimeout(feedbackTimer.current);};
- },[profile.authId,category,accept]);
+ },[profile.authId,category,accept,restartCycle]);
 
  // Browser clock is display only; server timestamps are authoritative.
  const onServer=useCallback(async()=>{
@@ -238,6 +249,12 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const pages=Math.max(1,Math.ceil(allRows.length/10));
  const page=Math.min(reviewPage,pages-1);
 
+ function restart(){
+   sessionStorage.removeItem(key(profile.authId));
+   setReview(null);setReviewShown(false);setReviewPage(0);setReviewFilter('Semua');
+   setXp(null);setLiveProgress(null);setSelected(null);setFeedback(null);setFeedbackQuestion(null);
+   setImageUrls(new Map());setState(null);setError('');setRestartCycle(v=>v+1);
+ }
  function quit(){if(!window.confirm('Keluar dari latihan? Sesi tetap berjalan di server dan dapat dilanjutkan dari browser ini.'))return;onQuit();}
  if(busy)return <section className="white-panel center-message">Menyiapkan soal dan gambar... Waktu belum berjalan.</section>;
  if(!state&&error)return <section className="white-panel center-message"><XCircle className="error-icon" size={34}/><h2>Latihan belum bisa dimulai</h2><p>{error}</p><button className="btn secondary" onClick={onQuit}>Kembali</button></section>;
@@ -245,12 +262,15 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  if(state.status==='complete')return <section className="result-view quiz-playful-result">
    <div className="result-icon"><CheckCircle2 size={38}/></div>
    <span className="section-kicker">HASIL TELAH DIVERIFIKASI SERVER</span>
-   <h2>{(state.score||0)>=75?'Kerja bagus!':'Latihan selesai. Terus berlatih, ya!'}</h2>
+   <h2>{liveProgress?.timeout===state.total?'Waktu sesi habis. Yuk, coba lagi!':(state.score||0)>=75?'Kerja bagus!':'Latihan selesai. Terus berlatih, ya!'}</h2>
    <div className="result-score">{state.score||0}<small>/100</small></div>
    <div className="result-stats"><div><b>{state.correct||0}</b><span>Jawaban benar</span></div>
      <div><b>{state.total}</b><span>Total soal</span></div>
      <div><b>{xp===null?'…':'+'+xp}</b><span>XP didapat</span></div></div>
-   <div className="alert success">Nilai dihitung dan disimpan langsung oleh Supabase, bukan browser.</div>
+   <div className="alert success">Hasil sesi ini dihitung dan disimpan langsung oleh server.</div>
+   {state.category===null&&liveProgress?.repeat_today&&<div className="alert info">Ini <b>pengulangan latihan wajib hari ini</b>. Nilai dan XP sesi ini tidak mengganti hasil resmi pertamamu hari ini, tetapi tetap masuk Riwayat.</div>}
+   {state.category===null&&liveProgress?.official_today&&<div className="alert info">Ini hasil resmi latihan wajib pertamamu hari ini. Pengulangan berikutnya tidak akan mengubah nilai resmi atau menambah XP harian.</div>}
+   {liveProgress?.timeout===state.total&&<div className="alert danger">Seluruh soal pada sesi ini tercatat TIMEOUT. Jika kamu meninggalkan latihan hingga waktu habis, server tetap mengakhiri sesi. Kamu boleh mengerjakan ulang.</div>}
    {error&&<div className="alert danger" role="alert">{error}</div>}
    <div className="vokasi-review">
     <button className="btn secondary vokasi-review-toggle" onClick={()=>void loadReview()} disabled={sending}>
@@ -273,7 +293,10 @@ export default function QuizView({profile,category,onDone,onQuit}:{
         <button className="btn secondary small" disabled={page>=pages-1} onClick={()=>setReviewPage(i=>i+1)}>Berikutnya</button></div>
     </section>}
    </div>
-   <div className="result-actions"><button className="btn primary" onClick={()=>{sessionStorage.removeItem(key(profile.authId));onDone();}}>Kembali ke dashboard <ArrowRight size={16}/></button></div>
+   <div className="result-actions">
+     <button type="button" className="btn secondary" onClick={restart}><RefreshCw size={16}/> Kerjakan ulang</button>
+     <button type="button" className="btn primary" onClick={()=>{sessionStorage.removeItem(key(profile.authId));onDone();}}>Kembali ke dashboard <ArrowRight size={16}/></button>
+   </div>
  </section>;
  if(!question)return <section className="white-panel center-message">Menunggu soal berikutnya dari server...</section>;
  return <div className="quiz-focus-exam">
@@ -305,6 +328,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
        </div>
        <div className="quiz-focus-timer-track" aria-hidden="true"><span style={{width:timePercent+'%'}}/></div>
      </section>
+     {state.category===null&&liveProgress?.repeat_today&&<div className="alert info quiz-focus-repeat-notice"><RefreshCw size={17}/> <span><b>Mode pengulangan.</b> Kamu boleh berlatih lagi, tetapi nilai resmi dan XP pertama hari ini tidak berubah.</span></div>}
      <div className="quiz-layout quiz-playful">
    <div className="quiz-progress"><div className="quiz-progress-label"><span>Soal <b>{currentIndex+1}</b> dari {state.total}</span><span>{progress}% selesai</span></div>
    <div className="progress-track"><div style={{width:progress+'%'}}/></div></div>
