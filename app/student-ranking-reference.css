@@ -1,0 +1,375 @@
+/* VOKASI leaderboard design, adapted from the supplied Figma Make source.
+   Images are user-provided private avatars, never copied from demo students. */
+.school-shell.student-shell .vokasi-leaderboard{width:100%;max-width:1500px;margin:auto}
+.school-shell.student-shell .vokasi-ranking-hero{
+ position:relative;display:flex;align-items:center;overflow:hidden;isolation:isolate;
+ min-height:280px;padding:34px 48px;margin-bottom:22px;border-radius:28px;color:#fff;
+ background:radial-gradient(circle at 83% 20%,#5bb3ff66,transparent 30%),
+ linear-gradient(112deg,#104a9f,#1b68c7 55%,#2993eb);
+ box-shadow:0 24px 48px #1b5cb221;
+}
+.school-shell.student-shell .vokasi-ranking-hero:before{
+ content:"";position:absolute;inset:0;z-index:-1;opacity:.35;
+ background-image:linear-gradient(#ffffff11 1px,transparent 1px),linear-gradient(90deg,#ffffff11 1px,transparent 1px);
+ background-size:42px 42px;mask-image:linear-gradient(90deg,transparent,black);
+}
+.school-shell.student-shell .vokasi-ranking-hero:after{
+ content:"";position:absolute;right:-175px;top:-205px;width:580px;height:580px;
+ border:1px solid #ffffff36;border-radius:50%;box-shadow:0 0 0 110px #ffffff08;
+}
+.school-shell.student-shell .vokasi-ranking-hero-copy{position:relative;z-index:2;width:68%;min-width:0}
+.school-shell.student-shell .vokasi-ranking-hero-kicker{
+ display:inline-flex;align-items:center;gap:7px;color:#d6eaff;font-size:10px;font-weight:850;
+ letter-spacing:.13em;
+}
+.school-shell.student-shell .vokasi-ranking-hero h1{
+ margin:18px 0 10px;color:#fff;font-size:clamp(31px,3.6vw,49px);
+ font-weight:850;line-height:1.16;letter-spacing:-.06em;
+}
+.school-shell.student-shell .vokasi-ranking-hero p{
+ max-width:610px;margin:0;color:#daeaff;font-size:12px;line-height:1.8;
+}
+.school-shell.student-shell .vokasi-ranking-hero-stats{
+ display:flex;align-items:center;flex-wrap:wrap;gap:0;margin-top:26px;
+}
+.school-shell.student-shell .vokasi-ranking-hero-stats>div{
+ display:grid;gap:5px;min-width:107px;padding:0 19px;border-right:1px solid #ffffff42;
+}
+.school-shell.student-shell .vokasi-ranking-hero-stats>div:first-child{padding-left:0}
+.school-shell.student-shell .vokasi-ranking-hero-stats>div:last-child{border:0}
+.school-shell.student-shell .vokasi-ranking-hero-stats strong{color:#fff;font-size:20px;font-weight:850;line-height:1.1}
+.school-shell.student-shell .vokasi-ranking-hero-stats small{
+ color:#bfdcff;font-size:8px;font-weight:850;letter-spacing:.05em;
+}
+.school-shell.student-shell .vokasi-ranking-trophy{
+ position:absolute;right:4%;top:7%;z-index:1;width:230px;height:240px;
+ display:grid;place-items:center;pointer-events:none;
+}
+.school-shell.student-shell .vokasi-ranking-trophy-glow{
+ position:absolute;width:218px;height:218px;border-radius:50%;
+ background:radial-gradient(circle,#b3deff5c 0%,#4ea5f41a 55%,transparent 75%);
+ box-shadow:0 0 0 36px #ffffff0b;
+}
+.school-shell.student-shell .vokasi-ranking-cup{
+ position:relative;width:112px;height:103px;margin-top:-30px;
+ border-radius:18px 18px 48px 48px;background:linear-gradient(100deg,#d39307,#ffe98a 35%,#fbc437 67%,#d48b04);
+ box-shadow:inset -7px -7px 15px #a867153d,0 18px 27px #12407861;
+}
+.school-shell.student-shell .vokasi-ranking-cup-star{
+ position:absolute;left:0;right:0;top:31px;text-align:center;font-size:31px;color:#b97b1e;
+}
+.school-shell.student-shell .vokasi-ranking-cup-handle{
+ position:absolute;top:19px;width:38px;height:58px;border:12px solid #ffca3c;border-radius:50%;
+ box-shadow:inset 1px 1px 2px #a46c0d42;
+}
+.school-shell.student-shell .vokasi-ranking-cup-handle.left{left:-31px}
+.school-shell.student-shell .vokasi-ranking-cup-handle.right{right:-31px}
+.school-shell.student-shell .vokasi-ranking-cup-stem{
+ position:absolute;top:97px;left:calc(50% - 10px);width:20px;height:53px;
+ background:linear-gradient(90deg,#c57a06,#f7c52f,#bc7d0b);
+}
+.school-shell.student-shell .vokasi-ranking-cup-base{
+ position:absolute;top:144px;left:calc(50% - 35px);width:70px;height:15px;
+ border-radius:10px;background:linear-gradient(90deg,#bf7907,#f7ca43,#b8790c);
+ box-shadow:0 8px 17px #11386133;
+}
+.school-shell.student-shell .vokasi-ranking-controls{
+ display:flex;align-items:center;justify-content:space-between;gap:16px;
+ margin-bottom:24px;
+}
+.school-shell.student-shell .vokasi-ranking-controls .student-segments{
+ padding:4px;border-radius:13px;border:1px solid #dce5f2;background:#f5f9ff;box-shadow:0 5px 14px #1737670b;
+}
+.school-shell.student-shell .vokasi-ranking-controls .student-segments button{min-width:95px;padding:10px 15px}
+.school-shell.student-shell .vokasi-ranking-controls .student-ranking-search{
+ width:min(325px,100%);min-height:45px;border-radius:14px;box-shadow:0 5px 15px #1737670b;
+}
+.school-shell.student-shell .vokasi-ranking-stage{
+ padding:30px clamp(17px,2.4vw,33px) 30px;
+ border:1px solid #e0e8f3;border-radius:25px;background:#fff;
+ box-shadow:0 17px 40px rgba(35,69,116,.055);min-width:0;
+}
+.school-shell.student-shell .vokasi-ranking-stage-heading{
+ display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:16px;
+}
+.school-shell.student-shell .vokasi-ranking-stage-heading>div>span{
+ display:block;color:#6c8db7;font-size:10px;font-weight:850;letter-spacing:.13em;
+}
+.school-shell.student-shell .vokasi-ranking-stage-heading h2{
+ margin:8px 0 0;color:#153357;font-size:clamp(19px,2vw,25px);font-weight:850;
+}
+.school-shell.student-shell .vokasi-ranking-stage-heading h2 em{
+ color:#2879e8;font-style:normal;
+}
+.school-shell.student-shell .vokasi-ranking-verification{
+ display:inline-flex;align-items:center;gap:7px;flex:none;
+ color:#7189a6;font-size:10px;
+}
+.school-shell.student-shell .vokasi-ranking-verification svg{color:#28b684}
+.school-shell.student-shell .vokasi-ranking-podium{
+ max-width:1070px;margin:36px auto 30px;padding:0 14px;perspective:1200px;
+}
+.school-shell.student-shell .vokasi-ranking-podium-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;
+ gap:16px;padding:67px 12px 0;
+}
+.school-shell.student-shell .vokasi-ranking-podium-card{
+ position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;
+ min-width:0;min-height:272px;margin:0;padding:75px 16px 20px;
+ border:2px solid #56dfd4;border-radius:26px 26px 10px 10px;color:#fff;
+ background:radial-gradient(circle at 50% 0,#25bcd0 0%,transparent 44%),linear-gradient(145deg,#1397a5,#096a7c);
+ box-shadow:0 13px 26px #126b7b29,0 0 0 4px #5ed7d01e;
+ text-align:center;cursor:pointer;transition:transform .18s,box-shadow .18s;
+}
+.school-shell.student-shell .vokasi-ranking-podium-card:before{
+ content:"";position:absolute;z-index:-1;right:-35px;bottom:-72px;
+ width:150px;height:150px;border:24px solid #ffffff10;border-radius:50%;
+}
+.school-shell.student-shell .vokasi-ranking-podium-card:hover{
+ transform:translateY(-5px);box-shadow:0 21px 36px #1c6ba438;
+}
+.school-shell.student-shell .vokasi-ranking-podium-1{
+ min-height:315px;padding-top:85px;border-color:#ffdb65;
+ background:radial-gradient(circle at 50% 0,#4f9bff 0%,transparent 43%),
+ linear-gradient(145deg,#246ccf,#103f8d);
+ box-shadow:0 16px 33px #164d9d35,0 0 0 5px #ffdb6530,0 0 24px #ffca4652;
+}
+.school-shell.student-shell .vokasi-ranking-podium-3{
+ border-color:#bea3ff;
+ background:radial-gradient(circle at 50% 0,#ac91fb 0%,transparent 44%),
+ linear-gradient(145deg,#8d75e4,#5646aa);
+ box-shadow:0 13px 28px #6453aa35,0 0 0 4px #bda3fc22;
+}
+.school-shell.student-shell .vokasi-ranking-card-rank{
+ position:absolute;z-index:3;top:15px;right:15px;display:inline-flex;
+ align-items:center;gap:5px;padding:6px 10px;border:1px solid #ffffff66;
+ border-radius:40px;background:#0b326997;color:#fff;font-size:10px;font-weight:850;
+}
+.school-shell.student-shell .vokasi-ranking-photo-frame{
+ position:absolute;z-index:4;top:-58px;left:50%;
+ display:grid;place-items:center;width:109px;height:109px;padding:5px;
+ border-radius:31px;background:conic-gradient(#9cfef2,#fff,#42d4c3,#fff,#93fff3);
+ box-shadow:0 0 0 5px #7af9ed2d,0 12px 29px #07395356;
+ transform:translateX(-50%) rotate(3deg);
+}
+.school-shell.student-shell .vokasi-ranking-podium-1 .vokasi-ranking-photo-frame{
+ top:-72px;width:132px;height:132px;padding:6px;border-radius:39px;
+ background:conic-gradient(#f7c23a,#fff3bf,#dba41a,#fff5cf,#ffcc3e);
+ box-shadow:0 0 0 6px #ffcf4036,0 0 34px #ffbf3455,0 15px 34px #0826545c;
+ transform:translateX(-50%) rotate(-3deg);
+}
+.school-shell.student-shell .vokasi-ranking-podium-3 .vokasi-ranking-photo-frame{
+ background:conic-gradient(#c5a9ff,#fff,#a480f2,#f1e8ff,#c8aaff);
+ box-shadow:0 0 0 5px #d1b2fc35,0 12px 29px #332c7055;
+}
+.school-shell.student-shell .vokasi-ranking-photo{
+ display:grid;place-items:center;width:100%;height:100%;
+ border-radius:26px;background:#dbeafb;color:#17569e;font-size:27px;font-weight:850;overflow:hidden;
+}
+.school-shell.student-shell .vokasi-ranking-podium-1 .vokasi-ranking-photo{border-radius:32px}
+.school-shell.student-shell .vokasi-ranking-photo-badge{
+ position:absolute;right:-12px;bottom:1px;display:grid;place-items:center;
+ width:31px;height:31px;border:2px solid #fff;border-radius:10px;
+ background:#145f80;color:#fff;font-size:14px;font-weight:900;
+ box-shadow:0 5px 12px #072b4b44;
+}
+.school-shell.student-shell .vokasi-ranking-podium-1 .vokasi-ranking-photo-badge{background:#f0bd39;color:#65440a}
+.school-shell.student-shell .vokasi-ranking-podium-3 .vokasi-ranking-photo-badge{background:#785ac6}
+.school-shell.student-shell .vokasi-ranking-card-subtitle{
+ color:#d8eeff;font-size:9px;letter-spacing:.15em;font-weight:850;margin-bottom:11px;
+}
+.school-shell.student-shell .vokasi-ranking-card-score-label{
+ color:#e1f1ff;font-size:9px;letter-spacing:.09em;font-weight:850;
+}
+.school-shell.student-shell .vokasi-ranking-card-score{
+ display:block;color:#fff;font-size:clamp(37px,3.8vw,53px);
+ font-weight:900;line-height:1.1;letter-spacing:-.055em;margin:8px 0 20px;
+}
+.school-shell.student-shell .vokasi-ranking-card-score small{
+ margin-left:2px;font-size:10px;letter-spacing:0;font-weight:750;color:#e6f0ff;
+}
+.school-shell.student-shell .vokasi-ranking-card-name{
+ display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ color:#fff;font-size:14px;font-weight:850;line-height:1.35;text-transform:uppercase;overflow-wrap:anywhere;
+}
+.school-shell.student-shell .vokasi-ranking-card-class{
+ display:block;width:100%;max-width:100%;overflow:hidden;margin-top:6px;
+ color:#d1e8ff;font-size:9px;white-space:nowrap;text-overflow:ellipsis;
+}
+.school-shell.student-shell .vokasi-ranking-detail-button{
+ display:block;margin-top:auto;padding:7px 15px;border:1px solid #ffffff47;
+ border-radius:25px;background:#ffffff17;color:#eaf5ff;font-size:9px;font-weight:750;
+}
+.school-shell.student-shell .vokasi-ranking-podium-placeholder{
+ display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;
+ min-height:272px;border:1px dashed #cddcf0;border-radius:24px;color:#7794b7;
+ background:linear-gradient(#fafcff,#f0f6ff);font-size:12px;font-weight:700;
+}
+.school-shell.student-shell .vokasi-ranking-placeholder-1{min-height:315px}
+.school-shell.student-shell .vokasi-ranking-podium-base{
+ display:grid;grid-template-columns:repeat(3,1fr);height:56px;
+ border-radius:0 0 12px 12px;background:linear-gradient(#deebfc,#c8dcf3);
+ box-shadow:0 20px 34px #2a567c21;transform:rotateX(52deg);transform-origin:top;
+}
+.school-shell.student-shell .vokasi-ranking-podium-base>span{
+ display:grid;place-items:center;border-right:1px solid #c0d2ea;
+ color:#90a9c5;font-size:19px;font-weight:850;
+}
+.school-shell.student-shell .vokasi-ranking-podium-base>span:last-child{border:0}
+.school-shell.student-shell .vokasi-ranking-list{
+ overflow-x:auto;margin:10px 0 16px;border:1px solid #e1e9f4;border-radius:16px;background:#fff;
+}
+.school-shell.student-shell .vokasi-ranking-list-header,
+.school-shell.student-shell .vokasi-ranking-list-row{
+ display:grid;grid-template-columns:70px minmax(180px,1.65fr) minmax(90px,.72fr) minmax(155px,1fr) 85px;
+ align-items:center;gap:15px;min-width:695px;padding:10px 18px;
+}
+.school-shell.student-shell .vokasi-ranking-list-header{
+ min-height:40px;background:#f6f9fd;color:#94a5bc;
+ font-size:9px;font-weight:850;letter-spacing:.08em;
+}
+.school-shell.student-shell .vokasi-ranking-list-header>span:last-child{text-align:right}
+.school-shell.student-shell .vokasi-ranking-list-row{
+ width:100%;min-height:69px;border:0;border-top:1px solid #edf1f7;
+ background:#fff;text-align:left;transition:background .15s;
+}
+.school-shell.student-shell .vokasi-ranking-list-row:hover{background:#f5f9ff}
+.school-shell.student-shell .vokasi-ranking-list-row.is-self{background:#ecf5ff}
+.school-shell.student-shell .vokasi-ranking-row-position{color:#39628c;font-size:13px;font-weight:800}
+.school-shell.student-shell .vokasi-ranking-row-student{
+ display:flex;align-items:center;gap:11px;min-width:0;
+}
+.school-shell.student-shell .vokasi-ranking-row-photo{
+ display:grid;place-items:center;width:41px;height:41px;flex:none;
+ overflow:hidden;border-radius:12px;background:#dceaff;color:#2867b5;font-size:12px;font-weight:800;
+}
+.school-shell.student-shell .vokasi-ranking-row-identity{display:grid;gap:4px;min-width:0}
+.school-shell.student-shell .vokasi-ranking-row-identity b{
+ overflow:hidden;color:#25466d;font-size:12px;text-overflow:ellipsis;white-space:nowrap;
+}
+.school-shell.student-shell .vokasi-ranking-row-identity small{
+ overflow:hidden;color:#90a1b5;font-size:9px;text-overflow:ellipsis;white-space:nowrap;
+}
+.school-shell.student-shell .vokasi-ranking-class-pill{
+ width:max-content;max-width:100%;overflow:hidden;padding:6px 8px;border-radius:7px;
+ background:#eaf2ff;color:#4477b6;font-size:10px;font-weight:800;text-overflow:ellipsis;white-space:nowrap;
+}
+.school-shell.student-shell .vokasi-ranking-progress{display:flex;align-items:center;gap:9px}
+.school-shell.student-shell .vokasi-ranking-progress progress{
+ width:100%;height:7px;min-width:40px;appearance:none;overflow:hidden;border:0;border-radius:99px;background:#e7eef8;
+}
+.school-shell.student-shell .vokasi-ranking-progress progress::-webkit-progress-bar{background:#e7eef8;border-radius:99px}
+.school-shell.student-shell .vokasi-ranking-progress progress::-webkit-progress-value{background:linear-gradient(90deg,#1772df,#59adfa);border-radius:99px}
+.school-shell.student-shell .vokasi-ranking-progress progress::-moz-progress-bar{background:linear-gradient(90deg,#1772df,#59adfa);border-radius:99px}
+.school-shell.student-shell .vokasi-ranking-progress small{flex:none;color:#8296b0;font-size:9px}
+.school-shell.student-shell .vokasi-ranking-row-score{justify-self:end;color:#2071d4;font-size:14px;font-weight:850}
+.school-shell.student-shell .vokasi-ranking-list-empty{padding:23px;color:#8398b2;font-size:11px;text-align:center}
+.school-shell.student-shell .vokasi-ranking-own-position{
+ display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;
+ background:#f1f7ff;color:#4775af;font-size:11px;font-weight:700;
+}
+.school-shell.student-shell .vokasi-ranking-stage-empty{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;
+ min-height:300px;color:#6488c0;text-align:center;
+}
+.school-shell.student-shell .vokasi-ranking-stage-empty b{color:#2a527f;font-size:17px}
+.school-shell.student-shell .vokasi-ranking-stage-empty p{max-width:430px;margin:0;color:#8a9eb7;font-size:12px;line-height:1.65}
+.school-shell.student-shell .vokasi-student-avatar img{
+ display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit;
+}
+.school-shell.student-shell .vokasi-student-avatar>.vokasi-avatar-initials{
+ display:grid;place-items:center;width:100%;height:100%;border-radius:inherit;
+}
+.school-shell.student-shell .student-header-avatar img,
+.school-shell.student-shell .user-badge img{
+ width:100%;height:100%;object-fit:cover;border-radius:inherit;
+}
+.school-shell.student-shell .student-profile-avatar img{
+ width:100%;height:100%;object-fit:cover;border-radius:inherit;
+}
+.school-shell.student-shell .vokasi-photo-upload{
+ display:inline-flex;justify-content:center;align-items:center;gap:7px;
+ margin:13px auto 6px;padding:9px 14px;border:1px solid #cfe0f8;
+ border-radius:10px;background:#edf5ff;color:#2466bd;font-size:11px;font-weight:850;cursor:pointer;
+}
+.school-shell.student-shell .vokasi-photo-upload:hover{background:#e2efff}
+.school-shell.student-shell .vokasi-photo-upload:focus-within{outline:2px solid #4589ec;outline-offset:3px}
+.school-shell.student-shell .vokasi-photo-upload input{
+ position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;
+}
+.school-shell.student-shell .vokasi-photo-help{display:block;color:#879bb5;font-size:10px;line-height:1.5}
+.school-shell.student-shell .vokasi-photo-message{margin:9px 0;font-size:11px;line-height:1.4}
+.school-shell.student-shell .vokasi-photo-message.success{color:#23865f}
+.school-shell.student-shell .vokasi-photo-message.error{color:#b64659}
+.school-shell.student-shell .vokasi-ranking-modal-backdrop{
+ position:fixed;z-index:180;inset:0;display:grid;place-items:center;
+ padding:20px;background:#071a34a8;backdrop-filter:blur(7px);
+}
+.school-shell.student-shell .vokasi-ranking-modal{
+ position:relative;width:min(470px,100%);overflow:hidden;border-radius:24px;background:#fff;
+ box-shadow:0 35px 90px #061b3873;
+}
+.school-shell.student-shell .vokasi-ranking-modal-close{
+ position:absolute;z-index:3;right:16px;top:16px;width:36px;height:36px;
+ border:1px solid #ffffff8c;border-radius:9px;background:#194b90a8;color:#fff;font-size:24px;line-height:1;
+}
+.school-shell.student-shell .vokasi-ranking-modal-banner{
+ position:relative;display:grid;place-items:end center;height:164px;
+ background:radial-gradient(circle at 50% 10%,#9bd9ff,transparent 55%),linear-gradient(115deg,#246cc8,#1555ac);
+}
+.school-shell.student-shell .vokasi-ranking-modal-banner>span:first-child{
+ position:absolute;top:20px;left:20px;display:flex;align-items:center;gap:6px;
+ padding:7px 10px;border-radius:99px;background:#ffffff24;color:#fff;font-size:10px;font-weight:800;
+}
+.school-shell.student-shell .vokasi-ranking-modal-photo{
+ position:relative;bottom:-44px;display:grid;place-items:center;
+ width:118px;height:118px;overflow:hidden;border:5px solid #fff;border-radius:30px;
+ background:#cce4ff;color:#225fb6;font-size:30px;font-weight:850;box-shadow:0 12px 30px #103a8247;
+}
+.school-shell.student-shell .vokasi-ranking-modal-content{padding:57px 27px 27px;text-align:center}
+.school-shell.student-shell .vokasi-ranking-modal-content>small{color:#3477d0;font-size:9px;font-weight:850;letter-spacing:.1em}
+.school-shell.student-shell .vokasi-ranking-modal-content h2{margin:8px 0 4px;color:#203f68;font-size:23px;font-weight:850}
+.school-shell.student-shell .vokasi-ranking-modal-content>p{margin:0;color:#8da0b6;font-size:11px;line-height:1.6}
+.school-shell.student-shell .vokasi-ranking-modal-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:22px}
+.school-shell.student-shell .vokasi-ranking-modal-stats>span{display:grid;gap:8px;padding:14px;border:1px solid #e2eaf6;border-radius:11px;background:#f7faff}
+.school-shell.student-shell .vokasi-ranking-modal-stats small{color:#8b9fb8;font-size:10px}
+.school-shell.student-shell .vokasi-ranking-modal-stats b{color:#226ac2;font-size:22px}
+.school-shell.student-shell .vokasi-ranking-modal-content .vokasi-ranking-modal-note{
+ display:flex;align-items:center;gap:8px;margin-top:18px;padding:12px;
+ border-radius:10px;background:#eaf3ff;color:#6485ab;text-align:left;font-size:10px;
+}
+.school-shell.student-shell .vokasi-ranking-modal-note svg{flex:none;color:#357ad2}
+@media(max-width:1140px){
+ .school-shell.student-shell .vokasi-ranking-podium-grid{gap:10px;padding-left:0;padding-right:0}
+ .school-shell.student-shell .vokasi-ranking-podium-card{padding-left:11px;padding-right:11px}
+ .school-shell.student-shell .vokasi-ranking-hero{padding:28px 32px}
+}
+@media(max-width:760px){
+ .school-shell.student-shell .vokasi-ranking-hero{padding:23px 20px;min-height:320px;border-radius:19px}
+ .school-shell.student-shell .vokasi-ranking-hero-copy{width:100%}
+ .school-shell.student-shell .vokasi-ranking-hero h1{max-width:420px;padding-right:30px;font-size:clamp(30px,6vw,42px)}
+ .school-shell.student-shell .vokasi-ranking-hero p{max-width:75%}
+ .school-shell.student-shell .vokasi-ranking-trophy{right:-37px;top:65px;transform:scale(.6);transform-origin:center}
+ .school-shell.student-shell .vokasi-ranking-hero-stats{margin-top:21px}
+ .school-shell.student-shell .vokasi-ranking-hero-stats>div{min-width:80px;padding:0 10px}
+ .school-shell.student-shell .vokasi-ranking-hero-stats strong{font-size:16px}
+ .school-shell.student-shell .vokasi-ranking-hero-stats small{font-size:7px}
+ .school-shell.student-shell .vokasi-ranking-controls{flex-direction:column;align-items:stretch}
+ .school-shell.student-shell .vokasi-ranking-controls .student-ranking-search{width:100%}
+ .school-shell.student-shell .vokasi-ranking-stage{padding:22px 12px;border-radius:19px}
+ .school-shell.student-shell .vokasi-ranking-stage-heading{align-items:flex-start;flex-wrap:wrap}
+ .school-shell.student-shell .vokasi-ranking-podium{overflow-x:auto;padding:0 3px;margin:25px auto}
+ .school-shell.student-shell .vokasi-ranking-podium-grid,
+ .school-shell.student-shell .vokasi-ranking-podium-base{min-width:690px}
+ .school-shell.student-shell .vokasi-ranking-podium-grid{padding-top:76px}
+}
+@media(max-width:390px){
+ .school-shell.student-shell .vokasi-ranking-hero p{max-width:90%}
+ .school-shell.student-shell .vokasi-ranking-trophy{opacity:.3}
+ .school-shell.student-shell .vokasi-ranking-hero-stats{gap:10px}
+ .school-shell.student-shell .vokasi-ranking-hero-stats>div{border:0;padding:0}
+ .school-shell.student-shell .vokasi-ranking-verification{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .school-shell.student-shell .vokasi-ranking-podium-card{transition:none}
+}
