@@ -1,0 +1,354 @@
+/* Student learning history — compact statistics and readable session report cards.
+   Render real attempt data; never use decorative invented counts or grades. */
+.school-shell.student-shell .student-history-reference{
+ display:grid;gap:21px;min-width:0;max-width:1550px;margin:0 auto;padding:0 0 28px;
+ color:#183d6d;
+}
+.school-shell.student-shell .student-history-hero{
+ position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;
+ gap:30px;min-height:212px;overflow:hidden;
+ padding:31px clamp(26px,3.4vw,53px);border-radius:26px;
+ background:linear-gradient(112deg,#1655b5 0%,#2377e3 70%,#4d90ed 100%);
+ color:#fff;box-shadow:0 16px 32px #2267bb1c;
+}
+.school-shell.student-shell .student-history-hero:before{
+ content:"";position:absolute;z-index:-1;right:-90px;top:-215px;
+ width:485px;height:485px;border:1px solid #ffffff33;border-radius:50%;
+ box-shadow:0 0 0 65px #ffffff0b,0 0 0 120px #ffffff09;
+}
+.school-shell.student-shell .student-history-hero-copy{display:grid;gap:14px;flex:1;min-width:0}
+.school-shell.student-shell .student-history-hero-copy>span{
+ color:#d8e9ff;letter-spacing:.095em;font-size:10px;font-weight:900;
+}
+.school-shell.student-shell .student-history-hero-copy h1{
+ margin:0;color:#fff;font-size:clamp(28px,3.5vw,43px);
+ font-weight:750;letter-spacing:-.045em;line-height:1.2;
+}
+.school-shell.student-shell .student-history-hero-copy p{
+ max-width:520px;margin:0;color:#e3efff;font-size:12px;line-height:1.65;
+}
+.school-shell.student-shell .student-history-hero-metrics{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));flex:none;
+ width:min(550px,52%);min-width:0;gap:0;
+ padding:17px 10px;border:1px solid #ffffff3e;border-radius:17px;background:#ffffff21;
+ backdrop-filter:blur(8px);
+}
+.school-shell.student-shell .student-history-hero-metrics>div{
+ display:flex;gap:11px;align-items:center;min-width:0;padding:0 12px;
+}
+.school-shell.student-shell .student-history-hero-metrics>div+div{border-left:1px solid #ffffff35}
+.school-shell.student-shell .student-history-hero-metric-icon{
+ display:grid;place-items:center;flex:none;width:39px;height:39px;border-radius:11px;
+ background:#ffffff28;color:#fff;
+}
+.school-shell.student-shell .student-history-hero-metrics>div>span:last-child{
+ display:grid;gap:6px;min-width:0;
+}
+.school-shell.student-shell .student-history-hero-metrics small{
+ color:#e0edff;font-size:9px;font-weight:750;white-space:nowrap;
+}
+.school-shell.student-shell .student-history-hero-metrics strong{
+ color:#fff;font-size:clamp(18px,1.9vw,24px);
+ font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.school-shell.student-shell .student-history-toolbar{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+ gap:12px;padding:12px 15px;border:1px solid #dbe7f8;border-radius:18px;background:#fff;
+ box-shadow:0 8px 27px #27558b0a;
+}
+.school-shell.student-shell .student-history-tabs{
+ display:flex;align-items:center;gap:4px;flex:none;padding:5px;
+ border-radius:12px;background:#eef3fa;
+}
+.school-shell.student-shell .student-history-tabs button{
+ padding:11px 17px;min-height:38px;border:0;border-radius:9px;
+ background:transparent;color:#6686ad;font-size:11px;font-weight:850;cursor:pointer;
+}
+.school-shell.student-shell .student-history-tabs button.active{
+ background:#fff;color:#236bd1;box-shadow:0 3px 13px #1d5da81a;
+}
+.school-shell.student-shell .student-history-filter-controls{
+ display:flex;align-items:center;flex:1;justify-content:flex-end;gap:10px;min-width:0;
+}
+.school-shell.student-shell .student-history-search,
+.school-shell.student-shell .student-history-month{
+ display:flex;align-items:center;gap:8px;min-width:0;height:46px;
+ padding:0 13px;border:1px solid #d8e6f7;border-radius:11px;
+ background:#fff;color:#7391b5;
+}
+.school-shell.student-shell .student-history-search{flex:1;max-width:375px}
+.school-shell.student-shell .student-history-search input,
+.school-shell.student-shell .student-history-month input{
+ min-width:0;width:100%;border:0;background:transparent;outline:none;
+ color:#31587f;font-size:11px;
+}
+.school-shell.student-shell .student-history-search input::placeholder{color:#9aacbe}
+.school-shell.student-shell .student-history-month{width:168px}
+.school-shell.student-shell .student-history-filter-more{
+ display:grid;place-items:center;flex:none;width:46px;height:46px;
+ border:1px solid #d7e7fb;border-radius:11px;background:#edf5ff;color:#347bd7;cursor:pointer;
+}
+.school-shell.student-shell .student-history-filter-more:hover,
+.school-shell.student-shell .student-history-filter-more.active{background:#e0eeff}
+.school-shell.student-shell .student-history-extra-filters{
+ display:flex;align-items:end;flex-wrap:wrap;gap:13px;width:100%;
+ padding:12px 0 4px;border-top:1px solid #e6edf8;
+}
+.school-shell.student-shell .student-history-extra-filters label{
+ display:grid;gap:6px;color:#6d8aaa;font-size:10px;font-weight:850;
+}
+.school-shell.student-shell .student-history-extra-filters input{
+ min-height:38px;padding:7px 10px;border:1px solid #dce7f5;
+ border-radius:8px;background:#fff;color:#34587e;
+}
+.school-shell.student-shell .student-history-extra-filters button,
+.school-shell.student-shell .student-history-section-heading>button{
+ min-height:38px;padding:7px 11px;border:1px solid #d1e2f7;border-radius:9px;
+ background:#f5f9ff;color:#286fc9;font-size:10px;font-weight:850;
+}
+.school-shell.student-shell .student-history-section-heading{
+ display:flex;align-items:end;justify-content:space-between;gap:15px;margin-top:1px;
+}
+.school-shell.student-shell .student-history-section-heading>div{display:grid;gap:7px}
+.school-shell.student-shell .student-history-section-heading span{
+ color:#3576cc;font-size:9px;font-weight:900;letter-spacing:.05em;
+}
+.school-shell.student-shell .student-history-section-heading h2{
+ margin:0;color:#22496f;font-size:19px;font-weight:760;letter-spacing:-.035em;
+}
+.school-shell.student-shell .student-history-cards{display:grid;gap:13px}
+.school-shell.student-shell .student-history-card{
+ min-width:0;overflow:hidden;border:1px solid #dae6f7;border-radius:19px;
+ background:#fff;box-shadow:0 10px 24px #244e7a0b;
+}
+.school-shell.student-shell .student-history-card.is-expanded{border-color:#a7cbff}
+.school-shell.student-shell .student-history-card-header{
+ display:flex;align-items:center;justify-content:space-between;gap:16px;
+ padding:17px 22px;min-width:0;
+}
+.school-shell.student-shell .student-history-card-toggle{
+ display:flex;align-items:center;flex:1;gap:16px;min-width:0;
+ padding:0;border:0;background:transparent;text-align:left;cursor:pointer;
+}
+.school-shell.student-shell .student-history-card-icon{
+ display:grid;place-items:center;flex:none;width:52px;height:52px;
+ border-radius:14px;background:#eaf3ff;color:#2e7bdf;
+}
+.school-shell.student-shell .student-history-card-title{display:grid;align-items:start;gap:6px;min-width:0}
+.school-shell.student-shell .student-history-card-tag{
+ justify-self:start;padding:5px 8px;border-radius:7px;
+ background:#eaf2ff;color:#2b71cc;font-size:9px;font-weight:850;
+}
+.school-shell.student-shell .student-history-card-title strong{
+ max-width:100%;color:#23486d;font-size:14px;font-weight:900;line-height:1.4;overflow-wrap:anywhere;
+}
+.school-shell.student-shell .student-history-card-title small{
+ color:#899fba;font-size:10px;line-height:1.4;
+}
+.school-shell.student-shell .student-history-card-trailing{
+ display:flex;align-items:center;gap:12px;flex:none;
+}
+.school-shell.student-shell .student-history-card-score{
+ color:#159e7d;font-size:30px;font-weight:900;letter-spacing:-.045em;
+ font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.school-shell.student-shell .student-history-card-score.is-low{color:#e28c47}
+.school-shell.student-shell .student-history-card-score small{
+ color:#8da4bd;font-size:11px;letter-spacing:0;
+}
+.school-shell.student-shell .student-history-card-chevron{
+ display:grid;place-items:center;width:37px;height:37px;
+ border:0;border-radius:10px;background:#f4f8fe;color:#6f90b5;cursor:pointer;
+}
+.school-shell.student-shell .student-history-card-chevron svg{transition:transform .15s}
+.school-shell.student-shell .student-history-card.is-expanded .student-history-card-chevron svg{transform:rotate(90deg)}
+.school-shell.student-shell .student-history-card-expanded{
+ display:grid;gap:18px;padding:22px;border-top:1px solid #e4edf8;background:#fbfdff;
+}
+.school-shell.student-shell .student-history-card-stats{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+}
+.school-shell.student-shell .student-history-card-stats>div{
+ display:flex;align-items:center;gap:11px;min-width:0;
+ min-height:72px;padding:13px;border:1px solid #deebf7;border-radius:13px;background:#fff;
+}
+.school-shell.student-shell .student-history-stat-icon{
+ display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:11px;
+}
+.school-shell.student-shell .student-history-stat-icon.green{background:#e7f8f3;color:#22a889}
+.school-shell.student-shell .student-history-stat-icon.blue{background:#eaf2ff;color:#2a7ce1}
+.school-shell.student-shell .student-history-stat-icon.purple{background:#f1eaff;color:#8a69d7}
+.school-shell.student-shell .student-history-stat-icon.amber{background:#fff4df;color:#e6a13b}
+.school-shell.student-shell .student-history-card-stats>div>span:last-child{display:grid;gap:6px;min-width:0}
+.school-shell.student-shell .student-history-card-stats small{
+ color:#8198b4;font-size:9px;line-height:1.4;
+}
+.school-shell.student-shell .student-history-card-stats strong{
+ color:#244a77;font-size:13px;font-weight:900;line-height:1.3;overflow-wrap:anywhere;
+}
+.school-shell.student-shell .student-history-answer-summary{
+ display:grid;gap:15px;padding:19px 20px;border:1px solid #dbe8f6;
+ border-radius:14px;background:#fff;
+}
+.school-shell.student-shell .student-history-answer-top{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.school-shell.student-shell .student-history-answer-top>div:first-child{display:grid;gap:7px}
+.school-shell.student-shell .student-history-answer-top strong{color:#274b76;font-size:12px}
+.school-shell.student-shell .student-history-answer-top small{color:#8ca0b9;font-size:10px}
+.school-shell.student-shell .student-history-answer-legend{display:flex;flex-wrap:wrap;gap:12px}
+.school-shell.student-shell .student-history-answer-legend span{
+ display:flex;align-items:center;gap:5px;color:#7991ae;font-size:9px;
+}
+.school-shell.student-shell .student-history-answer-legend i{
+ display:inline-block;width:8px;height:8px;border-radius:50%;
+}
+.school-shell.student-shell .student-history-answer-legend .good{background:#22b58e}
+.school-shell.student-shell .student-history-answer-legend .bad{background:#e75668}
+.school-shell.student-shell .student-history-answer-legend .timed{background:#efa229}
+.school-shell.student-shell .student-history-answer-numbers{
+ display:flex;flex-wrap:wrap;gap:8px;max-height:200px;overflow-y:auto;
+}
+.school-shell.student-shell .student-history-answer-numbers span{
+ display:grid;place-items:center;width:39px;height:39px;border-radius:10px;
+ background:#edf3fa;color:#55779a;font-size:11px;font-weight:850;
+}
+.school-shell.student-shell .student-history-answer-numbers .is-correct{background:#dbf5ec;color:#098b70}
+.school-shell.student-shell .student-history-answer-numbers .is-wrong{background:#ffe5e8;color:#c93c57}
+.school-shell.student-shell .student-history-answer-numbers .is-timeout{background:#fff0d5;color:#b37818}
+.school-shell.student-shell .student-history-review-content{
+ padding:0 1px;
+}
+.school-shell.student-shell .student-history-card-footer{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+ gap:12px;padding:14px 21px;border-top:1px solid #e4edf8;background:#fff;
+}
+.school-shell.student-shell .student-history-card-verification{
+ display:flex;align-items:center;gap:7px;flex:1;min-width:0;
+ color:#7390af;font-size:10px;line-height:1.5;
+}
+.school-shell.student-shell .student-history-card-verification svg{flex:none;color:#36a78d}
+.school-shell.student-shell .student-history-card-actions{
+ display:flex;align-items:center;gap:10px;flex:none;
+}
+.school-shell.student-shell .student-history-card-actions .vokasi-report-download{
+ min-height:41px;margin:0;padding:10px 14px;
+ border:1px solid #caddf7;border-radius:10px;background:#f4f9ff;
+ color:#2b6bc3;font-size:11px;
+}
+.school-shell.student-shell .student-history-details-btn{
+ display:flex;align-items:center;justify-content:center;gap:8px;
+ min-height:41px;padding:10px 17px;border:1px solid #206dd6;
+ border-radius:10px;background:#226fdc;color:#fff;font-size:11px;font-weight:850;cursor:pointer;
+}
+.school-shell.student-shell .student-history-details-btn:hover{background:#155fc8}
+.school-shell.student-shell .student-history-empty{
+ display:flex;align-items:center;justify-content:center;flex-direction:column;
+ gap:12px;min-height:220px;padding:30px;border:1px solid #dbe7f6;
+ border-radius:18px;background:#fff;color:#819ab6;font-size:12px;text-align:center;
+}
+.school-shell.student-shell .student-history-empty strong{color:#244970;font-size:14px}
+.school-shell.student-shell .student-history-empty svg{color:#4b86d5}
+.school-shell.student-shell .student-history-pagination{
+ display:flex;align-items:center;justify-content:space-between;gap:13px;
+ padding:5px 0;color:#849bb5;font-size:11px;
+}
+.school-shell.student-shell .student-history-pagination>div{display:flex;gap:8px}
+.school-shell.student-shell .student-history-pagination button{
+ min-height:39px;padding:9px 12px;border:1px solid #d8e5f5;
+ border-radius:9px;background:#fff;color:#3472be;font-size:11px;font-weight:750;
+}
+.school-shell.student-shell .student-history-pagination button:disabled{opacity:.4;cursor:not-allowed}
+.school-shell.student-shell .student-history-reference button:focus-visible,
+.school-shell.student-shell .student-history-reference input:focus-visible{
+ outline:3px solid #78b4f7;outline-offset:2px;
+}
+@media(max-width:1180px){
+ .school-shell.student-shell .student-history-hero{gap:18px}
+ .school-shell.student-shell .student-history-hero-metrics{width:55%;padding:14px 5px}
+ .school-shell.student-shell .student-history-hero-metrics>div{padding:0 9px;gap:7px}
+ .school-shell.student-shell .student-history-hero-metric-icon{width:34px;height:34px}
+ .school-shell.student-shell .student-history-hero-metric-icon svg{width:18px}
+ .school-shell.student-shell .student-history-card-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:860px){
+ .school-shell.student-shell .student-history-reference{gap:16px}
+ .school-shell.student-shell .student-history-hero{
+   flex-direction:column;align-items:stretch;gap:22px;padding:26px;
+ }
+ .school-shell.student-shell .student-history-hero-metrics{width:100%;max-width:none}
+ .school-shell.student-shell .student-history-toolbar{align-items:stretch}
+ .school-shell.student-shell .student-history-filter-controls{justify-content:flex-start}
+ .school-shell.student-shell .student-history-search{max-width:none}
+}
+@media(max-width:600px){
+ .school-shell.student-shell .student-history-reference{gap:13px;padding-bottom:20px}
+ .school-shell.student-shell .student-history-hero{
+   padding:23px 18px;min-height:0;border-radius:18px;gap:20px;
+ }
+ .school-shell.student-shell .student-history-hero-copy{gap:10px}
+ .school-shell.student-shell .student-history-hero-copy h1{font-size:29px}
+ .school-shell.student-shell .student-history-hero-copy p{font-size:11px}
+ .school-shell.student-shell .student-history-hero-metrics{gap:0;padding:12px 4px}
+ .school-shell.student-shell .student-history-hero-metrics>div{
+   flex-direction:column;align-items:flex-start;padding:0 9px;
+ }
+ .school-shell.student-shell .student-history-hero-metric-icon{width:29px;height:29px;border-radius:8px}
+ .school-shell.student-shell .student-history-hero-metric-icon svg{width:15px}
+ .school-shell.student-shell .student-history-hero-metrics small{font-size:8px;white-space:normal}
+ .school-shell.student-shell .student-history-hero-metrics strong{font-size:19px}
+ .school-shell.student-shell .student-history-toolbar{gap:11px;padding:11px;border-radius:14px}
+ .school-shell.student-shell .student-history-tabs{width:100%}
+ .school-shell.student-shell .student-history-tabs button{flex:1;padding:9px 10px}
+ .school-shell.student-shell .student-history-filter-controls{width:100%;flex-wrap:wrap;gap:8px}
+ .school-shell.student-shell .student-history-search{flex:1 1 100%;height:43px}
+ .school-shell.student-shell .student-history-month{flex:1;width:auto;height:43px}
+ .school-shell.student-shell .student-history-filter-more{height:43px;width:43px}
+ .school-shell.student-shell .student-history-section-heading h2{font-size:17px}
+ .school-shell.student-shell .student-history-card{border-radius:15px}
+ .school-shell.student-shell .student-history-card-header{gap:7px;padding:14px 12px}
+ .school-shell.student-shell .student-history-card-toggle{gap:10px}
+ .school-shell.student-shell .student-history-card-icon{width:38px;height:38px;border-radius:11px}
+ .school-shell.student-shell .student-history-card-icon svg{width:18px}
+ .school-shell.student-shell .student-history-card-title strong{font-size:12px}
+ .school-shell.student-shell .student-history-card-title small{font-size:9px}
+ .school-shell.student-shell .student-history-card-tag{font-size:8px;padding:4px 6px}
+ .school-shell.student-shell .student-history-card-trailing{gap:1px}
+ .school-shell.student-shell .student-history-card-score{font-size:24px}
+ .school-shell.student-shell .student-history-card-score small{font-size:9px}
+ .school-shell.student-shell .student-history-card-chevron{width:28px;height:33px}
+ .school-shell.student-shell .student-history-card-expanded{gap:11px;padding:12px}
+ .school-shell.student-shell .student-history-card-stats{gap:8px}
+ .school-shell.student-shell .student-history-card-stats>div{gap:7px;min-height:70px;padding:9px}
+ .school-shell.student-shell .student-history-stat-icon{width:32px;height:32px;border-radius:9px}
+ .school-shell.student-shell .student-history-stat-icon svg{width:17px}
+ .school-shell.student-shell .student-history-card-stats small{font-size:8px}
+ .school-shell.student-shell .student-history-card-stats strong{font-size:12px}
+ .school-shell.student-shell .student-history-answer-summary{padding:13px}
+ .school-shell.student-shell .student-history-answer-top{align-items:flex-start;flex-direction:column;gap:9px}
+ .school-shell.student-shell .student-history-answer-numbers{gap:6px}
+ .school-shell.student-shell .student-history-answer-numbers span{width:32px;height:32px;font-size:9px}
+ .school-shell.student-shell .student-history-card-footer{
+   align-items:stretch;flex-direction:column;gap:10px;padding:12px;
+ }
+ .school-shell.student-shell .student-history-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .school-shell.student-shell .student-history-card-actions .vokasi-report-action{min-width:0}
+ .school-shell.student-shell .student-history-card-actions .vokasi-report-download,
+ .school-shell.student-shell .student-history-details-btn{
+   display:flex;width:100%;min-height:43px;padding:9px 7px;font-size:10px;
+ }
+ .school-shell.student-shell .student-history-card-verification{font-size:9px}
+ .school-shell.student-shell .student-history-pagination{gap:6px}
+ .school-shell.student-shell .student-history-pagination button{padding:8px;font-size:10px}
+}
+@media(max-width:365px){
+ .school-shell.student-shell .student-history-hero-metrics>div{padding:0 5px}
+ .school-shell.student-shell .student-history-hero-metrics strong{font-size:17px}
+ .school-shell.student-shell .student-history-hero-metrics small{font-size:7px}
+ .school-shell.student-shell .student-history-card-icon{display:none}
+ .school-shell.student-shell .student-history-card-score{font-size:22px}
+}
+@media(prefers-reduced-motion:reduce){
+ .school-shell.student-shell .student-history-card-chevron svg{transition:none}
+}
