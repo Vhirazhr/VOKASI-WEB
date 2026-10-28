@@ -36,7 +36,7 @@ export default function StudentAssistant(){
  function submit(){
   const prompt=input.trim().slice(0,250);
   if(!prompt)return;
-  setMessages(old=>[...old,{who:'student',body:prompt},{who:'assistant',body:answerFor(prompt)}].slice(-32));
+  setMessages(old=>[...old,{who:'student' as const,body:prompt},{who:'assistant' as const,body:answerFor(prompt)}].slice(-32));
   setInput('');
  }
  return <main className="vokasi-assistant-page">
@@ -46,7 +46,7 @@ export default function StudentAssistant(){
     <div className="vokasi-assistant-feed" role="log" aria-live="polite">
      {messages.map((m,index)=><article key={index} className={'vokasi-assistant-message '+m.who}><small>{m.who==='student'?'KAMU':'ASISTEN VOKASI'}</small><p>{m.body}</p></article>)}
     </div>
-    <div className="vokasi-assistant-prompts">{['Cara unduh PDF','Rekomendasi materi','Cara kerja nilai'].map(item=><button key={item} type="button" onClick={()=>{setMessages(old=>[...old,{who:'student',body:item},{who:'assistant',body:answerFor(item)}].slice(-32));}}>{item}</button>)}</div>
+    <div className="vokasi-assistant-prompts">{['Cara unduh PDF','Rekomendasi materi','Cara kerja nilai'].map(item=><button key={item} type="button" onClick={()=>{setMessages(old=>[...old,{who:'student' as const,body:item},{who:'assistant' as const,body:answerFor(item)}].slice(-32));}}>{item}</button>)}</div>
     <form className="vokasi-assistant-composer" onSubmit={event=>{event.preventDefault();submit();}}>
       <input value={input} onChange={e=>setInput(e.target.value.slice(0,250))} maxLength={250} aria-label="Tanyakan pada Asisten VOKASI" placeholder="Tanya tentang nilai, PDF, atau 12 x 3..." />
       <button type="submit" disabled={!input.trim()}><Send size={17}/> <span>Kirim</span></button>
