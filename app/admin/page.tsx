@@ -7,6 +7,7 @@ import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {getAdminAnalyticsAttempts,getAdminAttempts,getSchoolStudents,latestGrades,wibDate} from '@/lib/school';
 import type {Attempt,AttemptSummary,SchoolStudent} from '@/lib/types';
+import {exportAdminGrades} from '@/lib/admin-excel';
 const PAGE=10;
 export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('admin');
  const [students,setStudents]=useState<SchoolStudent[]>([]);const [attempts,setAttempts]=useState<Attempt[]>([]);
@@ -68,20 +69,12 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
    (status==='all'||(status==='complete'?allGrades.has(s.authId):!allGrades.has(s.authId)))).sort((a,b)=>a.fullName.localeCompare(b.fullName,'id')),[scope,search,status,allGrades]);
  const pages=Math.max(1,Math.ceil(filtered.length/PAGE));const rows=filtered.slice(Math.min(page,pages-1)*PAGE,(Math.min(page,pages-1)+1)*PAGE);
  
- async function exportExcel(){if(notice||busy||!klass)return;setExporting(true);
-  try{const ExcelJS=(await import('exceljs')).default;const book=new ExcelJS.Workbook();book.creator='VOKASI Web';
-    const sheet=book.addWorksheet('Nilai Siswa');sheet.columns=[
-      {header:'No',key:'no',width:8},{header:'Nama Siswa',key:'name',width:38},{header:'Kelas',key:'class',width:22},
-      {header:'Tanggal',key:'date',width:19},{header:'Nilai',key:'score',width:13},{header:'Status',key:'status',width:22}
-    ];sheet.getRow(1).font={bold:true,color:{argb:'FFFFFFFF'}};sheet.getRow(1).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF17345D'}};
-    scope.forEach((s,i)=>{const score=allGrades.get(s.authId)?.score;
-      const safe=(value:string)=>/^[=+\-@\t\r]/.test(value)?("'"+value):value;
-      sheet.addRow({no:i+1,name:safe(s.fullName),class:safe(s.className),date,score:score??'',status:score!==undefined?'Selesai':'Belum Mengerjakan'});
-    });
-    sheet.autoFilter={from:'A1',to:`F${scope.length+1}`};sheet.views=[{state:'frozen',ySplit:1}];
-    const bytes=await book.xlsx.writeBuffer();const blob=new Blob([bytes as BlobPart],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`VOKASI_Nilai_${klass.replace(/[^a-zA-Z0-9_-]/g,'_')}_${date}.xlsx`;a.click();URL.revokeObjectURL(url);
-  }catch(e){setNotice('Ekspor Excel gagal: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}finally{setExporting(false);}
+ async function exportExcel(){
+  if(notice||busy||!students.length||exporting)return;
+  setExporting(true);
+  try{await exportAdminGrades(scope,allGrades,date,major,klass);}
+  catch(e){setNotice('Ekspor Excel gagal: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}
+  finally{setExporting(false);}
  }
 
  const completionRate=scope.length?Math.round(complete/scope.length*100):0;
@@ -144,7 +137,8 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
             <label className="admin-overview-search"><Search size={17}/><input aria-label="Cari siswa pada laporan" placeholder="Cari nama atau username siswa..." value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label>
             <div className="admin-overview-actions">
               <button type="button" className="btn secondary small" onClick={()=>setRefreshKey(v=>v+1)} disabled={busy}><RefreshCw size={15}/> Segarkan</button>
-              <button type="button" title={!klass?'Pilih satu kelas sebelum mengunduh laporan':undefined} className="btn primary small" onClick={()=>void exportExcel()} disabled={busy||!!notice||exporting||!students.length||!klass}><ArrowDownToLine size={15}/> {exporting?'Mengekspor...':'Unduh Excel'}</button>
+              <Link href={embed?'/admin/monitoring?embed=1':'/admin/monitoring'} className="btn secondary small"><Users size={15}/> Monitoring siswa</Link>
+              <button type="button" title="Unduh laporan nilai untuk seluruh siswa dalam filter jurusan dan kelas" className="btn primary small" onClick={()=>void exportExcel()} disabled={busy||!!notice||exporting||!scope.length}><ArrowDownToLine size={15}/> {exporting?'Mengekspor...':'Unduh Excel'}</button>
             </div>
           </div>
           {busy?<div className="empty-state">Mengambil nilai resmi dari Supabase...</div>:
