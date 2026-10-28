@@ -84,6 +84,11 @@ Origin harus tepat (tanpa path); untuk beberapa domain pisahkan spasi. Konfigura
 
 **Catatan browser:** browser tertentu membatasi storage/login di third-party iframe. Jika login di iframe ditolak, sediakan tautan **Buka VOKASI di tab baru** atau pasang VOKASI sebagai subdomain same-site (misalnya `vokasi.sekolah.sch.id`). Uji langsung di Chrome, Edge, Firefox dan perangkat seluler.
 
+
+## Deployment cPanel
+
+Panduan deployment ke cPanel Node.js App tanpa Supervisor tersedia di [`docs/DEPLOY-CPANEL.md`](docs/DEPLOY-CPANEL.md). Panduan tersebut mencakup environment variables, build, smoke test, dan serah-terima Supabase.
+
 ## 5. Deploy publik
 
 Gunakan Vercel atau server Node.js yang menjalankan `npm run build` dan `npm run start`. **GitHub Pages biasa tidak cocok untuk menjalankan server Next.js dinamis.** Set environment variables Supabase dan `EMBED_ALLOWED_ORIGINS` di hosting.
