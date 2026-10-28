@@ -50,3 +50,8 @@
 @media(max-width:370px){.vok-nav-signin{padding:9px 11px}.vok-hero h1{font-size:34px}.vok-pill{font-size:7px}.vok-hero-art{height:345px}.vok-window-welcome p{max-width:170px}.vok-floating-label-top{right:-4px}.vok-floating-label-bottom{left:0}.vok-demo-choices span{font-size:10px}.vok-demo-double p{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.vok-site *, .vok-site *::before,.vok-site *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}.vok-hero-window{transform:none}}
 @media(prefers-reduced-motion:no-preference){html:has(.vok-site){scroll-behavior:smooth}}
+
+/* Official school identity in the landing navigation, footer, and preview header. */
+.vok-brand-school-logo{background:#fff!important;overflow:hidden;padding:2px;border:1px solid #e3eaf5;box-shadow:0 5px 15px rgba(24,59,108,.12)!important;}
+.vok-school-logo-image{display:block;width:100%;height:100%;object-fit:contain;}
+.vok-screen-logo{background:#fff!important;overflow:hidden;padding:2px;border:1px solid #e3eaf5;}
