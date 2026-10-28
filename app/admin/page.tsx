@@ -44,9 +44,9 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
   if(!Number.isFinite(start))return [];
   const scopeIds=new Set(scope.map(s=>s.authId).filter(Boolean));
   const byDay=new Map<string,Map<string,number>>();
-  // Sorted newest-first by getAdminAnalyticsAttempts: take the most recent verified
-  // compulsory grade of each student in each WIB day, as in /admin/analitik.
-  for(const attempt of trendAttempts){
+  // First verified compulsory score of each WIB day is official.
+  // Retakes stay in history and cannot replace daily analytics.
+  for(const attempt of [...trendAttempts].sort((a,b)=>a.completed_at_ms-b.completed_at_ms)){
     const id=attempt.auth_user_id;
     if(!id||!scopeIds.has(id)||!Number.isFinite(attempt.score)||attempt.score<0||attempt.score>100)continue;
     const day=wibDate(attempt.completed_at_ms);
@@ -206,7 +206,7 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
             </div>
           </div>
           {(busy||trendError||!trendHasData)&&<p className="admin-overview-trend-status" role="status">{busy?'Memuat data perkembangan...':trendError||'Belum ada nilai terverifikasi pada periode ini.'}</p>}
-          <p className="admin-overview-trend-note">Rata-rata nilai terakhir per siswa per hari (WIB), dari hasil terverifikasi.</p>
+          <p className="admin-overview-trend-note">Rata-rata nilai resmi pertama per siswa per hari (WIB), dari hasil terverifikasi.</p>
         </div>
       </section>
       </div>
