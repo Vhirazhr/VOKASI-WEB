@@ -269,6 +269,9 @@ export default function StudentPage(){
   const compulsory=officialMandatoryAttempts(attempts);
   const latest=compulsory[0];
   const today=compulsory.find(a=>wibDate(a.completed_at_ms)===wibDate());
+  const currentWib=wibDate();
+  const seasonQuarter=Math.ceil(Number(currentWib.slice(5,7))/3);
+  const seasonXp=attempts.filter(a=>a.signature?.startsWith('WEB-SERVER-v1:')&&wibDate(a.completed_at_ms).slice(0,4)===currentWib.slice(0,4)&&Math.ceil(Number(wibDate(a.completed_at_ms).slice(5,7))/3)===seasonQuarter).reduce((sum,a)=>sum+Math.max(0,a.earned_xp),0);
   const average=compulsory.length?Math.round(compulsory.reduce((s,a)=>s+a.score,0)/compulsory.length):null;
   return <AppShell role="student" onLogout={()=>void logout()} displayName={profile.fullName} studentAvatarUrl={avatarUrls[profile.username.toLowerCase()]} embed={embed} navigationBlocked={category!==undefined} quizFocusMode={category!==undefined}>
     {category!==undefined?<QuizView profile={profile} category={category} history={attempts} onQuit={()=>setCategory(undefined)} onDone={()=>{setCategory(undefined);void refresh();}}/>:
@@ -343,9 +346,12 @@ export default function StudentPage(){
                 <Link className="student-reference-secondary-link" href={embed?'/siswa/riwayat?embed=1':'/siswa/riwayat'}>Lihat riwayat <ArrowRight size={15}/></Link>
               </section>
 
-              <section className="student-aside-card student-reference-tip">
-                <div className="student-reference-section-heading"><div><span className="student-card-eyebrow">TIPS BELAJAR</span><h2>Kerjakan dengan teliti</h2></div><span className="student-dashboard-card-icon gold"><Lightbulb size={19}/></span></div>
-                <p>Baca setiap soal sampai selesai, perhatikan informasi penting, lalu periksa kembali jawabanmu sebelum mengirim.</p>
+              <section className="student-aside-card student-reference-tip vokasi-today-progress">
+                <div className="student-reference-section-heading"><div><span className="student-card-eyebrow">PROGRES HARI INI</span><h2>{today?'Latihan wajib selesai':'Ayo mulai latihan!'}</h2></div><span className="student-dashboard-card-icon blue"><CheckCircle2 size={19}/></span></div>
+                <div className="vokasi-today-progress-status"><strong>{busy?'—':today?'100%':'0%'}</strong><span>{busy?'Memuat aktivitas...':today?'Nilai resmi hari ini: '+today.score+'/100':'Belum ada nilai wajib resmi hari ini'}</span></div>
+                <div className="vokasi-today-progress-track"><span style={{width:today?'100%':'0%'}}/></div>
+                <div className="vokasi-today-season"><span>XP season {seasonQuarter}</span><strong>{busy?'—':seasonXp} XP</strong></div>
+                <p>{today?'Pengulangan tetap boleh, tetapi tidak mengganti nilai resmi maupun XP hari ini.':'Kerjakan 100 soal untuk mencatat progres resmi hari ini.'}</p>
               </section>
             </aside>
           </section>
