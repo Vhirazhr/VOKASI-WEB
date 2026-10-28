@@ -1,5 +1,6 @@
 'use client';
 
+import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useMemo,useState} from 'react';
 import {ArrowRight,BookOpen,GraduationCap,RefreshCw,School2,Search,Users,Plus,PenLine,Trash2,X} from 'lucide-react';
 import AppShell from '@/components/AppShell';
@@ -81,8 +82,8 @@ export default function AdminClassesPage(){
    if(!/^\d{4}\/\d{4}$/.test(newYear)||Number(newYear.slice(5))!==Number(newYear.slice(0,4))+1){setFeedback('Tahun ajaran harus berurutan, misalnya 2026/2027.');return;}
    setSaveBusy(true);
    const {error:err}=classModal==='edit'
-     ?await supabase().rpc('vokasi_admin_update_class',{p_class_id:editClassId,p_major_id:newMajor,p_name:finalName,p_grade:newGrade,p_year:newYear})
-     :await supabase().rpc('vokasi_admin_create_class',{p_major_id:newMajor,p_name:finalName,p_grade:newGrade,p_year:newYear});
+     ?await nativeRpc('vokasi_admin_update_class',{p_class_id:editClassId,p_major_id:newMajor,p_name:finalName,p_grade:newGrade,p_year:newYear})
+     :await nativeRpc('vokasi_admin_create_class',{p_major_id:newMajor,p_name:finalName,p_grade:newGrade,p_year:newYear});
    if(err)setFeedback(err.message);
    else{setFeedback('');setClassModal(null);setSelected(null);setRefreshKey(v=>v+1);}
    setSaveBusy(false);
@@ -90,7 +91,7 @@ export default function AdminClassesPage(){
  async function removeClass(){
   if(!deleteTarget||saveBusy)return;
   setSaveBusy(true);setFeedback('');
-  const {error:err}=await supabase().rpc('vokasi_admin_delete_empty_class',{p_class_id:deleteTarget.key});
+  const {error:err}=await nativeRpc('vokasi_admin_delete_empty_class',{p_class_id:deleteTarget.key});
   if(err)setFeedback(err.message);
   else{setDeleteTarget(null);setSelected(null);setRefreshKey(v=>v+1);}
   setSaveBusy(false);
