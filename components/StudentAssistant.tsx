@@ -1,6 +1,6 @@
 'use client';
-import {useState} from 'react';
-import {Bot,Calculator,Send,ShieldCheck,Sparkles} from 'lucide-react';
+import {useEffect,useRef,useState} from 'react';
+import {Bot,Send,ShieldCheck,MessageCircle} from 'lucide-react';
 
 type Message={who:'assistant'|'student';body:string};
 const guide:{keywords:string[];answer:string}[]=[
@@ -32,26 +32,27 @@ function answerFor(question:string){
 }
 export default function StudentAssistant(){
  const [input,setInput]=useState('');
+ const feedRef=useRef<HTMLDivElement>(null);
  const [messages,setMessages]=useState<Message[]>([{who:'assistant',body:'Halo! Aku Asisten VOKASI. Tanyakan seputar fitur belajar atau hitungan sederhana. Aku menggunakan panduan lokal, bukan AI atau akses ke data pribadimu.'}]);
+ useEffect(()=>{
+  if(feedRef.current)feedRef.current.scrollTop=feedRef.current.scrollHeight;
+ },[messages]);
  function submit(){
   const prompt=input.trim().slice(0,250);
   if(!prompt)return;
   setMessages(old=>[...old,{who:'student' as const,body:prompt},{who:'assistant' as const,body:answerFor(prompt)}].slice(-32));
   setInput('');
  }
- return <main className="vokasi-assistant-page">
-   <header className="vokasi-assistant-hero"><span><Sparkles size={16}/> PANDUAN BELAJAR</span><h1>Asisten VOKASI</h1><p>Tanya tentang fitur aplikasi dan matematika sederhana. Jawaban berasal dari panduan lokal.</p></header>
-   <section className="vokasi-assistant-panel">
-    <div className="vokasi-assistant-title"><span><Bot size={21}/></span><div><strong>Asisten belajar</strong><small>Tanpa koneksi API atau pengiriman pertanyaan ke pihak lain</small></div></div>
-    <div className="vokasi-assistant-feed" role="log" aria-live="polite">
-     {messages.map((m,index)=><article key={index} className={'vokasi-assistant-message '+m.who}><small>{m.who==='student'?'KAMU':'ASISTEN VOKASI'}</small><p>{m.body}</p></article>)}
+ return <section className="vokasi-assistant-panel vokasi-chatbot-conversation" aria-label="Percakapan chatbot VOKASI">
+    <div className="vokasi-assistant-title"><span><Bot size={21}/></span><div><strong>Chatbot belajar VOKASI</strong><small>Panduan lokal dan bantuan hitung sederhana</small></div><span className="vokasi-chatbot-online"><span/>Siap membantu</span></div>
+    <div className="vokasi-assistant-feed" role="log" aria-live="polite" aria-label="Pesan chatbot" ref={feedRef}>
+     {messages.map((m,index)=><article key={index} className={'vokasi-assistant-message '+m.who}><small>{m.who==='student'?'KAMU':'CHATBOT VOKASI'}</small><p>{m.body}</p></article>)}
     </div>
     <div className="vokasi-assistant-prompts">{['Cara unduh PDF','Rekomendasi materi','Cara kerja nilai'].map(item=><button key={item} type="button" onClick={()=>{setMessages(old=>[...old,{who:'student' as const,body:item},{who:'assistant' as const,body:answerFor(item)}].slice(-32));}}>{item}</button>)}</div>
     <form className="vokasi-assistant-composer" onSubmit={event=>{event.preventDefault();submit();}}>
-      <input value={input} onChange={e=>setInput(e.target.value.slice(0,250))} maxLength={250} aria-label="Tanyakan pada Asisten VOKASI" placeholder="Tanya tentang nilai, PDF, atau 12 x 3..." />
-      <button type="submit" disabled={!input.trim()}><Send size={17}/> <span>Kirim</span></button>
+      <input autoComplete="off" value={input} onChange={e=>setInput(e.target.value.slice(0,250))} maxLength={250} aria-label="Pesan untuk Chatbot VOKASI" placeholder="Tulis pertanyaanmu di sini..." />
+      <button type="submit" disabled={!input.trim()} aria-label="Kirim pesan"><Send size={18}/></button>
     </form>
-    <p className="vokasi-assistant-note"><ShieldCheck size={14}/> Panduan fitur, bukan sumber jawaban ketika sesi ujian berlangsung.</p>
-   </section>
-  </main>;
+    <p className="vokasi-assistant-note"><MessageCircle size={14}/> Chatbot panduan berbasis aturan, bukan AI. <ShieldCheck size={14}/> Tidak membaca jawaban ujian.</p>
+   </section>;
 }
