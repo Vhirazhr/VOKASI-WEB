@@ -34,6 +34,8 @@ jobs:
         run: node scripts/check-vokasi-chatbot.mjs
       - name: Validate student PDF exports
         run: node scripts/check-student-report.mjs
+      - name: Verify official grades in generated Excel workbook
+        run: node scripts/check-admin-grade-export.mjs
       - name: Build Next.js
         run: npm run build
       - name: Production HTTP route smoke test
