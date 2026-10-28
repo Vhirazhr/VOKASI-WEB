@@ -6,12 +6,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Atom, BookOpen, Brain, Calculator, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Divide, GraduationCap, History, Image as ImageIcon, Lightbulb, Medal, Megaphone, Play, RefreshCw, Search, Shapes, ShieldCheck, Sigma, Star, Target, TrendingUp, Trophy } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import StudentAvatar from '@/components/StudentAvatar';
+import StudentProfileDashboard from '@/components/StudentProfileDashboard';
 import QuizView from '@/components/QuizView';
 import ReviewHistory from '@/components/ReviewHistory';
 import {getPublishedBankVersion,PRACTICE_CATEGORIES} from '@/lib/quiz';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {getOwnAttempts,getLeaderboard,officialMandatoryAttempts,wibDate} from '@/lib/school';
-import {getSchoolAvatarUrls,uploadOwnAvatar} from '@/lib/student-avatar';
+import {getSchoolAvatarUrls} from '@/lib/student-avatar';
 import type {Attempt,LeaderboardEntry,StudentProfile} from '@/lib/types';
 import '@/app/student-experience.css';
 import '@/app/student-unified-ui.css';
@@ -178,51 +179,6 @@ function RankingView({leaders,profile,busy,failed,avatarUrls}:{leaders:Leaderboa
   </div>;
 }
 
-function ProfileView({profile,attempts,busy,avatarUrl,onAvatarUploaded}:{profile:StudentProfile;attempts:Attempt[];busy:boolean;avatarUrl?:string;onAvatarUploaded:(url:string)=>void}) {
-  const [photoBusy,setPhotoBusy]=useState(false);
-  const [photoMessage,setPhotoMessage]=useState('');
-  const [photoError,setPhotoError]=useState(false);
-  const handlePhoto=async(file:File|undefined)=>{
-    if(!file)return;
-    setPhotoBusy(true);setPhotoError(false);setPhotoMessage('');
-    try{
-      const url=await uploadOwnAvatar(profile,file);
-      onAvatarUploaded(url);
-      setPhotoMessage('Foto profil berhasil disimpan.');
-    }catch(error){
-      setPhotoError(true);
-      setPhotoMessage(error instanceof Error?error.message:'Gagal mengunggah foto profil.');
-    }finally{setPhotoBusy(false);}
-  };
-  const compulsory=officialMandatoryAttempts(attempts);
-  const average=compulsory.length?Math.round(compulsory.reduce((s,a)=>s+a.score,0)/compulsory.length):null;
-  const highest=compulsory.length?Math.max(...compulsory.map(a=>a.score)):null;
-  const latest=compulsory[0];
-  const days=new Set(compulsory.map(a=>wibDate(a.completed_at_ms))).size;
-  return <div className="student-experience">
-    <StudentHeading kicker="AKUN BELAJAR" title="Profil siswa" description="Informasi akun, aktivitas, dan ringkasan capaian pribadimu."/>
-    <div className="student-profile-grid">
-      <section className="student-panel student-profile-card">
-        <span className="vokasi-profile-photo-decoration">
-          <StudentAvatar className="student-profile-avatar" name={profile.fullName} url={avatarUrl} size={100}/>
-          <span className="vokasi-deco-spark vokasi-deco-spark-one" aria-hidden="true">✦</span>
-          <span className="vokasi-deco-spark vokasi-deco-spark-two" aria-hidden="true">✧</span>
-          <span className="vokasi-deco-spark vokasi-deco-spark-three" aria-hidden="true">✦</span>
-        </span>
-        <label className="vokasi-photo-upload"><ImageIcon size={16}/>{photoBusy?'Mengunggah foto...':avatarUrl?'Ganti foto profil':'Pasang foto profil'}
-          <input type="file" accept="image/jpeg" disabled={photoBusy} onChange={event=>{const file=event.target.files?.[0];event.target.value='';void handlePhoto(file);}}/>
-        </label>
-        <small className="vokasi-photo-help">Foto JPG/JPEG maksimal 1 MB. Foto bisa tampil di peringkat sekolah.</small>
-        {photoMessage&&<p className={'vokasi-photo-message '+(photoError?'error':'success')} role="status">{photoMessage}</p>}
-        <h2>{profile.fullName}</h2><p>@{profile.username}</p><span className="student-profile-pill"><GraduationCap size={16}/> Siswa VOKASI</span><div className="student-profile-divider"/><dl><div><dt>Nama lengkap</dt><dd>{profile.fullName}</dd></div><div><dt>Kelas</dt><dd>{profile.className}</dd></div><div><dt>Jurusan</dt><dd>{profile.majorName}</dd></div></dl><div className="student-profile-safe"><ShieldCheck size={17}/> Profil dibaca dari akun sekolah.</div></section>
-      <div className="student-profile-side"><section className="student-panel"><div className="student-panel-heading"><div><span className="section-kicker">PERKEMBANGANMU</span><h2>Statistik belajar</h2></div><TrendingUp size={24}/></div><div className="student-profile-stats">
-        <div><small>Rata-rata nilai</small><strong>{busy?'—':average??'—'}</strong></div><div><small>Nilai tertinggi</small><strong>{busy?'—':highest??'—'}</strong></div><div><small>Total sesi wajib</small><strong>{busy?'—':compulsory.length}</strong></div><div><small>Hari aktif latihan</small><strong>{busy?'—':days}</strong></div>
-      </div></section>
-      <section className="student-panel student-profile-next"><div><span className="section-kicker">LANJUTKAN BELAJAR</span><h2>Setiap sesi berarti.</h2><p>{latest?'Latihan wajib terakhirmu pada '+toDay(latest.completed_at_ms)+'.':'Mulailah latihan wajib pertamamu untuk mencatat capaian.'}</p></div><Link className="btn primary" href="/siswa/riwayat">Lihat riwayat <ArrowRight size={16}/></Link></section></div>
-    </div>
-  </div>;
-}
-
 function getWibCalendarParts(){
   const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Jakarta',year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date());
   return {year:Number(parts.find(p=>p.type==='year')?.value||2026),month:Number(parts.find(p=>p.type==='month')?.value||1),day:Number(parts.find(p=>p.type==='day')?.value||1)};
@@ -306,7 +262,7 @@ export default function StudentPage(){
       {warning&&<div className="alert danger">{warning} <button type="button" className="link-action" onClick={()=>void refresh()}>Coba lagi</button></div>}
       {view==='history'?<HistoryView attempts={attempts} busy={busy}/>:
        view==='ranking'?<RankingView leaders={leaders} profile={profile} busy={busy} failed={rankFailed} avatarUrls={avatarUrls}/>:
-       view==='profile'?<ProfileView profile={profile} attempts={attempts} busy={busy} avatarUrl={avatarUrls[profile.username.toLowerCase()]} onAvatarUploaded={url=>setAvatarUrls(previous=>({...previous,[profile.username.toLowerCase()]:url}))}/>:
+       view==='profile'?<StudentProfileDashboard profile={profile} attempts={attempts} busy={busy} avatarUrl={avatarUrls[profile.username.toLowerCase()]} onAvatarUploaded={url=>setAvatarUrls(previous=>({...previous,[profile.username.toLowerCase()]:url}))} onLogout={()=>void logout()}/>:
         <main className="student-home student-home-dashboard">
           <section className="student-featured-practice student-reference-hero" aria-labelledby="mandatory-practice-title">
             <div className="student-featured-copy">
