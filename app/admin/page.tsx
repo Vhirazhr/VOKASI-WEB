@@ -72,7 +72,10 @@ export default function AdminPage(){const {loading,error,logout}=useSchoolAuth('
  async function exportExcel(){
   if(notice||busy||!students.length||exporting)return;
   setExporting(true);
-  try{await exportAdminGrades(scope,allGrades,date,major,klass);}
+  try{const freshAttempts=await getAdminAttempts(date);
+   const freshGrades=latestGrades(freshAttempts,students);
+   if(!freshGrades.size&&!window.confirm('Tidak ada nilai wajib terverifikasi pada '+date+'. Unduh laporan dengan status belum tercatat?'))return;
+   await exportAdminGrades(scope,freshGrades,date,major,klass);}
   catch(e){setNotice('Ekspor Excel gagal: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}
   finally{setExporting(false);}
  }
