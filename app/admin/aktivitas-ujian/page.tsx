@@ -7,7 +7,6 @@ import {
   FileWarning,Maximize2,MousePointer2,MousePointerClick,RefreshCw,Search,
   ShieldAlert,Users
 } from 'lucide-react';
-import Link from 'next/link';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {
