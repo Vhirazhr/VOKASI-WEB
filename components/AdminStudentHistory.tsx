@@ -1,8 +1,7 @@
 'use client';
+import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useState} from 'react';
 import {CheckCircle2,Clock3,RefreshCw} from 'lucide-react';
-import {supabase} from '@/lib/supabase';
-
 type Row={session_key:string;completed_at_ms:number;score:number;correct:number;question_count:number;practice_category:null|string;is_official:boolean};
 const when=(ms:number)=>new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Jakarta'}).format(new Date(ms))+' WIB';
 export default function AdminStudentHistory({authId}:{authId:string}){
@@ -12,7 +11,7 @@ export default function AdminStudentHistory({authId}:{authId:string}){
  useEffect(()=>{
   let active=true;
   async function load(){
-   const {data,error:e}=await supabase().rpc('vokasi_admin_student_history',{p_student:authId,p_limit:40});
+   const {data,error:e}=await nativeRpc('vokasi_admin_student_history',{p_student:authId,p_limit:40});
    if(!active)return;
    if(e)setError('Riwayat belum bisa dimuat: '+e.message);
    else setRows(Array.isArray(data)?data as Row[]:[]);
