@@ -373,3 +373,151 @@
 @media(prefers-reduced-motion:reduce){
  .school-shell.student-shell .vokasi-ranking-podium-card{transition:none}
 }
+
+
+/* Discord-like animated avatar decorations: subtle, CSS-only, and photo-safe. */
+.school-shell.student-shell .vokasi-ranking-photo-frame{
+  --vokasi-deco-a:#7bf7ea;--vokasi-deco-b:#d8ffff;
+  isolation:isolate;overflow:visible;
+}
+.school-shell.student-shell .vokasi-ranking-podium-1 .vokasi-ranking-photo-frame{
+  --vokasi-deco-a:#ffcc43;--vokasi-deco-b:#fff2ac;
+}
+.school-shell.student-shell .vokasi-ranking-podium-3 .vokasi-ranking-photo-frame{
+  --vokasi-deco-a:#b89cff;--vokasi-deco-b:#f4d8ff;
+}
+.school-shell.student-shell .vokasi-ranking-photo-frame::before{
+  content:"";position:absolute;z-index:-1;inset:-8px;
+  border-radius:37px;
+  background:conic-gradient(
+    from 30deg,
+    transparent 0deg,
+    var(--vokasi-deco-a) 52deg,
+    #fff 82deg,
+    transparent 112deg,
+    transparent 178deg,
+    var(--vokasi-deco-b) 216deg,
+    transparent 262deg,
+    var(--vokasi-deco-a) 324deg,
+    transparent 360deg
+  );
+  box-shadow:0 0 19px color-mix(in srgb,var(--vokasi-deco-a) 45%,transparent);
+  animation:vokasi-deco-orbit 12s linear infinite;
+  pointer-events:none;
+}
+.school-shell.student-shell .vokasi-ranking-podium-1 .vokasi-ranking-photo-frame::before{
+  inset:-9px;border-radius:47px;animation-duration:10s;
+}
+.school-shell.student-shell .vokasi-ranking-photo-frame::after{
+  content:"";position:absolute;z-index:-2;inset:-14px;border-radius:47px;
+  border:2px dashed color-mix(in srgb,var(--vokasi-deco-a) 65%,transparent);
+  opacity:.48;animation:vokasi-deco-breathe 4.2s ease-in-out infinite;
+  pointer-events:none;
+}
+.school-shell.student-shell .vokasi-ranking-podium-1 .vokasi-ranking-photo-frame::after{
+  inset:-17px;border-radius:52px;animation-duration:3.6s;
+}
+.school-shell.student-shell .vokasi-deco-spark{
+  position:absolute;z-index:7;display:grid;place-items:center;
+  color:var(--vokasi-deco-b,#d8e8ff);font-weight:900;line-height:1;
+  text-shadow:0 0 7px currentColor,0 0 16px currentColor;
+  pointer-events:none;user-select:none;
+  animation:vokasi-deco-twinkle 3.8s ease-in-out infinite;
+}
+.school-shell.student-shell .vokasi-ranking-photo-frame .vokasi-deco-spark-one{
+  left:-24px;top:4%;font-size:22px;animation-delay:0s;
+}
+.school-shell.student-shell .vokasi-ranking-photo-frame .vokasi-deco-spark-two{
+  right:-20px;top:22%;font-size:27px;animation-delay:-1.35s;
+}
+.school-shell.student-shell .vokasi-ranking-photo-frame .vokasi-deco-spark-three{
+  right:3px;bottom:-18px;font-size:13px;animation-delay:-2.35s;
+}
+.school-shell.student-shell .vokasi-ranking-podium-1 .vokasi-deco-spark-one{
+  left:-26px;top:6%;font-size:27px;
+}
+.school-shell.student-shell .vokasi-ranking-podium-1 .vokasi-deco-spark-two{
+  right:-24px;font-size:31px;
+}
+.school-shell.student-shell .vokasi-ranking-podium-card:hover .vokasi-ranking-photo-frame::before,
+.school-shell.student-shell .vokasi-ranking-podium-card:focus-visible .vokasi-ranking-photo-frame::before{
+  animation-duration:5s;
+}
+.school-shell.student-shell .vokasi-ranking-podium-card:hover .vokasi-deco-spark,
+.school-shell.student-shell .vokasi-ranking-podium-card:focus-visible .vokasi-deco-spark{
+  animation-duration:2.3s;
+}
+
+/* Students can see an animated decoration around their own avatar on Profile. */
+.school-shell.student-shell .vokasi-profile-photo-decoration{
+  --vokasi-deco-a:#77c4ff;--vokasi-deco-b:#b7e8ff;
+  position:relative;isolation:isolate;display:grid;place-items:center;
+  width:104px;height:104px;margin:4px auto 20px;
+  border-radius:29px;
+}
+.school-shell.student-shell .vokasi-profile-photo-decoration .student-profile-avatar{
+  position:relative;z-index:2;display:grid;place-items:center;
+  width:90px;height:90px;margin:0;overflow:hidden;border-radius:25px;
+}
+.school-shell.student-shell .vokasi-profile-photo-decoration::before{
+  content:"";position:absolute;z-index:1;inset:-2px;border-radius:32px;
+  background:conic-gradient(from 10deg,#9fcaff,transparent 24%,#e9f8ff 33%,#5d98f0 50%,transparent 68%,#8dd8ff 85%,#9fcaff);
+  box-shadow:0 0 20px #73b7fd3b;
+  animation:vokasi-deco-orbit 13s linear infinite;
+}
+.school-shell.student-shell .vokasi-profile-photo-decoration::after{
+  content:"";position:absolute;z-index:0;inset:-8px;
+  border:1px dashed #7cadf0;border-radius:38px;opacity:.6;
+  animation:vokasi-deco-breathe 4.5s ease-in-out infinite;
+}
+.school-shell.student-shell .vokasi-profile-photo-decoration .vokasi-deco-spark-one{
+  left:-19px;top:7px;font-size:23px;animation-delay:-.5s;
+}
+.school-shell.student-shell .vokasi-profile-photo-decoration .vokasi-deco-spark-two{
+  right:-18px;top:29px;font-size:25px;animation-delay:-2s;
+}
+.school-shell.student-shell .vokasi-profile-photo-decoration .vokasi-deco-spark-three{
+  right:7px;bottom:-14px;font-size:13px;animation-delay:-3s;
+}
+/* Keep the rest of the UI calm: tiny hover details for list and compact avatars. */
+.school-shell.student-shell .vokasi-ranking-row-photo{
+  box-shadow:0 0 0 2px #ffffff,0 0 0 3px #cce1fb;
+  transition:box-shadow .22s ease,transform .22s ease;
+}
+.school-shell.student-shell .vokasi-ranking-list-row:hover .vokasi-ranking-row-photo,
+.school-shell.student-shell .vokasi-ranking-list-row:focus-visible .vokasi-ranking-row-photo{
+  transform:rotate(-4deg) scale(1.05);
+  box-shadow:0 0 0 2px #ffffff,0 0 0 4px #90bcf7,0 0 16px #599eec55;
+}
+.school-shell.student-shell .vokasi-ranking-modal-photo{
+  animation:vokasi-deco-modal-glow 4.5s ease-in-out infinite;
+}
+@keyframes vokasi-deco-orbit{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+@keyframes vokasi-deco-breathe{
+  0%,100%{transform:scale(.97);opacity:.3}
+  50%{transform:scale(1.06);opacity:.73}
+}
+@keyframes vokasi-deco-twinkle{
+  0%,100%{transform:translateY(4px) scale(.7) rotate(-12deg);opacity:.25}
+  37%{transform:translateY(-7px) scale(1.08) rotate(8deg);opacity:1}
+  65%{transform:translateY(-2px) scale(.92) rotate(0deg);opacity:.65}
+}
+@keyframes vokasi-deco-modal-glow{
+  0%,100%{box-shadow:0 12px 30px #103a8247,0 0 0 3px #d6eaff}
+  50%{box-shadow:0 12px 30px #103a8247,0 0 0 6px #83b7ff,0 0 21px #62b5ff66}
+}
+/* Respect platform accessibility preferences; never animate the actual photo. */
+@media(prefers-reduced-motion:reduce){
+  .school-shell.student-shell .vokasi-ranking-photo-frame::before,
+  .school-shell.student-shell .vokasi-ranking-photo-frame::after,
+  .school-shell.student-shell .vokasi-profile-photo-decoration::before,
+  .school-shell.student-shell .vokasi-profile-photo-decoration::after,
+  .school-shell.student-shell .vokasi-deco-spark,
+  .school-shell.student-shell .vokasi-ranking-modal-photo{
+    animation:none!important;
+  }
+  .school-shell.student-shell .vokasi-ranking-row-photo{transition:none}
+}
