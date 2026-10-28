@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { BookOpen, BarChart3, CheckCircle2, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, FolderCog, Bot, Bell, X, MessageCircle, Menu } from 'lucide-react';
@@ -87,7 +88,7 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
   const linkTo=(href:string)=>href.includes('#')?(embedMode?href.replace('#','?embed=1#'):href):href+suffix;
   return <div className={'shell school-shell '+(embedMode?'shell-embed ':'')+(isAdmin?'admin-shell ':'student-shell ')+(quizFocusMode&&!isAdmin?'quiz-focus-mode ':'')+(dashboardStyle?'admin-overview-shell':'')}>
     <aside className="sidebar" aria-label={isAdmin?'Menu admin':'Menu siswa'}>
-      <Link onClick={askBeforeLeave} href="/" className="brand"><span className="brand-mark">V</span><span>VOKASI<span className="brand-dot">.</span></span></Link>
+      <Link onClick={askBeforeLeave} href="/" className="brand" aria-label="VOKASI — SMKN 1 Singosari"><span className="brand-mark brand-mark-school"><Image src="/assets/smkn1sgs-166x166-1.png" alt="Logo SMKN 1 Singosari" width={166} height={166} unoptimized className="brand-logo-image"/></span><span>VOKASI<span className="brand-dot">.</span></span></Link>
       <div className="side-label">{isAdmin?'PANEL SEKOLAH':'RUANG BELAJAR'}</div>
       <nav className="side-menu" aria-label="Navigasi dashboard">
         {items.map(({href,label,icon:Icon})=><Link key={href} onClick={askBeforeLeave} href={linkTo(href)} aria-current={active(href)?'page':undefined} className={'side-link '+(active(href)?'selected':'')}>
