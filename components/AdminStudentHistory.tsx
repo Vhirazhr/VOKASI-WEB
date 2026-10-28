@@ -1,10 +1,9 @@
 'use client';
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useState} from 'react';
 import {CheckCircle2,Clock3,RefreshCw} from 'lucide-react';
 import {supabase} from '@/lib/supabase';
-import {wibDate} from '@/lib/school';
 
-type Row={session_key:string;completed_at_ms:number;score:number;correct:number;question_count:number;practice_category:null|string};
+type Row={session_key:string;completed_at_ms:number;score:number;correct:number;question_count:number;practice_category:null|string;is_official:boolean};
 const when=(ms:number)=>new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Jakarta'}).format(new Date(ms))+' WIB';
 export default function AdminStudentHistory({authId}:{authId:string}){
  const [rows,setRows]=useState<Row[]>([]);
@@ -22,14 +21,6 @@ export default function AdminStudentHistory({authId}:{authId:string}){
   void load();
   return()=>{active=false;};
  },[authId]);
- const official=useMemo(()=>{
-  const set=new Set<string>(),seen=new Set<string>();
-  for(const row of [...rows].sort((a,b)=>a.completed_at_ms-b.completed_at_ms)){
-   const day=wibDate(row.completed_at_ms);
-   if(!seen.has(day)){set.add(row.session_key);seen.add(day);}
-  }
-  return set;
- },[rows]);
  return <section className="admin-student-history">
   <header><div><strong>Riwayat nilai wajib</strong><small>Hasil terverifikasi Supabase · maksimal 40 sesi terbaru</small></div><Clock3 size={18}/></header>
   {busy?<p className="admin-student-history-empty"><RefreshCw size={16}/> Memuat riwayat siswa...</p>:
@@ -37,7 +28,7 @@ export default function AdminStudentHistory({authId}:{authId:string}){
    rows.length===0?<p className="admin-student-history-empty">Belum ada riwayat wajib terverifikasi untuk siswa ini.</p>:
    <><div className="admin-student-history-list">
      {rows.slice(0,shown).map(row=><div key={row.session_key}>
-       <span><b>{when(row.completed_at_ms)}</b><small>{official.has(row.session_key)?<><CheckCircle2 size={13}/> Nilai resmi harian</>:'Pengulangan · tidak mengganti nilai resmi'}</small></span>
+       <span><b>{when(row.completed_at_ms)}</b><small>{row.is_official?<><CheckCircle2 size={13}/> Nilai resmi harian</>:'Pengulangan · tidak mengganti nilai resmi'}</small></span>
        <strong>{row.score}<small>/100</small></strong>
        <span className="admin-student-history-correct">{row.correct}/{row.question_count} benar</span>
      </div>)}
