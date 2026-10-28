@@ -95,7 +95,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  const inFlight=useRef(false);
  const feedbackTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const lastActivityAt=useRef<Map<string,number>>(new Map());
- type ActivityEventType='tab_hidden'|'tab_visible'|'window_blur'|'window_focus'|'copy'|'paste'|'context_menu'|'fullscreen_exit'|'external_link'|'ui_click'|'answer_option_selected';
+ type ActivityEventType='tab_hidden'|'tab_visible'|'window_blur'|'window_focus'|'copy'|'paste'|'context_menu'|'fullscreen_exit'|'external_link'|'ui_click';
  const recordExamActivity=useCallback((
    eventType:ActivityEventType,targetLabel:string,targetKind:string,detail:string
  )=>{
@@ -119,7 +119,9 @@ export default function QuizView({profile,category,onDone,onQuit}:{
 
  const accept=useCallback((next:State)=>{
    setState(next);setNow(Date.now());setClockBase(Date.now()-next.server_now_ms);
-   if(next.status==='active'){setSelected(null);setMonitorOpen(false);setFigureOpen(false);}
+   // A choice is pending client state only; discard it whenever the server advances or completes.
+    setSelected(null);
+    if(next.status==='active'){setMonitorOpen(false);setFigureOpen(false);}
  },[]);
 
  useEffect(()=>{
@@ -186,7 +188,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
  // Browser clock is display only; server timestamps are authoritative.
  const onServer=useCallback(async()=>{
    const id=state?.session_id;
-   if(!id||inFlight.current||feedback||busy)return;
+   if(!id||inFlight.current||feedback||busy||sending)return;
    inFlight.current=true;
    try{
      const next=await rpc<State>('vokasi_web_get_quiz_state',{p_session:id});
@@ -202,7 +204,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      }
    }catch(e){if(live.current)setError('Gagal menyinkronkan timer: '+errText(e));}
    finally{inFlight.current=false;}
- },[state,feedback,busy,accept,imageUrls]);
+ },[state,feedback,busy,sending,accept,imageUrls]);
 
  useEffect(()=>{
    if(!state||state.status!=='active'||busy||feedback)return;
@@ -211,13 +213,15 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      setNow(tick);
      const deadline=state.question_deadline_ms||0;
      if(tick-clockBase>=deadline||tick-clockBase>=Number(state.overall_deadline_ms||0)){
+       // An unsubmitted selection is discarded at expiry; only submit() sends choices.
+       if(!sending)setSelected(null);
        void onServer();
      }
    },300);
    function foreground(){if(document.visibilityState==='visible')void onServer();}
    document.addEventListener('visibilitychange',foreground);
    return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',foreground);};
- },[state,busy,feedback,clockBase,onServer]);
+ },[state,busy,feedback,sending,clockBase,onServer]);
 
  useEffect(()=>{
    if(state?.status!=='complete')return;
@@ -260,10 +264,10 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      const target=raw.closest('button,a[href],[role="button"]');
      if(!target||!target.closest('.quiz-focus-exam'))return;
      if(target.matches('button.answer')){
-       const letter=target.querySelector('.answer-letter')?.textContent?.trim()||'Pilihan jawaban';
-       recordExamActivity('answer_option_selected',letter,'answer','Pilihan jawaban diklik; teks jawaban tidak disalin ke laporan');
-       return;
-     }
+        // A click is only a local pending selection, not a submitted answer.
+        // Do not write it to the activity log or to the result record.
+        return;
+      }
      const label=(target.getAttribute('aria-label')||target.getAttribute('title')||target.textContent||'Elemen halaman ujian').replace(/\s+/g,' ').trim().slice(0,100);
      if(target instanceof HTMLAnchorElement){
        if(target.hostname&&target.hostname!==window.location.hostname){
@@ -482,7 +486,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
       <b>{feedback.correct?'✓ Jawaban kamu BENAR!':'✕ Jawaban kamu SALAH.'}</b><span>Soal berikutnya segera tampil…</span></div>}
     {error&&<div className="alert danger" role="alert">{error}<button className="btn secondary small" onClick={()=>void onServer()}><RefreshCw size={15}/> Sinkronkan</button></div>}
     </div>
-    <div className="quiz-footer"><span>Jawaban diperiksa server. Aktivitas halaman yang terdeteksi dicatat untuk laporan admin; isi clipboard dan aplikasi lain tidak dibaca.</span>
+    <div className="quiz-footer"><span>Pilihan hanya dikirim ke server saat tombol Kirim jawaban ditekan. Jika waktu habis lebih dulu, pilihan dibuang dan soal menjadi TIMEOUT. Aktivitas halaman yang terdeteksi dicatat untuk laporan admin; isi clipboard dan aplikasi lain tidak dibaca.</span>
       <button className="btn primary" disabled={selected===null||sending||!!feedback||remaining<=0} onClick={()=>void submit()}>
         {sending?'Memverifikasi...':'Kirim jawaban'} <ArrowRight size={16}/></button></div>
    </div>
