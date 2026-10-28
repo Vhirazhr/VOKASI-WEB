@@ -1,12 +1,13 @@
 'use client';
 
 import {useEffect,useMemo,useState} from 'react';
-import {CheckCircle2,GraduationCap,Search,Users,UserRound,RefreshCw} from 'lucide-react';
+import {CheckCircle2,GraduationCap,Search,Users,UserRound,RefreshCw,FileSpreadsheet,Download} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {supabase} from '@/lib/supabase';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {getSchoolStudents} from '@/lib/school';
 import type {SchoolStudent} from '@/lib/types';
+import {exportAdminRoster,downloadAdminRosterTemplate} from '@/lib/admin-excel';
 import '@/app/admin-workspace.css';
 import '@/app/admin-students-ui.css';
 
@@ -21,6 +22,8 @@ export default function AdminStudentsPage(){
  const [classOptions,setClassOptions]=useState<{id:string;class_name:string;major_id:string}[]>([]);
  const [targetClass,setTargetClass]=useState('');
  const [savingMove,setSavingMove]=useState(false);
+ const [exporting,setExporting]=useState(false);
+ const [exportIssue,setExportIssue]=useState('');
  const [editInfo,setEditInfo]=useState('');
  useEffect(()=>{if(loading||error)return;let active=true;
   async function load(){try{const data=await getSchoolStudents();if(active){setStudents(data);setIssue('');setBusy(false);}}catch(e){if(active){setIssue(e instanceof Error?e.message:'Data siswa tidak dapat dimuat.');setBusy(false);}}}
@@ -46,6 +49,18 @@ export default function AdminStudentsPage(){
    (status==='all'||(status==='registered'?s.registered:!s.registered))&&
    (!search||[s.fullName,s.username,s.className,s.majorName].some(k=>k.toLowerCase().includes(search.trim().toLowerCase())))
   ).sort((a,b)=>a.fullName.localeCompare(b.fullName,'id')),[students,major,klass,search,status]);
+ async function exportRoster(){
+  setExporting(true);setExportIssue('');
+  try{await exportAdminRoster(filtered,major,klass);}
+  catch(e){setExportIssue(e instanceof Error?e.message:'Tidak dapat mengunduh data siswa.');}
+  finally{setExporting(false);}
+ }
+ async function downloadTemplate(){
+  setExporting(true);setExportIssue('');
+  try{await downloadAdminRosterTemplate();}
+  catch(e){setExportIssue(e instanceof Error?e.message:'Tidak dapat membuat template.');}
+  finally{setExporting(false);}
+ }
  const pages=Math.max(1,Math.ceil(filtered.length/ROWS_PER_PAGE));
  const activePage=Math.min(page,pages-1);
  if(loading)return <main className="page-loader">Memverifikasi hak akses admin...</main>;
@@ -66,6 +81,14 @@ export default function AdminStudentsPage(){
     </section>
     <section className="admin-data-card" aria-label="Daftar siswa">
       {issue&&<div className="alert danger" role="alert">{issue}</div>}
+      {exportIssue&&<div className="alert danger" role="alert">{exportIssue}</div>}
+      <div className="admin-roster-export-actions">
+       <div><span className="section-kicker">DATA SEKOLAH</span><h2>Kelola daftar siswa</h2><p>Ekspor data sesuai filter atau gunakan template pendataan Excel. File tidak otomatis mengubah database.</p></div>
+       <div className="admin-roster-export-buttons">
+        <button type="button" className="admin-roster-template" onClick={()=>void downloadTemplate()} disabled={exporting}><FileSpreadsheet size={17}/> Unduh template Excel</button>
+        <button type="button" className="admin-roster-export" onClick={()=>void exportRoster()} disabled={exporting||busy||!!issue||filtered.length===0}><Download size={17}/>{exporting?'Menyiapkan...':'Unduh data siswa ('+filtered.length+')'}</button>
+       </div>
+      </div>
       <div className="admin-directory-controls">
        <label className="admin-directory-search"><Search size={17}/><input aria-label="Cari siswa" value={search} placeholder="Cari nama, username, kelas..." onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label>
        <label>Jurusan<select value={major} onChange={e=>{setMajor(e.target.value);setKlass('');setPage(0);}}><option value="">Semua jurusan</option>{majors.map(m=><option key={m} value={m}>{m}</option>)}</select></label>
