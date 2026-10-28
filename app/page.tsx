@@ -3,6 +3,7 @@ import {
   ChartNoAxesCombined,
   ClipboardCheck,
   Medal,
+  Trophy,
   ArrowUpRight,
   Mail,
   MapPin,
@@ -96,6 +97,10 @@ export default function Home() {
                 ))}
               </h1>
               <p>Platform Pembelajaran Numerasi</p>
+              <LeaderboardLink className="vkw-primary vkw-hero-ranking-cta">
+                <Trophy size={17} />
+                Lihat Peringkat Siswa
+              </LeaderboardLink>
             </div>
           </section>
           <section
