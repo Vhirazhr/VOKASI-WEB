@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { BookOpen, BarChart3, CheckCircle2, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, FolderCog, Bot, Bell, X, MessageCircle, Menu } from 'lucide-react';
+import { Activity, BookOpen, BarChart3, CheckCircle2, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, FolderCog, Bot, Bell, X, MessageCircle, Menu } from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import AdminNotificationBell from '@/components/AdminNotificationBell';
 import StudentAvatar from '@/components/StudentAvatar';
@@ -78,6 +78,7 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
     {href:'/admin/monitoring',label:'Monitoring nilai',icon:CheckCircle2},
     {href:'/admin/analitik',label:'Analitik',icon:BarChart3},
     {href:'/admin/logs',label:'Log aktivitas',icon:ScrollText},
+    {href:'/admin/aktivitas-ujian',label:'Aktivitas ujian',icon:Activity},
     {href:'/admin/pengaturan',label:'Pengaturan',icon:Settings}
   ];
   const items=isAdmin?adminLinks:studentLinks;
@@ -102,7 +103,7 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
     <div className="shell-main">
       {embedMode&&!navigationBlocked&&<nav className="embed-shortcuts" aria-label="Menu VOKASI dalam website sekolah">{items.map(({href,label})=><Link key={href} href={linkTo(href)} className={active(href)?'active':''}>{label}</Link>)}</nav>}
       <header className="topbar">
-        <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':pathname==='/admin/logs'?'Log Aktivitas':pathname==='/admin/monitoring'?'Monitoring Nilai':pathname==='/admin/bank-soal'?'Bank Soal':pathname==='/admin/kelas'?'Kelas & Jurusan':pathname==='/admin/analitik'?'Analitik Sekolah':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':pathname.endsWith('/notifikasi')?'Notifikasi Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
+        <div><span className="topbar-title">{isAdmin?(pathname==='/admin/pengaturan'?'Pengaturan Admin':pathname==='/admin/siswa'?'Data Siswa':pathname==='/admin/logs'?'Log Aktivitas':pathname==='/admin/aktivitas-ujian'?'Aktivitas Ujian':pathname==='/admin/monitoring'?'Monitoring Nilai':pathname==='/admin/bank-soal'?'Bank Soal':pathname==='/admin/kelas'?'Kelas & Jurusan':pathname==='/admin/analitik'?'Analitik Sekolah':'Dashboard Admin'):pathname.endsWith('/riwayat')?'Riwayat Latihan':pathname.endsWith('/peringkat')?'Peringkat Siswa':pathname.endsWith('/profil')?'Profil Siswa':pathname.endsWith('/notifikasi')?'Notifikasi Siswa':'Dashboard Siswa'}</span><small>SMK Negeri 1 Singosari</small></div>
         <div className="top-actions">
           {isAdmin?<div className="admin-header-actions">
             <button type="button" className="admin-mobile-menu-trigger" aria-label="Buka semua fitur admin" aria-controls="vokasi-admin-mobile-menu" aria-expanded={adminMenuOpen} onClick={()=>setAdminMenuOpen(v=>!v)}><Menu size={20}/><span>Menu</span></button>
