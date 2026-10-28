@@ -36,7 +36,7 @@ async function allRows<T>(table: string, select: string, options: RowQuery = {})
           const {error: refreshError} = await db.auth.refreshSession();
           if (!refreshError) continue;
         }
-        const transient = result.status === 429 || result.status >= 500;
+        const transient = result.status === 0 || result.status === 429 || result.status >= 500;
         if (transient && attempt < 2) {
           await new Promise<void>(resolve => setTimeout(resolve, 350 * (attempt + 1)));
           continue;
@@ -168,4 +168,20 @@ export function latestGrades(attempts:Attempt[], students:SchoolStudent[]): Map<
     if(key && !map.has(key)) map.set(key,attempt);
   }
   return map;
+}
+
+/** Shared, retry-safe directory for the school-data management page. */
+export async function getAdminSchoolCatalog(): Promise<{
+  majors: {id:string; name:string; code:string|null}[];
+  classes: {id:string; class_name:string; major_id:string; grade_level:number; school_year:string}[];
+}> {
+  const [majorRows, classRows] = await Promise.all([
+    allRows<{id:string;name:string;code:string|null;is_active:boolean}>('majors','id,name,code,is_active'),
+    allRows<{id:string;class_name:string;major_id:string;grade_level:number;school_year:string;is_active:boolean}>(
+      'classes','id,class_name,major_id,grade_level,school_year,is_active')
+  ]);
+  return {
+    majors: majorRows.filter(row=>row.is_active).map(({id,name,code})=>({id,name,code})),
+    classes: classRows.filter(row=>row.is_active).map(({id,class_name,major_id,grade_level,school_year})=>({id,class_name,major_id,grade_level,school_year}))
+  };
 }
