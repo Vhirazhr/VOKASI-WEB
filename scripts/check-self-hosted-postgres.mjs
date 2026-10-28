@@ -3,6 +3,9 @@ import { readFileSync } from 'node:fs';
 
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const schema = read('database/schema.sql');
+const functions = read('database/functions.sql');
+const rpc = read('app/api/rpc/route.ts');
+const rpcClient = read('lib/native-rpc.ts');
 const db = read('lib/server/db.ts');
 const auth = read('lib/server/auth.ts');
 const login = read('app/api/auth/login/route.ts');
@@ -20,7 +23,9 @@ assert.match(schema, /CREATE TABLE public\.vokasi_web_verified_results/);
 assert.match(schema, /CREATE VIEW public\.vokasi_verified_attempts/);
 assert.match(schema, /vokasi_limit_daily_compulsory_xp_before_insert/);
 assert.match(schema, /vokasi_web_stop_broken_visual_release/);
-assert.doesNotMatch(schema.replace(/^--.*$/gm, ''), /auth\.users|auth\.uid\s*\(/i, 'Standalone schema must not depend on hosted Auth.');
+assert.match(schema, /CREATE OR REPLACE FUNCTION auth\.uid\(\)/, 'Native transaction-scoped identity bridge is required.');
+assert.match(schema, /CREATE VIEW auth\.users AS/, 'Admin directory compatibility view is required.');
+assert.doesNotMatch(schema.replace(/^--.*$/gm, ''), /REFERENCES auth\.users|DEFAULT auth\.uid\s*\(/i, 'Standalone tables must reference app_users, not hosted Auth.');
 assert.doesNotMatch(schema, /service_role|SUPABASE_SERVICE_ROLE_KEY/i);
 
 assert.match(db, /import 'server-only'/);
@@ -35,6 +40,14 @@ assert.match(auth, /revoked_at IS NULL/);
 assert.match(auth, /expires_at > now\(\)/);
 assert.match(auth, /school_admins AS sa/);
 assert.match(auth, /registration_status = 'registered'/);
+assert.match(functions, /public\.vokasi_web_select_answer/);
+assert.match(functions, /vokasi_private\.web_process/);
+assert.match(functions, /REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC/);
+assert.match(rpc, /RPC_DEFINITIONS/);
+assert.match(rpc, /set_config\('app\.user_id'/);
+assert.match(rpc, /Object\.hasOwn\(RPC_DEFINITIONS/);
+assert.match(rpc, /isSameOriginRequest/);
+assert.match(rpcClient, /credentials: 'same-origin'/);
 
 assert.match(login, /count\(\*\).*identifier_hash/s);
 assert.match(login, /Terlalu banyak percobaan login/);
