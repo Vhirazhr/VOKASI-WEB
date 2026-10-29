@@ -53,6 +53,14 @@ For a deliberate first bootstrap only, also set `ALLOW_SUPER_ADMIN_BOOTSTRAP=yes
 - `POST /api/admin/invitations`, `GET /api/admin/invitations?token=...`, and `POST /api/admin/invitations/accept`: one-time administrator activation links. Links expire after 48 hours and are shown once for manual delivery; no email is sent automatically.
 - `POST /api/storage/upload`, `GET /api/storage/file`, and `POST /api/storage/delete`: private local image storage. Uploads validate the role, path, MIME type, extension, and size; student question images are scoped to the student's own exam session.
 
+## Native student account activation
+
+School roster imports deliberately create pending roster records only. In the administrator's **Data Sekolah** page, the **Aktivasi akun login siswa** section now provisions one pending roster record at a time into `app_users` and `student_profiles` using `POST /api/admin/student-accounts/provision`. This route verifies the admin's native session, locks the roster record, checks username uniqueness, and stores a bcrypt hash of a unique cryptographically random temporary password.
+
+The temporary password is returned **once** to the currently logged-in administrator; it is not mailed or stored in plaintext. Share it with the corresponding student privately and ask the student to change it using the account page after logging in. If this one-time password is lost, an account recovery process must be arranged; the current provisioning route intentionally refuses to overwrite an already active account.
+
+This activation flow covers **new, pending** records. It does not import identities, credentials, or historical data from the previous hosted authentication system. Do not use it to re-create an existing user without reconciling user IDs and references first.
+
 ## Data and file migration still required
 
 The schema does not copy existing application records. Before the switch, compare counts and representative rows for users, students, classes, majors, drafts, published questions, sessions, attempts, and notifications. Preserve UUIDs wherever records reference each other. Existing Supabase password hashes should only be reused if they are compatible with the native bcrypt verifier; otherwise arrange a secure password reset/activation process.
