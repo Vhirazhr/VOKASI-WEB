@@ -210,7 +210,7 @@ export default function AdminBankPage(){
      fetchBank({allowIncomplete:true}),
      nativeRpc('vokasi_admin_question_health'),
      getQuestionDrafts(),
-     getImportDrafts<ImportDraft>()
+     getImportDrafts<unknown[]>()
     ]);
     if(bankResult.status==='rejected')throw bankResult.reason;
     const data=bankResult.value;
