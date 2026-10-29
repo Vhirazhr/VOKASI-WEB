@@ -23,6 +23,8 @@ const databaseUrl = process.env.DATABASE_URL?.trim() ?? '';
 if (!storageValue || !isAbsolute(storageValue)) throw new Error('STORAGE_ROOT must be an absolute private directory.');
 if (!databaseUrl) throw new Error('DATABASE_URL is required.');
 const storageRoot = resolve(storageValue);
+const sourceInfo = await stat(sourceRoot).catch(() => null);
+if (!sourceInfo?.isDirectory()) throw new Error('Export root directory does not exist.');
 if (sourceRoot === storageRoot || sourceRoot.startsWith(storageRoot + sep)) {
   throw new Error('The export directory must be outside STORAGE_ROOT.');
 }
