@@ -8,7 +8,7 @@ import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {currentUser} from '@/lib/auth';
 import {uploadStorageFile} from '@/lib/storage-client';
-import {supabase} from '@/lib/supabase';
+import {deleteImportDraft,getImportDrafts,getPublishedQuestionCount,saveImportDraft} from '@/lib/admin-question-data';
 import {IMPORT_CATEGORIES,QUESTION_GROUPS,emptyQuestion,inspectQuestionRows,parseQuestionFile,type ImportedQuestion,type QuestionGroup} from '@/lib/question-import';
 import '@/app/admin-question-import.css';
 
@@ -36,13 +36,11 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
 
  async function refresh(){
   try{
-   const [drafts,bank]=await Promise.all([
-    supabase().from('vokasi_web_import_drafts').select('id,file_name,mode,payload,created_at')
-      .order('created_at',{ascending:false}).limit(12),
-    supabase().from('vokasi_web_published_questions').select('source_number',{count:'exact',head:true})
+   const [drafts,bankCount]=await Promise.all([
+    getImportDrafts<ImportedQuestion[]>(),
+    getPublishedQuestionCount()
    ]);
-   if(drafts.error)throw drafts.error;
-   const existing=(drafts.data||[]) as Stored[];
+   const existing=drafts as Stored[];
    setSaved(existing);
    const requested=!initialRestored.current?
      (embedded?initialDraftId:new URLSearchParams(window.location.search).get('draft')):null;
@@ -56,7 +54,7 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
     }else setNotice('Draft impor tersebut tidak ditemukan atau tidak dapat diakses.');
     if(!embedded)window.history.replaceState(window.history.state,'',window.location.pathname);
    }
-   if(!bank.error)setActiveCount(bank.count);
+   setActiveCount(bankCount);
   }catch(e){setNotice('Gagal memuat draft impor: '+(e instanceof Error?e.message:'Kesalahan tidak diketahui'));}
  }
  useEffect(()=>{if(!loading&&!error)queueMicrotask(()=>void refresh());},[loading,error]);
@@ -117,14 +115,9 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
   setSaving(true);setNotice('');
   try{
    const data=await withStorageUploads();
-   const user=await currentUser();
-   if(!user||(user.role!=='admin'&&user.role!=='super_admin'))throw new Error('Login admin perlu diulang.');
    const values={file_name:(fileName||'Buat soal manual').slice(0,250),mode,payload:data};
-   const result=savedId
-     ?await supabase().from('vokasi_web_import_drafts').update(values).eq('id',savedId).eq('owner_id',user.id).select('id').single()
-     :await supabase().from('vokasi_web_import_drafts').insert({...values,owner_id:user.id}).select('id').single();
-   if(result.error)throw result.error;
-   setSavedId(result.data.id);
+   const id=await saveImportDraft(savedId,values);
+   setSavedId(id);
    setNotice('Draft '+data.length+' soal tersimpan. Bank aktif belum diubah. Buka kembali dari daftar draft di bawah.');
    setConfirm(false);await refresh();
    if(embedded)onComplete?.('draft');
@@ -141,7 +134,7 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
    const {data:result,error:rpcError}=await nativeRpc('vokasi_admin_import_questions',{p_questions:data,p_mode:mode});
    if(rpcError)throw rpcError;
     setNotice('Berhasil! '+data.length+' soal '+(mode==='replace'?'menggantikan bank lama':'ditambahkan ke bank aktif')+'. Jumlah soal aktif: '+String((result as {after?:number})?.after??'tersinkron')+'.');
-   if(savedId)await supabase().from('vokasi_web_import_drafts').delete().eq('id',savedId);
+   if(savedId)await deleteImportDraft(savedId).catch(()=>undefined);
    setRows([]);setPendingImages({});setFileName('');setSavedId(null);setPage(0);setConfirm(false);await refresh();
    if(embedded)onComplete?.('published');
   }catch(e){setNotice('Tidak ada perubahan pada bank aktif: '+(e instanceof Error?e.message:'Impor ditolak.'));}
@@ -155,9 +148,8 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
  }
  async function discard(item:Stored){
   if(!window.confirm('Hapus draft "'+item.file_name+'"? Bank soal aktif tidak terpengaruh.'))return;
-  const {error:e}=await supabase().from('vokasi_web_import_drafts').delete().eq('id',item.id);
-  if(e)setNotice('Gagal menghapus draft: '+e.message);
-  else{setNotice('Draft dihapus. Bank aktif tidak berubah.');await refresh();}
+  try{await deleteImportDraft(item.id);setNotice('Draft dihapus. Bank aktif tidak berubah.');await refresh();}
+  catch(e){setNotice('Gagal menghapus draft: '+(e instanceof Error?e.message:String(e)));}
  }
  if(loading)return embedded?<div className="unified-import-inline-loading">Memeriksa akses admin...</div>:<main className="page-loader">Memverifikasi akses administrator...</main>;
  if(error)return embedded?<div className="unified-import-inline-loading" role="alert">{error}</div>:<main className="page-loader">{error}</main>;
