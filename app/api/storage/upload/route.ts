@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { link, mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { copyFile, link, mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentNativeUser, isSameOriginRequest } from '@/lib/server/auth';
@@ -102,7 +103,10 @@ export async function POST(request: NextRequest) {
   }
 
   const tempPath = finalPath + '.tmp-' + randomUUID();
+  const avatarBackupPath = finalPath + '.bak-' + randomUUID();
   let createdFigure = false;
+  let avatarReplaced = false;
+  let avatarBackupSaved = false;
   try {
     const bytes = Buffer.from(await fileValue.arrayBuffer());
     if (bytes.length !== fileValue.size || !hasSupportedImageSignature(bytes, mime)) {
@@ -115,7 +119,15 @@ export async function POST(request: NextRequest) {
       createdFigure = true;
       await rm(tempPath, { force: true });
     } else {
+      // Preserve the current avatar until PostgreSQL has accepted its replacement.
+      try {
+        await copyFile(finalPath, avatarBackupPath, constants.COPYFILE_EXCL);
+        avatarBackupSaved = true;
+      } catch (error) {
+        if (!(error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT')) throw error;
+      }
       await rename(tempPath, finalPath);
+      avatarReplaced = true;
     }
 
     await db.begin(async tx => {
@@ -150,10 +162,17 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    if (avatarBackupSaved) await rm(avatarBackupPath, { force: true }).catch(() => undefined);
     const query = new URLSearchParams({ bucket, path: objectPath });
     return json({ data: { bucket, path: objectPath, url: '/api/storage/file?' + query.toString() } });
   } catch (error) {
     if (createdFigure) await rm(finalPath, { force: true }).catch(() => undefined);
+    if (avatarReplaced) {
+      if (avatarBackupSaved) await rename(avatarBackupPath, finalPath).catch(() => undefined);
+      else await rm(finalPath, { force: true }).catch(() => undefined);
+    } else if (avatarBackupSaved) {
+      await rm(avatarBackupPath, { force: true }).catch(() => undefined);
+    }
     await rm(tempPath, { force: true }).catch(() => undefined);
     const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : '';
     if (code === 'EEXIST' || code === '23505' || (error instanceof Error && error.message === 'STORAGE_COLLISION')) {
