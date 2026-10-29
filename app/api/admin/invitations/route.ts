@@ -92,7 +92,12 @@ export async function POST(request: NextRequest) {
       return rows[0]?.expires_at;
     });
 
-    const activation = new URL('/admin/aktivasi', request.nextUrl.origin);
+    const origin = new URL(request.nextUrl.origin);
+    const forwardedHost = request.headers.get('x-forwarded-host')?.split(',')[0]?.trim();
+    const forwardedProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim();
+    if (forwardedHost) origin.host = forwardedHost;
+    if (process.env.NODE_ENV === 'production' || forwardedProto === 'https') origin.protocol = 'https:';
+    const activation = new URL('/admin/aktivasi', origin.origin);
     activation.searchParams.set('token', token);
     return json({ data: {
       ok: true,
