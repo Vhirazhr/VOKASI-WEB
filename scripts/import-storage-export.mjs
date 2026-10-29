@@ -120,32 +120,34 @@ try {
       await link(temporary, destination);
       await rm(temporary, { force: true });
       try {
-        await sql`
-          INSERT INTO storage.objects
-            (bucket_id, name, owner_id, metadata, mimetype, size_bytes, updated_at)
-          VALUES (
-            ${item.bucket}, ${item.objectPath}, NULL,
-            jsonb_build_object('migrated_from', 'local-supabase-export'),
-            ${item.mime}, ${item.size}, now()
-          )
-        `;
+        await sql.begin(async tx => {
+          await tx`
+            INSERT INTO storage.objects
+              (bucket_id, name, owner_id, metadata, mimetype, size_bytes, updated_at)
+            VALUES (
+              ${item.bucket}, ${item.objectPath}, NULL,
+              jsonb_build_object('migrated_from', 'local-supabase-export'),
+              ${item.mime}, ${item.size}, now()
+            )
+          `;
+          if (item.bucket === 'vokasi-avatars') {
+            const username = item.objectPath.split('/')[0];
+            await tx`
+              INSERT INTO public.student_profiles (user_id, avatar_path, updated_at)
+              SELECT r.auth_user_id, ${item.objectPath}, now()
+              FROM public.student_roster AS r
+              WHERE r.username = ${username}
+                AND r.registration_status = 'registered'
+                AND r.auth_user_id IS NOT NULL
+              ON CONFLICT (user_id) DO UPDATE SET
+                avatar_path = EXCLUDED.avatar_path,
+                updated_at = now()
+            `;
+          }
+        });
       } catch (error) {
         await rm(destination, { force: true }).catch(() => undefined);
         throw error;
-      }
-      if (item.bucket === 'vokasi-avatars') {
-        const username = item.objectPath.split('/')[0];
-        await sql`
-          INSERT INTO public.student_profiles (user_id, avatar_path, updated_at)
-          SELECT r.auth_user_id, ${item.objectPath}, now()
-          FROM public.student_roster AS r
-          WHERE r.username = ${username}
-            AND r.registration_status = 'registered'
-            AND r.auth_user_id IS NOT NULL
-          ON CONFLICT (user_id) DO UPDATE SET
-            avatar_path = EXCLUDED.avatar_path,
-            updated_at = now()
-        `;
       }
       report.imported += 1;
       report.objects.push({ bucket: item.bucket, path: item.objectPath, size: item.size, status: 'imported' });
