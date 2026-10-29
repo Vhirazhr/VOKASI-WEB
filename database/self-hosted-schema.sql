@@ -1,8 +1,6 @@
 -- VOKASI self-hosted PostgreSQL schema baseline
--- Generated from the current Supabase public schema on 2026-10-29.
--- IMPORTANT: This is a migration baseline, NOT a drop-in production migration.
--- It replaces Supabase auth.users references with app_users, but application auth,
--- RPCs, Storage, and data migration must be ported and tested before cutover.
+-- Generated from current Supabase public base tables on 2026-10-29.
+-- NOT a drop-in production migration: auth, RPCs, storage, and data migration must be ported.
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -25,11 +23,7 @@ CREATE TABLE IF NOT EXISTS public."classes" (
   "class_name" text NOT NULL,
   "is_active" boolean NOT NULL DEFAULT true,
   "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-  "school_year" text NOT NULL DEFAULT '2026/2027'::text,
-  CONSTRAINT "classes_class_name_check" CHECK ((btrim(class_name) <> '')),
-  CONSTRAINT "classes_grade_level_check" CHECK ((grade_level = ANY (ARRAY[10, 11, 12]))),
-  CONSTRAINT "classes_major_id_fkey" FOREIGN KEY ("major_id") REFERENCES public."majors" ("id") ON UPDATE NO ACTION ON DELETE RESTRICT,
-  CONSTRAINT "classes_pkey" PRIMARY KEY ("id")
+  "school_year" text NOT NULL DEFAULT '2026/2027'::text
 );
 
 CREATE TABLE IF NOT EXISTS public."majors" (
@@ -37,9 +31,7 @@ CREATE TABLE IF NOT EXISTS public."majors" (
   "name" text NOT NULL,
   "is_active" boolean NOT NULL DEFAULT true,
   "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-  "code" text,
-  CONSTRAINT "majors_name_check" CHECK ((btrim(name) <> '')),
-  CONSTRAINT "majors_pkey" PRIMARY KEY ("id")
+  "code" text
 );
 
 CREATE TABLE IF NOT EXISTS public."school_admins" (
@@ -47,10 +39,7 @@ CREATE TABLE IF NOT EXISTS public."school_admins" (
   "display_name" text NOT NULL DEFAULT 'Admin Sekolah'::text,
   "is_active" boolean NOT NULL DEFAULT true,
   "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-  "access_role" text NOT NULL DEFAULT 'admin'::text,
-  CONSTRAINT "school_admin_access_role_check" CHECK ((access_role = ANY (ARRAY['admin', 'super_admin']))),
-  CONSTRAINT "school_admins_pkey" PRIMARY KEY ("user_id"),
-  CONSTRAINT "school_admins_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE CASCADE
+  "access_role" text NOT NULL DEFAULT 'admin'::text
 );
 
 CREATE TABLE IF NOT EXISTS public."school_import_batches" (
@@ -61,9 +50,7 @@ CREATE TABLE IF NOT EXISTS public."school_import_batches" (
   "accounts_existing" integer NOT NULL DEFAULT 0,
   "failed_rows" integer NOT NULL DEFAULT 0,
   "result_details" jsonb NOT NULL DEFAULT '{}'::jsonb,
-  "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "school_import_batches_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE SET NULL,
-  CONSTRAINT "school_import_batches_pkey" PRIMARY KEY ("id")
+  "created_at" timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public."student_attempts" (
@@ -84,20 +71,7 @@ CREATE TABLE IF NOT EXISTS public."student_attempts" (
   "class_snapshot" text NOT NULL DEFAULT ''::text,
   "major_snapshot" text NOT NULL DEFAULT ''::text,
   "review_summary" jsonb NOT NULL DEFAULT '[]'::jsonb,
-  "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "student_attempts_answered_check" CHECK ((answered >= 0)),
-  CONSTRAINT "student_attempts_auth_user_id_fkey" FOREIGN KEY ("auth_user_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "student_attempts_completed_at_ms_check" CHECK ((completed_at_ms > 0)),
-  CONSTRAINT "student_attempts_correct_check" CHECK ((correct >= 0)),
-  CONSTRAINT "student_attempts_counts_check" CHECK (((correct <= answered) AND (answered <= question_count))),
-  CONSTRAINT "student_attempts_earned_xp_check" CHECK (((earned_xp >= 0) AND (earned_xp <= 100))),
-  CONSTRAINT "student_attempts_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "student_attempts_question_count_check" CHECK ((question_count = ANY (ARRAY[10, 100]))),
-  CONSTRAINT "student_attempts_review_summary_check" CHECK (((jsonb_typeof(review_summary) = 'array') AND (jsonb_array_length(review_summary) <= 100))),
-  CONSTRAINT "student_attempts_score_check" CHECK ((score = ((correct * 100) / question_count))),
-  CONSTRAINT "student_attempts_seconds_spent_check" CHECK (((seconds_spent >= 0) AND (seconds_spent <= 7200))),
-  CONSTRAINT "student_attempts_session_unique" UNIQUE ("auth_user_id", "auth_user_id", "session_key", "session_key"),
-  CONSTRAINT "student_attempts_username_check" CHECK (((length(btrim(username)) >= 2) AND (length(btrim(username)) <= 100)))
+  "created_at" timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public."student_email_challenges" (
@@ -109,11 +83,7 @@ CREATE TABLE IF NOT EXISTS public."student_email_challenges" (
   "expires_at" timestamp with time zone NOT NULL,
   "attempts" integer NOT NULL DEFAULT 0,
   "consumed_at" timestamp with time zone,
-  "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "student_email_challenges_attempts_check" CHECK ((attempts >= 0)),
-  CONSTRAINT "student_email_challenges_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "student_email_challenges_purpose_check" CHECK ((purpose = ANY (ARRAY['verify_email', 'password_reset']))),
-  CONSTRAINT "student_email_challenges_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE CASCADE
+  "created_at" timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public."student_profiles" (
@@ -123,11 +93,7 @@ CREATE TABLE IF NOT EXISTS public."student_profiles" (
   "email_verified_at" timestamp with time zone,
   "avatar_path" text,
   "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-  "updated_at" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "student_profiles_pkey" PRIMARY KEY ("user_id"),
-  CONSTRAINT "student_profiles_roster_id_fkey" FOREIGN KEY ("roster_id") REFERENCES public."student_roster" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "student_profiles_roster_id_key" UNIQUE ("roster_id"),
-  CONSTRAINT "student_profiles_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE CASCADE
+  "updated_at" timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public."student_roster" (
@@ -145,16 +111,7 @@ CREATE TABLE IF NOT EXISTS public."student_roster" (
   "normalized_name" text,
   "identity_key" text,
   "current_school_year" text NOT NULL DEFAULT '2026/2027'::text,
-  "data_status" text NOT NULL DEFAULT 'valid'::text,
-  CONSTRAINT "student_roster_admission_year_check" CHECK (((admission_year >= 2000) AND (admission_year <= 2100))),
-  CONSTRAINT "student_roster_auth_user_id_fkey" FOREIGN KEY ("auth_user_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE SET NULL,
-  CONSTRAINT "student_roster_auth_user_id_key" UNIQUE ("auth_user_id"),
-  CONSTRAINT "student_roster_class_id_fkey" FOREIGN KEY ("class_id") REFERENCES public."classes" ("id") ON UPDATE NO ACTION ON DELETE RESTRICT,
-  CONSTRAINT "student_roster_data_status_check" CHECK ((data_status = ANY (ARRAY['valid', 'needs_review']))),
-  CONSTRAINT "student_roster_full_name_check" CHECK ((btrim(full_name) <> '')),
-  CONSTRAINT "student_roster_major_id_fkey" FOREIGN KEY ("major_id") REFERENCES public."majors" ("id") ON UPDATE NO ACTION ON DELETE RESTRICT,
-  CONSTRAINT "student_roster_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "student_roster_registration_status_check" CHECK ((registration_status = ANY (ARRAY['pending', 'registered', 'inactive'])))
+  "data_status" text NOT NULL DEFAULT 'valid'::text
 );
 
 CREATE TABLE IF NOT EXISTS public."vokasi_admin_change_log" (
@@ -164,18 +121,13 @@ CREATE TABLE IF NOT EXISTS public."vokasi_admin_change_log" (
   "target_id" uuid NOT NULL,
   "before_data" jsonb,
   "after_data" jsonb,
-  "changed_at" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "vokasi_admin_change_log_admin_auth_user_id_fkey" FOREIGN KEY ("admin_auth_user_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT "vokasi_admin_change_log_pkey" PRIMARY KEY ("id")
+  "changed_at" timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public."vokasi_admin_notification_reads" (
   "admin_id" uuid NOT NULL,
   "attempt_id" uuid NOT NULL,
-  "read_at" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "vokasi_admin_notification_reads_admin_id_fkey" FOREIGN KEY ("admin_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "vokasi_admin_notification_reads_attempt_id_fkey" FOREIGN KEY ("attempt_id") REFERENCES public."student_attempts" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "vokasi_admin_notification_reads_pkey" PRIMARY KEY ("admin_id", "admin_id", "attempt_id", "attempt_id")
+  "read_at" timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public."vokasi_question_drafts" (
@@ -191,25 +143,14 @@ CREATE TABLE IF NOT EXISTS public."vokasi_question_drafts" (
   "explanation" text NOT NULL DEFAULT ''::text,
   "created_by" uuid NOT NULL,
   "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-  "updated_at" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "question_body_present" CHECK (((btrim(question) <> '') OR (question_image_path IS NOT NULL))),
-  CONSTRAINT "question_correct_index" CHECK ((correct_index < jsonb_array_length(options))),
-  CONSTRAINT "question_options_count" CHECK (((jsonb_typeof(options) = 'array') AND ((jsonb_array_length(options) >= 2) AND (jsonb_array_length(options) <= 6)))),
-  CONSTRAINT "vokasi_question_drafts_category_check" CHECK (((length(btrim(category)) >= 2) AND (length(btrim(category)) <= 100))),
-  CONSTRAINT "vokasi_question_drafts_correct_index_check" CHECK (((correct_index >= 0) AND (correct_index <= 5))),
-  CONSTRAINT "vokasi_question_drafts_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE RESTRICT,
-  CONSTRAINT "vokasi_question_drafts_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "vokasi_question_drafts_source_number_check" CHECK (((source_number IS NULL) OR ((source_number >= 1) AND (source_number <= 100000)))),
-  CONSTRAINT "vokasi_question_drafts_time_limit_seconds_check" CHECK (((time_limit_seconds >= 5) AND (time_limit_seconds <= 180)))
+  "updated_at" timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public."vokasi_visual_asset_blocks" (
   "source_number" integer NOT NULL,
   "blocked_image_path" text NOT NULL,
   "reason" text NOT NULL,
-  "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "vokasi_visual_asset_blocks_pkey" PRIMARY KEY ("source_number"),
-  CONSTRAINT "vokasi_visual_asset_blocks_source_number_check" CHECK (((source_number >= 451) AND (source_number <= 500)))
+  "created_at" timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public."vokasi_web_bank_release" (
@@ -217,10 +158,7 @@ CREATE TABLE IF NOT EXISTS public."vokasi_web_bank_release" (
   "active" boolean NOT NULL DEFAULT false,
   "version" text NOT NULL DEFAULT 'VOKASI-NEW-20261026-v1'::text,
   "published_at" timestamp with time zone,
-  "published_by" uuid,
-  CONSTRAINT "vokasi_web_bank_release_id_check" CHECK ((id = 1)),
-  CONSTRAINT "vokasi_web_bank_release_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "vokasi_web_bank_release_published_by_fkey" FOREIGN KEY ("published_by") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE SET NULL
+  "published_by" uuid
 );
 
 CREATE TABLE IF NOT EXISTS public."vokasi_web_exam_activity_events" (
@@ -232,15 +170,7 @@ CREATE TABLE IF NOT EXISTS public."vokasi_web_exam_activity_events" (
   "target_label" text NOT NULL DEFAULT ''::text,
   "target_kind" text NOT NULL DEFAULT ''::text,
   "detail" text NOT NULL DEFAULT ''::text,
-  "occurred_at" timestamp with time zone NOT NULL DEFAULT clock_timestamp(),
-  CONSTRAINT "vokasi_web_exam_activity_events_auth_user_id_fkey" FOREIGN KEY ("auth_user_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "vokasi_web_exam_activity_events_detail_check" CHECK ((char_length(detail) <= 240)),
-  CONSTRAINT "vokasi_web_exam_activity_events_event_type_check" CHECK ((event_type = ANY (ARRAY['tab_hidden', 'tab_visible', 'window_blur', 'window_focus', 'copy', 'paste', 'context_menu', 'fullscreen_exit', 'external_link', 'ui_click', 'answer_option_selected']))),
-  CONSTRAINT "vokasi_web_exam_activity_events_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "vokasi_web_exam_activity_events_question_index_check" CHECK (((question_index IS NULL) OR ((question_index >= 0) AND (question_index <= 1000)))),
-  CONSTRAINT "vokasi_web_exam_activity_events_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES public."vokasi_web_exam_sessions" ("id") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "vokasi_web_exam_activity_events_target_kind_check" CHECK ((char_length(target_kind) <= 40)),
-  CONSTRAINT "vokasi_web_exam_activity_events_target_label_check" CHECK ((char_length(target_label) <= 120))
+  "occurred_at" timestamp with time zone NOT NULL DEFAULT clock_timestamp()
 );
 
 CREATE TABLE IF NOT EXISTS public."vokasi_web_exam_sessions" (
@@ -262,13 +192,7 @@ CREATE TABLE IF NOT EXISTS public."vokasi_web_exam_sessions" (
   "final_score" integer,
   "pending_choice" integer,
   "pending_question_index" integer,
-  "pending_selected_at" timestamp with time zone,
-  CONSTRAINT "vokasi_web_exam_sessions_answers_check" CHECK ((jsonb_typeof(answers) = 'array')),
-  CONSTRAINT "vokasi_web_exam_sessions_auth_user_id_fkey" FOREIGN KEY ("auth_user_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT "vokasi_web_exam_sessions_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "vokasi_web_exam_sessions_question_count_check" CHECK ((question_count = ANY (ARRAY[10, 100]))),
-  CONSTRAINT "vokasi_web_exam_sessions_questions_check" CHECK ((jsonb_typeof(questions) = 'array')),
-  CONSTRAINT "vokasi_web_exam_sessions_status_check" CHECK ((status = ANY (ARRAY['prepared', 'active', 'complete', 'cancelled'])))
+  "pending_selected_at" timestamp with time zone
 );
 
 CREATE TABLE IF NOT EXISTS public."vokasi_web_import_drafts" (
@@ -277,12 +201,7 @@ CREATE TABLE IF NOT EXISTS public."vokasi_web_import_drafts" (
   "file_name" text NOT NULL,
   "mode" text NOT NULL,
   "payload" jsonb NOT NULL,
-  "created_at" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "vokasi_web_import_drafts_file_name_check" CHECK (((length(file_name) >= 1) AND (length(file_name) <= 250))),
-  CONSTRAINT "vokasi_web_import_drafts_mode_check" CHECK ((mode = ANY (ARRAY['append', 'replace']))),
-  CONSTRAINT "vokasi_web_import_drafts_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE CASCADE,
-  CONSTRAINT "vokasi_web_import_drafts_payload_check" CHECK (((jsonb_typeof(payload) = 'array') AND ((jsonb_array_length(payload) >= 1) AND (jsonb_array_length(payload) <= 500)))),
-  CONSTRAINT "vokasi_web_import_drafts_pkey" PRIMARY KEY ("id")
+  "created_at" timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public."vokasi_web_published_questions" (
@@ -294,9 +213,7 @@ CREATE TABLE IF NOT EXISTS public."vokasi_web_published_questions" (
   "options" jsonb NOT NULL,
   "correct_index" integer NOT NULL,
   "time_limit_seconds" integer NOT NULL,
-  "explanation" text NOT NULL DEFAULT ''::text,
-  CONSTRAINT "vokasi_web_published_questions_pkey" PRIMARY KEY ("source_number"),
-  CONSTRAINT "vokasi_web_published_questions_source_number_check" CHECK (((source_number >= 1) AND (source_number <= 100000)))
+  "explanation" text NOT NULL DEFAULT ''::text
 );
 
 CREATE TABLE IF NOT EXISTS public."vokasi_web_verified_results" (
@@ -306,14 +223,96 @@ CREATE TABLE IF NOT EXISTS public."vokasi_web_verified_results" (
   "score" smallint NOT NULL,
   "correct" smallint NOT NULL,
   "question_count" smallint NOT NULL,
-  "verified_at" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "vokasi_web_verified_results_attempt_id_fkey" FOREIGN KEY ("attempt_id") REFERENCES public."student_attempts" ("id") ON UPDATE NO ACTION ON DELETE RESTRICT,
-  CONSTRAINT "vokasi_web_verified_results_attempt_id_key" UNIQUE ("attempt_id"),
-  CONSTRAINT "vokasi_web_verified_results_auth_user_id_fkey" FOREIGN KEY ("auth_user_id") REFERENCES public."null" ("null") ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT "vokasi_web_verified_results_pkey" PRIMARY KEY ("session_id"),
-  CONSTRAINT "vokasi_web_verified_results_score_check" CHECK (((score >= 0) AND (score <= 100))),
-  CONSTRAINT "vokasi_web_verified_results_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES public."vokasi_web_exam_sessions" ("id") ON UPDATE NO ACTION ON DELETE RESTRICT
+  "verified_at" timestamp with time zone NOT NULL DEFAULT now()
 );
+
+ALTER TABLE public."classes" ADD CONSTRAINT "classes_class_name_check" CHECK (btrim(class_name) <> ''::text);
+ALTER TABLE public."classes" ADD CONSTRAINT "classes_grade_level_check" CHECK (grade_level = ANY (ARRAY[10, 11, 12]));
+ALTER TABLE public."classes" ADD CONSTRAINT "classes_major_id_fkey" FOREIGN KEY (major_id) REFERENCES public."majors"(id) ON DELETE RESTRICT;
+ALTER TABLE public."classes" ADD CONSTRAINT "classes_pkey" PRIMARY KEY (id);
+ALTER TABLE public."majors" ADD CONSTRAINT "majors_name_check" CHECK (btrim(name) <> ''::text);
+ALTER TABLE public."majors" ADD CONSTRAINT "majors_pkey" PRIMARY KEY (id);
+ALTER TABLE public."school_admins" ADD CONSTRAINT "school_admin_access_role_check" CHECK (access_role = ANY (ARRAY['admin'::text, 'super_admin'::text]));
+ALTER TABLE public."school_admins" ADD CONSTRAINT "school_admins_pkey" PRIMARY KEY (user_id);
+ALTER TABLE public."school_admins" ADD CONSTRAINT "school_admins_user_id_fkey" FOREIGN KEY (user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+ALTER TABLE public."school_import_batches" ADD CONSTRAINT "school_import_batches_created_by_fkey" FOREIGN KEY (created_by) REFERENCES public.app_users(id) ON DELETE SET NULL;
+ALTER TABLE public."school_import_batches" ADD CONSTRAINT "school_import_batches_pkey" PRIMARY KEY (id);
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_answered_check" CHECK (answered >= 0);
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_auth_user_id_fkey" FOREIGN KEY (auth_user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_completed_at_ms_check" CHECK (completed_at_ms > 0);
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_correct_check" CHECK (correct >= 0);
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_counts_check" CHECK (correct <= answered AND answered <= question_count);
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_earned_xp_check" CHECK (earned_xp >= 0 AND earned_xp <= 100);
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_pkey" PRIMARY KEY (id);
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_question_count_check" CHECK (question_count = ANY (ARRAY[10, 100]));
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_review_summary_check" CHECK (jsonb_typeof(review_summary) = 'array'::text AND jsonb_array_length(review_summary) <= 100);
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_score_check" CHECK (score = (correct * 100 / question_count));
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_seconds_spent_check" CHECK (seconds_spent >= 0 AND seconds_spent <= 7200);
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_session_unique" UNIQUE (auth_user_id, session_key);
+ALTER TABLE public."student_attempts" ADD CONSTRAINT "student_attempts_username_check" CHECK (length(btrim(username)) >= 2 AND length(btrim(username)) <= 100);
+ALTER TABLE public."student_email_challenges" ADD CONSTRAINT "student_email_challenges_attempts_check" CHECK (attempts >= 0);
+ALTER TABLE public."student_email_challenges" ADD CONSTRAINT "student_email_challenges_pkey" PRIMARY KEY (id);
+ALTER TABLE public."student_email_challenges" ADD CONSTRAINT "student_email_challenges_purpose_check" CHECK (purpose = ANY (ARRAY['verify_email'::text, 'password_reset'::text]));
+ALTER TABLE public."student_email_challenges" ADD CONSTRAINT "student_email_challenges_user_id_fkey" FOREIGN KEY (user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+ALTER TABLE public."student_profiles" ADD CONSTRAINT "student_profiles_pkey" PRIMARY KEY (user_id);
+ALTER TABLE public."student_profiles" ADD CONSTRAINT "student_profiles_roster_id_fkey" FOREIGN KEY (roster_id) REFERENCES public."student_roster"(id) ON DELETE CASCADE;
+ALTER TABLE public."student_profiles" ADD CONSTRAINT "student_profiles_roster_id_key" UNIQUE (roster_id);
+ALTER TABLE public."student_profiles" ADD CONSTRAINT "student_profiles_user_id_fkey" FOREIGN KEY (user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+ALTER TABLE public."student_roster" ADD CONSTRAINT "student_roster_admission_year_check" CHECK (admission_year >= 2000 AND admission_year <= 2100);
+ALTER TABLE public."student_roster" ADD CONSTRAINT "student_roster_auth_user_id_fkey" FOREIGN KEY (auth_user_id) REFERENCES public.app_users(id) ON DELETE SET NULL;
+ALTER TABLE public."student_roster" ADD CONSTRAINT "student_roster_auth_user_id_key" UNIQUE (auth_user_id);
+ALTER TABLE public."student_roster" ADD CONSTRAINT "student_roster_class_id_fkey" FOREIGN KEY (class_id) REFERENCES public."classes"(id) ON DELETE RESTRICT;
+ALTER TABLE public."student_roster" ADD CONSTRAINT "student_roster_data_status_check" CHECK (data_status = ANY (ARRAY['valid'::text, 'needs_review'::text]));
+ALTER TABLE public."student_roster" ADD CONSTRAINT "student_roster_full_name_check" CHECK (btrim(full_name) <> ''::text);
+ALTER TABLE public."student_roster" ADD CONSTRAINT "student_roster_major_id_fkey" FOREIGN KEY (major_id) REFERENCES public."majors"(id) ON DELETE RESTRICT;
+ALTER TABLE public."student_roster" ADD CONSTRAINT "student_roster_pkey" PRIMARY KEY (id);
+ALTER TABLE public."student_roster" ADD CONSTRAINT "student_roster_registration_status_check" CHECK (registration_status = ANY (ARRAY['pending'::text, 'registered'::text, 'inactive'::text]));
+ALTER TABLE public."vokasi_admin_change_log" ADD CONSTRAINT "vokasi_admin_change_log_admin_auth_user_id_fkey" FOREIGN KEY (admin_auth_user_id) REFERENCES public.app_users(id);
+ALTER TABLE public."vokasi_admin_change_log" ADD CONSTRAINT "vokasi_admin_change_log_pkey" PRIMARY KEY (id);
+ALTER TABLE public."vokasi_admin_notification_reads" ADD CONSTRAINT "vokasi_admin_notification_reads_admin_id_fkey" FOREIGN KEY (admin_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+ALTER TABLE public."vokasi_admin_notification_reads" ADD CONSTRAINT "vokasi_admin_notification_reads_attempt_id_fkey" FOREIGN KEY (attempt_id) REFERENCES public."student_attempts"(id) ON DELETE CASCADE;
+ALTER TABLE public."vokasi_admin_notification_reads" ADD CONSTRAINT "vokasi_admin_notification_reads_pkey" PRIMARY KEY (admin_id, attempt_id);
+ALTER TABLE public."vokasi_question_drafts" ADD CONSTRAINT "question_body_present" CHECK (btrim(question) <> ''::text OR question_image_path IS NOT NULL);
+ALTER TABLE public."vokasi_question_drafts" ADD CONSTRAINT "question_correct_index" CHECK (correct_index < jsonb_array_length(options));
+ALTER TABLE public."vokasi_question_drafts" ADD CONSTRAINT "question_options_count" CHECK (jsonb_typeof(options) = 'array'::text AND jsonb_array_length(options) >= 2 AND jsonb_array_length(options) <= 6);
+ALTER TABLE public."vokasi_question_drafts" ADD CONSTRAINT "vokasi_question_drafts_category_check" CHECK (length(btrim(category)) >= 2 AND length(btrim(category)) <= 100);
+ALTER TABLE public."vokasi_question_drafts" ADD CONSTRAINT "vokasi_question_drafts_correct_index_check" CHECK (correct_index >= 0 AND correct_index <= 5);
+ALTER TABLE public."vokasi_question_drafts" ADD CONSTRAINT "vokasi_question_drafts_created_by_fkey" FOREIGN KEY (created_by) REFERENCES public.app_users(id) ON DELETE RESTRICT;
+ALTER TABLE public."vokasi_question_drafts" ADD CONSTRAINT "vokasi_question_drafts_pkey" PRIMARY KEY (id);
+ALTER TABLE public."vokasi_question_drafts" ADD CONSTRAINT "vokasi_question_drafts_source_number_check" CHECK (source_number IS NULL OR source_number >= 1 AND source_number <= 100000);
+ALTER TABLE public."vokasi_question_drafts" ADD CONSTRAINT "vokasi_question_drafts_time_limit_seconds_check" CHECK (time_limit_seconds >= 5 AND time_limit_seconds <= 180);
+ALTER TABLE public."vokasi_visual_asset_blocks" ADD CONSTRAINT "vokasi_visual_asset_blocks_pkey" PRIMARY KEY (source_number);
+ALTER TABLE public."vokasi_visual_asset_blocks" ADD CONSTRAINT "vokasi_visual_asset_blocks_source_number_check" CHECK (source_number >= 451 AND source_number <= 500);
+ALTER TABLE public."vokasi_web_bank_release" ADD CONSTRAINT "vokasi_web_bank_release_id_check" CHECK (id = 1);
+ALTER TABLE public."vokasi_web_bank_release" ADD CONSTRAINT "vokasi_web_bank_release_pkey" PRIMARY KEY (id);
+ALTER TABLE public."vokasi_web_bank_release" ADD CONSTRAINT "vokasi_web_bank_release_published_by_fkey" FOREIGN KEY (published_by) REFERENCES public.app_users(id) ON DELETE SET NULL;
+ALTER TABLE public."vokasi_web_exam_activity_events" ADD CONSTRAINT "vokasi_web_exam_activity_events_auth_user_id_fkey" FOREIGN KEY (auth_user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+ALTER TABLE public."vokasi_web_exam_activity_events" ADD CONSTRAINT "vokasi_web_exam_activity_events_detail_check" CHECK (char_length(detail) <= 240);
+ALTER TABLE public."vokasi_web_exam_activity_events" ADD CONSTRAINT "vokasi_web_exam_activity_events_event_type_check" CHECK (event_type = ANY (ARRAY['tab_hidden'::text, 'tab_visible'::text, 'window_blur'::text, 'window_focus'::text, 'copy'::text, 'paste'::text, 'context_menu'::text, 'fullscreen_exit'::text, 'external_link'::text, 'ui_click'::text, 'answer_option_selected'::text]));
+ALTER TABLE public."vokasi_web_exam_activity_events" ADD CONSTRAINT "vokasi_web_exam_activity_events_pkey" PRIMARY KEY (id);
+ALTER TABLE public."vokasi_web_exam_activity_events" ADD CONSTRAINT "vokasi_web_exam_activity_events_question_index_check" CHECK (question_index IS NULL OR question_index >= 0 AND question_index <= 1000);
+ALTER TABLE public."vokasi_web_exam_activity_events" ADD CONSTRAINT "vokasi_web_exam_activity_events_session_id_fkey" FOREIGN KEY (session_id) REFERENCES public."vokasi_web_exam_sessions"(id) ON DELETE CASCADE;
+ALTER TABLE public."vokasi_web_exam_activity_events" ADD CONSTRAINT "vokasi_web_exam_activity_events_target_kind_check" CHECK (char_length(target_kind) <= 40);
+ALTER TABLE public."vokasi_web_exam_activity_events" ADD CONSTRAINT "vokasi_web_exam_activity_events_target_label_check" CHECK (char_length(target_label) <= 120);
+ALTER TABLE public."vokasi_web_exam_sessions" ADD CONSTRAINT "vokasi_web_exam_sessions_answers_check" CHECK (jsonb_typeof(answers) = 'array'::text);
+ALTER TABLE public."vokasi_web_exam_sessions" ADD CONSTRAINT "vokasi_web_exam_sessions_auth_user_id_fkey" FOREIGN KEY (auth_user_id) REFERENCES public.app_users(id);
+ALTER TABLE public."vokasi_web_exam_sessions" ADD CONSTRAINT "vokasi_web_exam_sessions_pkey" PRIMARY KEY (id);
+ALTER TABLE public."vokasi_web_exam_sessions" ADD CONSTRAINT "vokasi_web_exam_sessions_question_count_check" CHECK (question_count = ANY (ARRAY[10, 100]));
+ALTER TABLE public."vokasi_web_exam_sessions" ADD CONSTRAINT "vokasi_web_exam_sessions_questions_check" CHECK (jsonb_typeof(questions) = 'array'::text);
+ALTER TABLE public."vokasi_web_exam_sessions" ADD CONSTRAINT "vokasi_web_exam_sessions_status_check" CHECK (status = ANY (ARRAY['prepared'::text, 'active'::text, 'complete'::text, 'cancelled'::text]));
+ALTER TABLE public."vokasi_web_import_drafts" ADD CONSTRAINT "vokasi_web_import_drafts_file_name_check" CHECK (length(file_name) >= 1 AND length(file_name) <= 250);
+ALTER TABLE public."vokasi_web_import_drafts" ADD CONSTRAINT "vokasi_web_import_drafts_mode_check" CHECK (mode = ANY (ARRAY['append'::text, 'replace'::text]));
+ALTER TABLE public."vokasi_web_import_drafts" ADD CONSTRAINT "vokasi_web_import_drafts_owner_id_fkey" FOREIGN KEY (owner_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
+ALTER TABLE public."vokasi_web_import_drafts" ADD CONSTRAINT "vokasi_web_import_drafts_payload_check" CHECK (jsonb_typeof(payload) = 'array'::text AND jsonb_array_length(payload) >= 1 AND jsonb_array_length(payload) <= 500);
+ALTER TABLE public."vokasi_web_import_drafts" ADD CONSTRAINT "vokasi_web_import_drafts_pkey" PRIMARY KEY (id);
+ALTER TABLE public."vokasi_web_published_questions" ADD CONSTRAINT "vokasi_web_published_questions_pkey" PRIMARY KEY (source_number);
+ALTER TABLE public."vokasi_web_published_questions" ADD CONSTRAINT "vokasi_web_published_questions_source_number_check" CHECK (source_number >= 1 AND source_number <= 100000);
+ALTER TABLE public."vokasi_web_verified_results" ADD CONSTRAINT "vokasi_web_verified_results_attempt_id_fkey" FOREIGN KEY (attempt_id) REFERENCES public."student_attempts"(id) ON DELETE RESTRICT;
+ALTER TABLE public."vokasi_web_verified_results" ADD CONSTRAINT "vokasi_web_verified_results_attempt_id_key" UNIQUE (attempt_id);
+ALTER TABLE public."vokasi_web_verified_results" ADD CONSTRAINT "vokasi_web_verified_results_auth_user_id_fkey" FOREIGN KEY (auth_user_id) REFERENCES public.app_users(id);
+ALTER TABLE public."vokasi_web_verified_results" ADD CONSTRAINT "vokasi_web_verified_results_pkey" PRIMARY KEY (session_id);
+ALTER TABLE public."vokasi_web_verified_results" ADD CONSTRAINT "vokasi_web_verified_results_score_check" CHECK (score >= 0 AND score <= 100);
+ALTER TABLE public."vokasi_web_verified_results" ADD CONSTRAINT "vokasi_web_verified_results_session_id_fkey" FOREIGN KEY (session_id) REFERENCES public."vokasi_web_exam_sessions"(id) ON DELETE RESTRICT;
 
 CREATE UNIQUE INDEX IF NOT EXISTS classes_unique_school_year_ci ON public.classes USING btree (major_id, grade_level, lower(btrim(class_name)), school_year);
 CREATE UNIQUE INDEX IF NOT EXISTS majors_code_unique ON public.majors USING btree (code);
@@ -338,7 +337,6 @@ CREATE INDEX IF NOT EXISTS vokasi_exam_activity_student_idx ON public.vokasi_web
 CREATE INDEX IF NOT EXISTS vokasi_web_exam_owner ON public.vokasi_web_exam_sessions USING btree (auth_user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS vokasi_web_verified_owner ON public.vokasi_web_verified_results USING btree (auth_user_id, verified_at DESC);
 
--- Map former Supabase Auth identities to app_users before copying data.
--- Do not copy password hashes from Supabase Auth: provision new credentials or
--- implement a secure password reset/invitation flow on the self-hosted backend.
+-- Map former auth user UUIDs to app_users.id before importing data.
+-- Do not copy Supabase password hashes; use a secure invitation/reset flow.
 COMMIT;
