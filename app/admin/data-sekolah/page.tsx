@@ -118,7 +118,7 @@ export default function AdminDataManagement(){
  }
  async function saveRows(rows:Draft[]){
   if(!rows.length||saving)return;
-  if(!window.confirm('Tambahkan '+rows.length+' siswa berstatus BELUM TERDAFTAR ke Supabase? Data yang sudah ada tidak akan diubah.'))return;
+  if(!window.confirm('Tambahkan '+rows.length+' siswa berstatus BELUM TERDAFTAR ke database sekolah? Data yang sudah ada tidak akan diubah.'))return;
   setSaving(true);setNotice('');setProblem('');
   try{
    let done=0;
@@ -128,7 +128,7 @@ export default function AdminDataManagement(){
     if(e)throw new Error('Gagal pada kelompok '+(Math.floor(offset/200)+1)+': '+e.message+(done?' ('+done+' baris sebelumnya sudah tersimpan)':''));
     done+=Number(data||0);
    }
-   setNotice(done+' siswa berhasil ditambahkan sebagai data sekolah. Pembuatan akun/login siswa tetap melalui alur registrasi.');
+   setNotice(done+' siswa berhasil ditambahkan sebagai data sekolah. Akun login siswa dapat diaktifkan melalui panel Aktivasi akun login siswa di bawah.');
    setDraft([]);setFileName('');setFullName('');setUsername('');setRefresh(n=>n+1);
   }catch(e){setProblem(e instanceof Error?e.message:'Gagal menyimpan.');setRefresh(n=>n+1);}
   finally{setSaving(false);}
