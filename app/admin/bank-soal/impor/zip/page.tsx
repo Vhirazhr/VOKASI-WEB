@@ -6,6 +6,8 @@ import {ArrowLeft,Archive,CheckCircle2,FileUp,RefreshCw,ShieldCheck} from 'lucid
 import JSZip from 'jszip';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
+import {currentUser} from '@/lib/auth';
+import {deleteStorageFiles,uploadStorageFile} from '@/lib/storage-client';
 import {supabase} from '@/lib/supabase';
 import {APPROVED_BLUEPRINT,APPROVED_GROUPS,inspectApprovedBank,type BlueprintInspection} from '@/lib/new-bank-blueprint';
 import '@/app/admin-visual-questions.css';
@@ -77,8 +79,8 @@ export default function ImportQuestionBundle(){
    if(data.length>3*1024*1024)throw new Error('Gambar lebih dari 3 MB: '+path);
    const mime=/\.png$/i.test(path)?'image/png':/\.webp$/i.test(path)?'image/webp':'image/jpeg';
    const location=owner+'/'+batchId+'/'+crypto.randomUUID()+'.'+(mime==='image/png'?'png':mime==='image/webp'?'webp':'jpg');
-   const {error:uploadError}=await supabase().storage.from(BUCKET).upload(location,new Blob([data as BlobPart],{type:mime}),{contentType:mime,upsert:false});
-   if(uploadError)throw uploadError;
+   const file=new File([data as BlobPart],location.split('/').pop()||'question-image',{type:mime});
+   await uploadStorageFile(BUCKET,location,file);
    return location;
  }
  async function importDrafts(){
@@ -86,8 +88,8 @@ export default function ImportQuestionBundle(){
    setSaving(true);setNotice('');
    let done=0;
    try{
-     const {data:{user},error:authError}=await supabase().auth.getUser();
-     if(authError||!user)throw new Error('Harus login sebagai admin.');
+     const user=await currentUser();
+     if(!user||(user.role!=='admin'&&user.role!=='super_admin'))throw new Error('Harus login sebagai admin.');
      const {data:existing,error:readError}=await supabase().from('vokasi_question_drafts')
        .select('source_number,question,time_limit_seconds,difficulty_code').not('source_number','is',null).limit(5000);
      if(readError)throw new Error('Tabel draft belum siap. Jalankan migrasi SQL lebih dulu. '+readError.message);
@@ -146,7 +148,7 @@ export default function ImportQuestionBundle(){
          if(insertError)throw insertError;
          done+=batch.length;setProgress({done,total:pending.length});
        }catch(e){
-         if(uploaded.length)await supabase().storage.from(BUCKET).remove(uploaded);
+         if(uploaded.length)await deleteStorageFiles(BUCKET,uploaded).catch(()=>undefined);
          throw new Error('Batch soal '+batch[0].source_number+'–'+batch[batch.length-1].source_number+' gagal: '+textError(e));
        }
      }
