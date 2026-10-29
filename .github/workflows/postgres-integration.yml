@@ -40,6 +40,8 @@ jobs:
         run: psql -X -v ON_ERROR_STOP=1 -f database/functions.sql
       - name: Verify native schema objects
         run: psql -X -v ON_ERROR_STOP=1 -f database/verify_native_setup.sql
+      - name: Exercise native admin/student authorization with temporary rows
+        run: psql -X -v ON_ERROR_STOP=1 -f database/test_native_runtime.sql
       - name: Validate native authentication bridge and exam functions
         run: |
           psql -X -v ON_ERROR_STOP=1 <<'SQL'
