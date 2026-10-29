@@ -32,3 +32,18 @@ export async function uploadStorageFile(
   if (!payload.data?.url) throw new Error('Respons unggahan tidak valid.');
   return payload.data;
 }
+
+export async function deleteStorageFiles(bucket: StorageBucket, paths: string[]): Promise<void> {
+  if (!paths.length) return;
+  const response = await fetch('/api/storage/delete', {
+    method: 'POST',
+    credentials: 'same-origin',
+    cache: 'no-store',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bucket, paths }),
+  });
+  const payload = await response.json().catch(() => ({})) as { error?: unknown };
+  if (!response.ok) {
+    throw new Error(typeof payload.error === 'string' ? payload.error : 'Berkas sementara tidak dapat dibersihkan.');
+  }
+}
