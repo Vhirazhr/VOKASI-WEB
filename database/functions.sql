@@ -152,7 +152,7 @@ BEGIN
  INSERT INTO public.vokasi_admin_change_log(admin_auth_user_id,action,target_id,after_data)
  VALUES(auth.uid(),'create_class',v_id,jsonb_build_object('class_name',v_name,'major_id',p_major_id,'grade_level',p_grade,'school_year',p_year));
  RETURN v_id;
-END $function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_create_major(p_name text, p_code text DEFAULT NULL::text)
  RETURNS uuid
@@ -184,7 +184,7 @@ BEGIN
  INSERT INTO public.vokasi_admin_change_log(admin_auth_user_id,action,target_id,after_data)
  VALUES((SELECT auth.uid()),'create_major',v_new,pg_catalog.jsonb_build_object('name',v_name,'code',v_code));
  RETURN v_new;
-END $function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_delete_empty_class(p_class_id uuid)
  RETURNS boolean
@@ -364,7 +364,7 @@ BEGIN
   published_at=clock_timestamp(),published_by=auth.uid()
  WHERE id=1;
  RETURN v_after;
-END;$function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_exam_activity(p_days integer DEFAULT 7, p_limit integer DEFAULT 50, p_offset integer DEFAULT 0, p_student uuid DEFAULT NULL::uuid)
  RETURNS jsonb
@@ -477,7 +477,7 @@ BEGIN
  SELECT * INTO v_row FROM public.vokasi_web_published_questions WHERE source_number=p_source_number;
  IF NOT FOUND THEN RAISE EXCEPTION 'Soal sudah tidak ditemukan. Segarkan halaman.'; END IF;
  RETURN to_jsonb(v_row);
-END;$function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_get_notifications(p_limit integer DEFAULT 20)
  RETURNS jsonb
@@ -707,7 +707,7 @@ BEGIN
   a.user_id=auth.uid(),a.access_role
  FROM public.school_admins a LEFT JOIN auth.users u ON u.id=a.user_id
  ORDER BY a.access_role='super_admin' DESC,a.is_active DESC,a.created_at ASC,a.user_id;
-END;$function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_mark_notifications_read(p_attempt_ids uuid[] DEFAULT NULL::uuid[])
  RETURNS integer
@@ -826,7 +826,7 @@ BEGIN
  jsonb_build_object('class_id',v_old.class_id),
  jsonb_build_object('class_id',p_new_class_id));
  RETURN TRUE;
-END $function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_question_health()
  RETURNS jsonb
@@ -1286,7 +1286,7 @@ BEGIN
  INSERT INTO public.vokasi_admin_change_log(admin_auth_user_id,action,target_id,before_data,after_data)
  VALUES(auth.uid(),'manage_admin_'||p_action,p_target,to_jsonb(previous),result);
  RETURN jsonb_build_object('ok',true,'action',p_action,'target',p_target);
-END;$function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_begin_session(p_session uuid)
  RETURNS jsonb
@@ -1312,7 +1312,7 @@ BEGIN
   WHERE id=s.id;
  END IF;
  RETURN vokasi_private.web_view(p_session);
-END; $function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_can_read_figure(p_path text)
  RETURNS boolean
@@ -1392,7 +1392,7 @@ BEGIN
  FROM jsonb_array_elements(s.questions) WITH ORDINALITY qq(q,pos)
  LEFT JOIN LATERAL (SELECT value AS a FROM jsonb_array_elements(s.answers) WITH ORDINALITY a(value,ord)
    WHERE ord=pos) answers ON true);
-END; $function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_get_quiz_state(p_session uuid)
  RETURNS jsonb
@@ -1533,7 +1533,7 @@ BEGIN
  VALUES(v_user,v_version,p_category,v_ordered,v_len) RETURNING id INTO v_id;
  RETURN jsonb_build_object('session_id',v_id,'status','prepared','image_paths',v_assets,
   'total',v_len);
-END; $function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_publish_new_bank()
  RETURNS text
@@ -1861,7 +1861,7 @@ BEGIN
  ON CONFLICT(session_id) DO NOTHING;
  UPDATE public.vokasi_web_exam_sessions SET status='complete',completed_at=clock_timestamp(),final_score=v_score
  WHERE id=p_id AND current_index=question_count;
-END; $function$
+END; $function$;
 
 CREATE OR REPLACE FUNCTION vokasi_private.web_process(p_session uuid, p_question_index integer DEFAULT NULL::integer, p_choice integer DEFAULT NULL::integer)
  RETURNS jsonb
