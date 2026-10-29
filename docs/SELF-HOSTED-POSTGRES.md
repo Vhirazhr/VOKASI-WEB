@@ -19,6 +19,12 @@ Never prefix database credentials or session secrets with `NEXT_PUBLIC_`.
 
 Until the old frontend is migrated, the existing `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` may still be required by the current UI. They are **legacy transition variables**, not part of the final self-hosted design. Do not delete them from a currently working deployment before the UI cutover is complete.
 
+## Native administrator invitations
+
+The self-hosted admin invitation flow no longer calls a Supabase Edge Function. A Super Admin creates a one-time activation link in the settings page; the link is shown once so it can be copied and sent to the recipient manually. It expires after 48 hours and can be used only once. The activation endpoint hashes the new password and creates the local `app_users` and `school_admins` records inside PostgreSQL.
+
+Apply `database/002_admin_invites.sql` if the base schema has already been installed before this migration was added. No email is sent automatically; configure a trusted mail delivery provider separately if automatic delivery is required.
+
 ## Private local image storage
 
 Set `STORAGE_ROOT` to an absolute, writable directory **outside `public_html` and the public web root**, for example `/home/CPANEL_USER/vokasi-private-storage`. Create the directory from the hosting account and confirm the Node.js application user can write to it. Do not expose this directory through a static web server or commit uploaded files to Git.
