@@ -1,6 +1,6 @@
 import type { Attempt, BankQuestion, SessionQuestion, StudentProfile } from './types';
 import { wibDate } from './school';
-import { supabase } from './supabase';
+import { storageUrl } from './storage-client';
 import { APPROVED_BLUEPRINT, APPROVED_GROUPS } from './new-bank-blueprint';
 
 export const QUOTAS: Record<string,number>=Object.fromEntries(
@@ -21,29 +21,44 @@ type PublishedRow={
  question_image_path:string|null;options:ActiveChoice[];correct_index:number;
  time_limit_seconds:number;explanation:string;
 };
+type PublishedBankPayload = { active: boolean; version: string | null; questions: PublishedRow[] };
+async function readPublishedBank(metaOnly = false): Promise<PublishedBankPayload> {
+ const url = '/api/admin/question-bank' + (metaOnly ? '?meta=1' : '');
+ const response = await fetch(url, {
+   method: 'GET',
+   credentials: 'same-origin',
+   cache: 'no-store',
+   headers: { Accept: 'application/json' },
+ });
+ const payload = await response.json().catch(() => ({})) as {
+   data?: Partial<PublishedBankPayload>;
+   error?: unknown;
+ };
+ if (!response.ok) {
+   throw new Error(typeof payload.error === 'string' ? payload.error : 'Bank soal lokal tidak dapat dimuat.');
+ }
+ return {
+   active: Boolean(payload.data?.active),
+   version: typeof payload.data?.version === 'string' ? payload.data.version : null,
+   questions: Array.isArray(payload.data?.questions) ? payload.data.questions : [],
+ };
+}
+
 export async function getPublishedBankVersion():Promise<string|null>{
- const {data,error}=await supabase().from('vokasi_web_bank_release')
-    .select('active,version').eq('id',1).maybeSingle();
- if(error||!data)return null;
- return data.active?String(data.version):null;
+ try {
+   const payload = await readPublishedBank(true);
+   return payload.active ? payload.version : null;
+ } catch {
+   return null;
+ }
 }
 
 export async function fetchBank(options:{allowIncomplete?:boolean}={}):Promise<BankQuestion[]>{
- const version=await getPublishedBankVersion();
+ const payload = await readPublishedBank();
+ const version = payload.active ? payload.version : null;
  if(!version||!version.startsWith('VOKASI-NEW-'))
     throw new Error('Bank soal baru masih menunggu aktivasi admin. Latihan belum tersedia.');
- const collected:PublishedRow[]=[];
- // Supabase PostgREST commonly caps one response at 1,000 rows.
- // Page until exhausted to avoid silently hiding appended questions in admin.
- for(let offset=0;;offset+=500){
-   const {data,error}=await supabase().from('vokasi_web_published_questions')
-     .select('source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation')
-     .order('source_number',{ascending:true}).range(offset,offset+499);
-   if(error)throw new Error('Gagal mengambil soal baru dari Supabase: '+error.message);
-   const batch=(data||[]) as PublishedRow[];
-   collected.push(...batch);
-   if(batch.length<500)break;
- }
+ const collected:PublishedRow[] = payload.questions;
  if(!options.allowIncomplete&&collected.length<APPROVED_BLUEPRINT.bankCount)
    throw new Error('Bank soal resmi harus memiliki setidaknya 500 soal untuk blueprint. Hubungi admin sekolah.');
  const rows=collected;
@@ -52,19 +67,7 @@ export async function fetchBank(options:{allowIncomplete?:boolean}={}):Promise<B
     ...r.options.flatMap(o=>o.image_path?[o.image_path]:[])
  ]))];
  const signed=new Map<string,string>();
- if(filePaths.length){
-   // Batch signing to avoid oversized Storage requests as the bank grows.
-   for(let offset=0;offset<filePaths.length;offset+=100){
-     const paths=filePaths.slice(offset,offset+100);
-     const {data:urls,error:signError}=await supabase().storage.from('vokasi-question-figures')
-       .createSignedUrls(paths,7200);
-     if(signError||!urls){if(options.allowIncomplete)continue;throw new Error('Gambar soal tidak dapat diakses: '+(signError?.message||'Storage tidak tersedia.'));}
-     urls.forEach((item,i)=>{
-       if(item.error||!item.signedUrl){if(options.allowIncomplete)return;throw new Error('Gambar soal tidak dapat dibuka: '+paths[i]);}
-       signed.set(paths[i],item.signedUrl);
-     });
-   }
- }
+ for(const path of filePaths) signed.set(path,storageUrl('vokasi-question-figures',path));
  const bank:BankQuestion[]=rows.map(r=>{
    if(!Array.isArray(r.options)||r.options.length<2||r.options.length>6
       ||!Number.isInteger(r.correct_index)||r.correct_index<0||r.correct_index>=r.options.length)
