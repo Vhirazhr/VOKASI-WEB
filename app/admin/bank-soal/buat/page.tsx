@@ -5,6 +5,8 @@ import {useEffect,useState} from 'react';
 import {ArrowLeft,ImagePlus,Plus,Save,Trash2,UploadCloud} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
+import {currentUser} from '@/lib/auth';
+import {deleteStorageFiles,storageUrl,uploadStorageFile} from '@/lib/storage-client';
 import {supabase} from '@/lib/supabase';
 import {APPROVED_BLUEPRINT,APPROVED_GROUPS,approvedGroup,type ApprovedGroup} from '@/lib/new-bank-blueprint';
 import '@/app/admin-visual-questions.css';
@@ -20,7 +22,7 @@ function UploadField({title,file,path,setImage,remove}:{title:string;file:File|n
  useEffect(()=>{let active=true;let objectUrl:string|null=null;
   async function load(){
    if(file){objectUrl=URL.createObjectURL(file);if(active)setUrl(objectUrl);}
-   else if(path){const r=await supabase().storage.from(BUCKET).createSignedUrl(path,1200);if(active)setUrl(r.data?.signedUrl||'');}
+   else if(path){if(active)setUrl(storageUrl(BUCKET,path));}
    else if(active)setUrl('');
   }
   void load();return()=>{active=false;if(objectUrl)URL.revokeObjectURL(objectUrl);};
@@ -76,8 +78,7 @@ export default function CreatePictureQuestion(){
    if(!['image/png','image/jpeg','image/webp'].includes(f.type)||f.size>3145728)throw new Error('File gambar tidak valid (maks. 3 MB).');
    const extension=f.type==='image/png'?'png':f.type==='image/webp'?'webp':'jpg';
    const location=userId+'/'+crypto.randomUUID()+'.'+extension;
-   const {error:err}=await supabase().storage.from(BUCKET).upload(location,f,{upsert:false,contentType:f.type});
-   if(err)throw err;
+   await uploadStorageFile(BUCKET,location,f);
    return location;
  }
  async function save(e:React.FormEvent){
@@ -94,8 +95,8 @@ export default function CreatePictureQuestion(){
    setSaving(true);
    const uploaded:string[]=[];
    try{
-     const {data:{user},error:authError}=await supabase().auth.getUser();
-     if(authError||!user)throw new Error('Login admin perlu diulang.');
+     const user=await currentUser();
+     if(!user||(user.role!=='admin'&&user.role!=='super_admin'))throw new Error('Login admin perlu diulang.');
      const imageLocation=image?await upload(image,user.id):imagePath;
      if(image&&imageLocation)uploaded.push(imageLocation);
      const saved:SavedAnswer[]=[];
@@ -121,7 +122,7 @@ export default function CreatePictureQuestion(){
        clear();await refresh();setNotice('Draft soal tersimpan. Bank aktif tidak berubah.');
      }
    }catch(e){
-     if(uploaded.length)await supabase().storage.from(BUCKET).remove(uploaded);
+     if(uploaded.length)await deleteStorageFiles(BUCKET,uploaded).catch(()=>undefined);
      setNotice('Gagal menyimpan: '+(e instanceof Error?e.message:String(e)));
    }finally{setSaving(false);}
  }
