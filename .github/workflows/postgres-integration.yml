@@ -1,0 +1,62 @@
+name: VOKASI PostgreSQL integration
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  bootstrap-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: vokasi_ci
+          POSTGRES_USER: vokasi_ci
+          POSTGRES_PASSWORD: ci-only-not-for-production
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vokasi_ci -d vokasi_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: vokasi_ci
+      PGPASSWORD: ci-only-not-for-production
+      PGDATABASE: vokasi_ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install PostgreSQL command line if unavailable
+        run: command -v psql || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client)
+      - name: Apply native bootstrap schema
+        run: psql -X -v ON_ERROR_STOP=1 -f database/schema.sql
+      - name: Apply native SQL business functions
+        run: psql -X -v ON_ERROR_STOP=1 -f database/functions.sql
+      - name: Verify native schema objects
+        run: psql -X -v ON_ERROR_STOP=1 -f database/verify_native_setup.sql
+      - name: Validate native authentication bridge and exam functions
+        run: |
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          BEGIN
+            IF auth.uid() IS NOT NULL THEN
+              RAISE EXCEPTION 'Unauthenticated auth.uid() must be NULL';
+            END IF;
+            IF to_regprocedure('public.vokasi_web_prepare_session(text)') IS NULL THEN
+              RAISE EXCEPTION 'Missing prepare_session function';
+            END IF;
+            IF to_regprocedure('public.vokasi_web_submit_answer(uuid,integer,integer)') IS NULL THEN
+              RAISE EXCEPTION 'Missing server grading function';
+            END IF;
+            IF to_regprocedure('public.vokasi_web_select_answer(uuid,integer,integer)') IS NULL THEN
+              RAISE EXCEPTION 'Missing answer autosave function';
+            END IF;
+          END
+          $$;
+          SQL
