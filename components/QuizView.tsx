@@ -4,7 +4,6 @@ import { nativeRpc } from '@/lib/native-rpc';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle,Grid2X2,ShieldCheck,ZoomIn,X,LogOut} from 'lucide-react';
 import {storageUrl} from '@/lib/storage-client';
-import {supabase} from '@/lib/supabase';
 import StudentSessionReportDownload from '@/components/StudentSessionReportDownload';
 import type {Attempt,StudentProfile} from '@/lib/types';
 import {getOwnSessionXp} from '@/lib/school';
