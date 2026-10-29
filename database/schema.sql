@@ -328,6 +328,26 @@ CREATE TABLE public.vokasi_web_verified_results (
 );
 
 
+-- Primary keys must exist before any cross-table foreign keys are created.
+ALTER TABLE public.classes ADD CONSTRAINT classes_pkey PRIMARY KEY (id);
+ALTER TABLE public.majors ADD CONSTRAINT majors_pkey PRIMARY KEY (id);
+ALTER TABLE public.school_admins ADD CONSTRAINT school_admins_pkey PRIMARY KEY (user_id);
+ALTER TABLE public.school_import_batches ADD CONSTRAINT school_import_batches_pkey PRIMARY KEY (id);
+ALTER TABLE public.student_attempts ADD CONSTRAINT student_attempts_pkey PRIMARY KEY (id);
+ALTER TABLE public.student_email_challenges ADD CONSTRAINT student_email_challenges_pkey PRIMARY KEY (id);
+ALTER TABLE public.student_profiles ADD CONSTRAINT student_profiles_pkey PRIMARY KEY (user_id);
+ALTER TABLE public.student_roster ADD CONSTRAINT student_roster_pkey PRIMARY KEY (id);
+ALTER TABLE public.vokasi_admin_change_log ADD CONSTRAINT vokasi_admin_change_log_pkey PRIMARY KEY (id);
+ALTER TABLE public.vokasi_admin_notification_reads ADD CONSTRAINT vokasi_admin_notification_reads_pkey PRIMARY KEY (admin_id, attempt_id);
+ALTER TABLE public.vokasi_question_drafts ADD CONSTRAINT vokasi_question_drafts_pkey PRIMARY KEY (id);
+ALTER TABLE public.vokasi_visual_asset_blocks ADD CONSTRAINT vokasi_visual_asset_blocks_pkey PRIMARY KEY (source_number);
+ALTER TABLE public.vokasi_web_bank_release ADD CONSTRAINT vokasi_web_bank_release_pkey PRIMARY KEY (id);
+ALTER TABLE public.vokasi_web_exam_activity_events ADD CONSTRAINT vokasi_web_exam_activity_events_pkey PRIMARY KEY (id);
+ALTER TABLE public.vokasi_web_exam_sessions ADD CONSTRAINT vokasi_web_exam_sessions_pkey PRIMARY KEY (id);
+ALTER TABLE public.vokasi_web_import_drafts ADD CONSTRAINT vokasi_web_import_drafts_pkey PRIMARY KEY (id);
+ALTER TABLE public.vokasi_web_published_questions ADD CONSTRAINT vokasi_web_published_questions_pkey PRIMARY KEY (source_number);
+ALTER TABLE public.vokasi_web_verified_results ADD CONSTRAINT vokasi_web_verified_results_pkey PRIMARY KEY (session_id);
+
 -- Constraints from the live schema.
 
 ALTER TABLE public.classes ADD CONSTRAINT classes_class_name_check CHECK ((btrim(class_name) <> ''::text));
@@ -336,21 +356,17 @@ ALTER TABLE public.classes ADD CONSTRAINT classes_grade_level_check CHECK ((grad
 
 ALTER TABLE public.classes ADD CONSTRAINT classes_major_id_fkey FOREIGN KEY (major_id) REFERENCES majors(id) ON DELETE RESTRICT;
 
-ALTER TABLE public.classes ADD CONSTRAINT classes_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.majors ADD CONSTRAINT majors_name_check CHECK ((btrim(name) <> ''::text));
 
-ALTER TABLE public.majors ADD CONSTRAINT majors_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.school_admins ADD CONSTRAINT school_admin_access_role_check CHECK ((access_role = ANY (ARRAY['admin'::text, 'super_admin'::text])));
 
-ALTER TABLE public.school_admins ADD CONSTRAINT school_admins_pkey PRIMARY KEY (user_id);
 
 ALTER TABLE public.school_admins ADD CONSTRAINT school_admins_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
 
 ALTER TABLE public.school_import_batches ADD CONSTRAINT school_import_batches_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.app_users(id) ON DELETE SET NULL;
 
-ALTER TABLE public.school_import_batches ADD CONSTRAINT school_import_batches_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.student_attempts ADD CONSTRAINT student_attempts_answered_check CHECK ((answered >= 0));
 
@@ -364,7 +380,6 @@ ALTER TABLE public.student_attempts ADD CONSTRAINT student_attempts_counts_check
 
 ALTER TABLE public.student_attempts ADD CONSTRAINT student_attempts_earned_xp_check CHECK (((earned_xp >= 0) AND (earned_xp <= 100)));
 
-ALTER TABLE public.student_attempts ADD CONSTRAINT student_attempts_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.student_attempts ADD CONSTRAINT student_attempts_question_count_check CHECK ((question_count = ANY (ARRAY[10, 100])));
 
@@ -380,13 +395,11 @@ ALTER TABLE public.student_attempts ADD CONSTRAINT student_attempts_username_che
 
 ALTER TABLE public.student_email_challenges ADD CONSTRAINT student_email_challenges_attempts_check CHECK ((attempts >= 0));
 
-ALTER TABLE public.student_email_challenges ADD CONSTRAINT student_email_challenges_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.student_email_challenges ADD CONSTRAINT student_email_challenges_purpose_check CHECK ((purpose = ANY (ARRAY['verify_email'::text, 'password_reset'::text])));
 
 ALTER TABLE public.student_email_challenges ADD CONSTRAINT student_email_challenges_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
 
-ALTER TABLE public.student_profiles ADD CONSTRAINT student_profiles_pkey PRIMARY KEY (user_id);
 
 ALTER TABLE public.student_profiles ADD CONSTRAINT student_profiles_roster_id_fkey FOREIGN KEY (roster_id) REFERENCES student_roster(id) ON DELETE CASCADE;
 
@@ -408,19 +421,16 @@ ALTER TABLE public.student_roster ADD CONSTRAINT student_roster_full_name_check 
 
 ALTER TABLE public.student_roster ADD CONSTRAINT student_roster_major_id_fkey FOREIGN KEY (major_id) REFERENCES majors(id) ON DELETE RESTRICT;
 
-ALTER TABLE public.student_roster ADD CONSTRAINT student_roster_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.student_roster ADD CONSTRAINT student_roster_registration_status_check CHECK ((registration_status = ANY (ARRAY['pending'::text, 'registered'::text, 'inactive'::text])));
 
 ALTER TABLE public.vokasi_admin_change_log ADD CONSTRAINT vokasi_admin_change_log_admin_auth_user_id_fkey FOREIGN KEY (admin_auth_user_id) REFERENCES public.app_users(id);
 
-ALTER TABLE public.vokasi_admin_change_log ADD CONSTRAINT vokasi_admin_change_log_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.vokasi_admin_notification_reads ADD CONSTRAINT vokasi_admin_notification_reads_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.app_users(id) ON DELETE CASCADE;
 
 ALTER TABLE public.vokasi_admin_notification_reads ADD CONSTRAINT vokasi_admin_notification_reads_attempt_id_fkey FOREIGN KEY (attempt_id) REFERENCES student_attempts(id) ON DELETE CASCADE;
 
-ALTER TABLE public.vokasi_admin_notification_reads ADD CONSTRAINT vokasi_admin_notification_reads_pkey PRIMARY KEY (admin_id, attempt_id);
 
 ALTER TABLE public.vokasi_question_drafts ADD CONSTRAINT question_body_present CHECK (((btrim(question) <> ''::text) OR (question_image_path IS NOT NULL)));
 
@@ -434,19 +444,16 @@ ALTER TABLE public.vokasi_question_drafts ADD CONSTRAINT vokasi_question_drafts_
 
 ALTER TABLE public.vokasi_question_drafts ADD CONSTRAINT vokasi_question_drafts_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.app_users(id) ON DELETE RESTRICT;
 
-ALTER TABLE public.vokasi_question_drafts ADD CONSTRAINT vokasi_question_drafts_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.vokasi_question_drafts ADD CONSTRAINT vokasi_question_drafts_source_number_check CHECK (((source_number IS NULL) OR ((source_number >= 1) AND (source_number <= 100000))));
 
 ALTER TABLE public.vokasi_question_drafts ADD CONSTRAINT vokasi_question_drafts_time_limit_seconds_check CHECK (((time_limit_seconds >= 5) AND (time_limit_seconds <= 180)));
 
-ALTER TABLE public.vokasi_visual_asset_blocks ADD CONSTRAINT vokasi_visual_asset_blocks_pkey PRIMARY KEY (source_number);
 
 ALTER TABLE public.vokasi_visual_asset_blocks ADD CONSTRAINT vokasi_visual_asset_blocks_source_number_check CHECK (((source_number >= 451) AND (source_number <= 500)));
 
 ALTER TABLE public.vokasi_web_bank_release ADD CONSTRAINT vokasi_web_bank_release_id_check CHECK ((id = 1));
 
-ALTER TABLE public.vokasi_web_bank_release ADD CONSTRAINT vokasi_web_bank_release_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.vokasi_web_bank_release ADD CONSTRAINT vokasi_web_bank_release_published_by_fkey FOREIGN KEY (published_by) REFERENCES public.app_users(id) ON DELETE SET NULL;
 
@@ -456,7 +463,6 @@ ALTER TABLE public.vokasi_web_exam_activity_events ADD CONSTRAINT vokasi_web_exa
 
 ALTER TABLE public.vokasi_web_exam_activity_events ADD CONSTRAINT vokasi_web_exam_activity_events_event_type_check CHECK ((event_type = ANY (ARRAY['tab_hidden'::text, 'tab_visible'::text, 'window_blur'::text, 'window_focus'::text, 'copy'::text, 'paste'::text, 'context_menu'::text, 'fullscreen_exit'::text, 'external_link'::text, 'ui_click'::text, 'answer_option_selected'::text])));
 
-ALTER TABLE public.vokasi_web_exam_activity_events ADD CONSTRAINT vokasi_web_exam_activity_events_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.vokasi_web_exam_activity_events ADD CONSTRAINT vokasi_web_exam_activity_events_question_index_check CHECK (((question_index IS NULL) OR ((question_index >= 0) AND (question_index <= 1000))));
 
@@ -470,7 +476,6 @@ ALTER TABLE public.vokasi_web_exam_sessions ADD CONSTRAINT vokasi_web_exam_sessi
 
 ALTER TABLE public.vokasi_web_exam_sessions ADD CONSTRAINT vokasi_web_exam_sessions_auth_user_id_fkey FOREIGN KEY (auth_user_id) REFERENCES public.app_users(id);
 
-ALTER TABLE public.vokasi_web_exam_sessions ADD CONSTRAINT vokasi_web_exam_sessions_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.vokasi_web_exam_sessions ADD CONSTRAINT vokasi_web_exam_sessions_question_count_check CHECK ((question_count = ANY (ARRAY[10, 100])));
 
@@ -486,9 +491,7 @@ ALTER TABLE public.vokasi_web_import_drafts ADD CONSTRAINT vokasi_web_import_dra
 
 ALTER TABLE public.vokasi_web_import_drafts ADD CONSTRAINT vokasi_web_import_drafts_payload_check CHECK (((jsonb_typeof(payload) = 'array'::text) AND ((jsonb_array_length(payload) >= 1) AND (jsonb_array_length(payload) <= 500))));
 
-ALTER TABLE public.vokasi_web_import_drafts ADD CONSTRAINT vokasi_web_import_drafts_pkey PRIMARY KEY (id);
 
-ALTER TABLE public.vokasi_web_published_questions ADD CONSTRAINT vokasi_web_published_questions_pkey PRIMARY KEY (source_number);
 
 ALTER TABLE public.vokasi_web_published_questions ADD CONSTRAINT vokasi_web_published_questions_source_number_check CHECK (((source_number >= 1) AND (source_number <= 100000)));
 
@@ -498,7 +501,6 @@ ALTER TABLE public.vokasi_web_verified_results ADD CONSTRAINT vokasi_web_verifie
 
 ALTER TABLE public.vokasi_web_verified_results ADD CONSTRAINT vokasi_web_verified_results_auth_user_id_fkey FOREIGN KEY (auth_user_id) REFERENCES public.app_users(id);
 
-ALTER TABLE public.vokasi_web_verified_results ADD CONSTRAINT vokasi_web_verified_results_pkey PRIMARY KEY (session_id);
 
 ALTER TABLE public.vokasi_web_verified_results ADD CONSTRAINT vokasi_web_verified_results_score_check CHECK (((score >= 0) AND (score <= 100)));
 
