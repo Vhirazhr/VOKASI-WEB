@@ -3,6 +3,7 @@
 import { nativeRpc } from '@/lib/native-rpc';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle,Grid2X2,ShieldCheck,ZoomIn,X,LogOut} from 'lucide-react';
+import {storageUrl} from '@/lib/storage-client';
 import {supabase} from '@/lib/supabase';
 import StudentSessionReportDownload from '@/components/StudentSessionReportDownload';
 import type {Attempt,StudentProfile} from '@/lib/types';
@@ -33,16 +34,10 @@ async function rpc<T>(functionName:string,params:Record<string,unknown>):Promise
  if(error)throw new Error(error.message);
  return data as T;
 }
-async function signedImages(paths:string[]):Promise<Map<string,string>>{
+async function signedImages(paths:string[],sessionId:string):Promise<Map<string,string>>{
  const unique=[...new Set(paths.filter(Boolean))];
  const urls=new Map<string,string>();
- if(!unique.length)return urls;
- const {data,error}=await supabase().storage.from('vokasi-question-figures').createSignedUrls(unique,7200);
- if(error||!data)throw new Error('Gambar soal tidak bisa dimuat: '+(error?.message||'Storage tidak siap'));
- data.forEach((entry,i)=>{
-   if(entry.error||!entry.signedUrl)throw new Error('Gambar tidak tersedia di Storage: '+unique[i]);
-   urls.set(unique[i],entry.signedUrl);
- });
+ unique.forEach(path=>urls.set(path,storageUrl('vokasi-question-figures',path,sessionId)));
  return urls;
 }
 function visualPaths(q?:Question):string[]{
@@ -148,7 +143,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
              if(recovered.status==='active'){
                accept(recovered);
                if(recovered.question){
-                 const urls=await signedImages(visualPaths(recovered.question));
+                 const urls=await signedImages(visualPaths(recovered.question),recovered.session_id);
                  if(active)setImageUrls(urls);
                }
                setBusy(false);return;
@@ -173,7 +168,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
          }
        }
        sessionStorage.setItem(key(profile.authId),JSON.stringify({session_id:prepared.session_id,category}));
-       const urls=await signedImages(prepared.image_paths||[]);
+       const urls=await signedImages(prepared.image_paths||[],prepared.session_id);
        await preloadImages(urls);
        if(!active)return;
        setImageUrls(urls);
@@ -181,7 +176,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
        const begun=await rpc<State>('vokasi_web_begin_session',{p_session:prepared.session_id});
        if(!active)return;
        if(begun.status==='active'&&begun.question){
-         const extra=await signedImages(visualPaths(begun.question));
+         const extra=await signedImages(visualPaths(begun.question),begun.session_id);
          if(!active)return;
          setImageUrls(current=>new Map([...current,...extra]));
        }
@@ -204,7 +199,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      if(next.status!==state?.status||next.index!==state?.index){
        accept(next);
        if(next.question&&!imageUrls.has(next.question.image_path||'')){
-         const urls=await signedImages(visualPaths(next.question));
+         const urls=await signedImages(visualPaths(next.question),next.session_id);
          if(live.current)setImageUrls(current=>new Map([...current,...urls]));
        }
      }else{
@@ -352,7 +347,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      accept(result);
      if(result.question&&!imageUrls.has(result.question.image_path||'')){
        try{
-         const urls=await signedImages(visualPaths(result.question));
+         const urls=await signedImages(visualPaths(result.question),result.session_id);
          if(live.current)setImageUrls(current=>new Map([...current,...urls]));
        }catch(cause){
          if(live.current)setError('Soal berikutnya belum dapat dimuat: '+errText(cause));
@@ -404,7 +399,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
      const answers=await rpc<Review[]>('vokasi_web_completed_review',{p_session:state.session_id});
      if(!live.current)return;
      const paths=answers.flatMap(a=>[a.image_path,...a.options.map(o=>o.image_path)]).filter((p):p is string=>!!p);
-     const urls=await signedImages(paths);
+     const urls=await signedImages(paths,state.session_id);
      if(live.current){setReview(answers);setImageUrls(current=>new Map([...current,...urls]));setReviewShown(true);}
    }catch(e){if(live.current)setError('Pembahasan belum bisa dibuka: '+errText(e));}
    finally{if(live.current)setSending(false);}
