@@ -2,7 +2,7 @@
 import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useMemo,useState} from 'react';
 import {BookOpen,CheckCircle2,ChevronLeft,ChevronRight,RefreshCw,X,XCircle,TrendingUp,Target,Clock3} from 'lucide-react';
-import {supabase} from '@/lib/supabase';
+import {storageUrl} from '@/lib/storage-client';
 import type {Attempt} from '@/lib/types';
 
 type Answer={id:number;text:string;category:string;image_path:string|null;options:{text:string;image_path:string|null}[];
@@ -25,11 +25,7 @@ export default function AdminAnswerReview({student,attempt,onClose}:{student:str
       ...(x.image_path?[x.image_path]:[]),...x.options.flatMap(o=>o.image_path?[o.image_path]:[])
     ]))];
     const urlMap:Record<string,string>={};
-    if(paths.length){
-     const {data:images,error:e}=await supabase().storage.from('vokasi-question-figures').createSignedUrls(paths,3600);
-     if(e)throw e;
-     images?.forEach((image,index)=>{if(image.signedUrl)urlMap[paths[index]]=image.signedUrl;});
-    }
+    paths.forEach(path=>{urlMap[path]=storageUrl('vokasi-question-figures',path);});
     if(active){setReview(items);setUrls(urlMap);setError('');}
    }catch(e){if(active)setError(e instanceof Error?e.message:'Gagal mengambil pembahasan.');}
    finally{if(active)setBusy(false);}
