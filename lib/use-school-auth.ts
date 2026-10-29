@@ -1,7 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
 import {useRouter} from 'next/navigation';
-import {configured,supabase} from './supabase';
 import {currentRole,signOut} from './auth';
 import type {UserRole,StudentProfile} from './types';
 
@@ -20,30 +19,35 @@ export function useSchoolAuth(required:UserRole) {
   const [error,setError]=useState('');
   useEffect(()=>{
     let active=true;
-    let unsubscribe:(()=>void)|null=null;
-    const redirectToLanding=()=>{
-      if(active)router.replace(landingLoginPath(required));
-    };
-    if(configured()){
-      const {data:{subscription}}=supabase().auth.onAuthStateChange((event)=>{
-        // If Supabase ends the session while a protected screen is open, use
-        // the current landing-page login modal instead of the legacy /login UI.
-        if(event==='SIGNED_OUT')redirectToLanding();
-      });
-      unsubscribe=()=>subscription.unsubscribe();
-    }
-    async function run(){
-      if(!configured()){if(active){setError('Konfigurasi Supabase belum diisi.');setLoading(false);}return;}
+    let checking=false;
+    const redirectToLanding=()=>{if(active)router.replace(landingLoginPath(required));};
+    const run=async()=>{
+      if(checking)return;
+      checking=true;
       try {
         const session=await currentRole();
         if(!active)return;
-        if(!session||session.role!==required){router.replace(landingLoginPath(required));return;}
-        setProfile(session.profile);setLoading(false);
-      }catch(e){if(active){setError(e instanceof Error?e.message:'Akun tidak dapat diverifikasi.');setLoading(false);}}
-    }
+        if(!session||session.role!==required){redirectToLanding();return;}
+        setProfile(session.profile);
+        setError('');
+        setLoading(false);
+      }catch(e){
+        if(active){setError(e instanceof Error?e.message:'Akun tidak dapat diverifikasi.');setLoading(false);}
+      }finally{checking=false;}
+    };
     void run();
-    return()=>{active=false;unsubscribe?.();};
+    const onAuthChanged=()=>{void run();};
+    window.addEventListener('vokasi:auth-changed',onAuthChanged);
+    const interval=window.setInterval(()=>void run(),60_000);
+    return()=>{
+      active=false;
+      window.removeEventListener('vokasi:auth-changed',onAuthChanged);
+      window.clearInterval(interval);
+    };
   },[required,router]);
-  const logout=async()=>{await signOut();router.replace(landingLoginPath(required));};
+  const logout=async()=>{
+    try{await signOut();}
+    finally{router.replace(landingLoginPath(required));}
+  };
   return {profile,loading,error,logout};
 }

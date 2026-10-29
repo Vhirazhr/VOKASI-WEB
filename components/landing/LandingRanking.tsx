@@ -1,5 +1,6 @@
 "use client";
 
+import { nativeRpc } from '@/lib/native-rpc';
 import {
   createContext,
   useContext,
@@ -10,8 +11,6 @@ import {
   type ReactNode,
 } from "react";
 import { RefreshCw, Trophy, UserRound, X } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-
 type LeaderboardRow = {
   rank: number;
   display_name: string;
@@ -77,7 +76,7 @@ export default function LandingRanking({ children }: { children: ReactNode }) {
     setError("");
 
     try {
-      const { data, error: rpcError } = await supabase().rpc(
+      const { data, error: rpcError } = await nativeRpc(
         "vokasi_public_leaderboard",
       );
       if (rpcError) throw rpcError;

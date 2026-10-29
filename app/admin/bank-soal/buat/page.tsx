@@ -1,10 +1,13 @@
 'use client';
+import { nativeRpc } from '@/lib/native-rpc';
 import Link from 'next/link';
 import {useEffect,useState} from 'react';
 import {ArrowLeft,ImagePlus,Plus,Save,Trash2,UploadCloud} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
-import {supabase} from '@/lib/supabase';
+import {currentUser} from '@/lib/auth';
+import {deleteStorageFiles,storageUrl,uploadStorageFile} from '@/lib/storage-client';
+import {deleteQuestionDraft,getQuestionDrafts,saveQuestionDraft} from '@/lib/admin-question-data';
 import {APPROVED_BLUEPRINT,APPROVED_GROUPS,approvedGroup,type ApprovedGroup} from '@/lib/new-bank-blueprint';
 import '@/app/admin-visual-questions.css';
 
@@ -19,7 +22,7 @@ function UploadField({title,file,path,setImage,remove}:{title:string;file:File|n
  useEffect(()=>{let active=true;let objectUrl:string|null=null;
   async function load(){
    if(file){objectUrl=URL.createObjectURL(file);if(active)setUrl(objectUrl);}
-   else if(path){const r=await supabase().storage.from(BUCKET).createSignedUrl(path,1200);if(active)setUrl(r.data?.signedUrl||'');}
+   else if(path){if(active)setUrl(storageUrl(BUCKET,path));}
    else if(active)setUrl('');
   }
   void load();return()=>{active=false;if(objectUrl)URL.revokeObjectURL(objectUrl);};
@@ -53,11 +56,9 @@ export default function CreatePictureQuestion(){
  const [publishNow,setPublishNow]=useState(false);
  async function refresh(){
    setBusy(true);
-   const {data,error:dbError}=await supabase().from('vokasi_question_drafts')
-     .select('id,source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation,created_at')
-     .order('created_at',{ascending:false}).limit(1000);
-   if(dbError){setIssue(dbError.message);setDrafts([]);}else{setIssue('');setDrafts((data||[]) as Draft[]);}
-   setBusy(false);
+   try{const data=await getQuestionDrafts();setIssue('');setDrafts(data as Draft[]);}
+   catch(e){setIssue(e instanceof Error?e.message:'Data draft tidak dapat dimuat.');setDrafts([]);}
+   finally{setBusy(false);}
  }
  useEffect(()=>{if(!loading&&!error)queueMicrotask(()=>void refresh());},[loading,error]);
  const setOption=(i:number,patch:Partial<Answer>)=>setOptions(a=>a.map((v,j)=>j===i?{...v,...patch}:v));
@@ -75,8 +76,7 @@ export default function CreatePictureQuestion(){
    if(!['image/png','image/jpeg','image/webp'].includes(f.type)||f.size>3145728)throw new Error('File gambar tidak valid (maks. 3 MB).');
    const extension=f.type==='image/png'?'png':f.type==='image/webp'?'webp':'jpg';
    const location=userId+'/'+crypto.randomUUID()+'.'+extension;
-   const {error:err}=await supabase().storage.from(BUCKET).upload(location,f,{upsert:false,contentType:f.type});
-   if(err)throw err;
+   await uploadStorageFile(BUCKET,location,f);
    return location;
  }
  async function save(e:React.FormEvent){
@@ -93,8 +93,8 @@ export default function CreatePictureQuestion(){
    setSaving(true);
    const uploaded:string[]=[];
    try{
-     const {data:{user},error:authError}=await supabase().auth.getUser();
-     if(authError||!user)throw new Error('Login admin perlu diulang.');
+     const user=await currentUser();
+     if(!user||(user.role!=='admin'&&user.role!=='super_admin'))throw new Error('Login admin perlu diulang.');
      const imageLocation=image?await upload(image,user.id):imagePath;
      if(image&&imageLocation)uploaded.push(imageLocation);
      const saved:SavedAnswer[]=[];
@@ -106,36 +106,30 @@ export default function CreatePictureQuestion(){
      const values={source_number:no,category:category.trim(),question:question.trim(),question_image_path:imageLocation,
        options:saved,difficulty_code:group,correct_index:correct,time_limit_seconds:seconds,explanation:explanation.trim()};
      if(publishNow&&!editing){
-       const {error:publishError}=await supabase().rpc('vokasi_admin_import_questions',{
+       const {error:publishError}=await nativeRpc('vokasi_admin_import_questions',{
          p_questions:[values],p_mode:'append'
        });
        if(publishError)throw publishError;
        clear();await refresh();
        setNotice('Berhasil! Soal ditambahkan ke bank aktif dan dapat dipilih untuk latihan siswa.');
      }else{
-       const request=editing?
-         await supabase().from('vokasi_question_drafts').update(values).eq('id',editing):
-         await supabase().from('vokasi_question_drafts').insert({...values,created_by:user.id});
-       if(request.error)throw request.error;
+       await saveQuestionDraft(editing,values);
        clear();await refresh();setNotice('Draft soal tersimpan. Bank aktif tidak berubah.');
      }
    }catch(e){
-     if(uploaded.length)await supabase().storage.from(BUCKET).remove(uploaded);
+     if(uploaded.length)await deleteStorageFiles(BUCKET,uploaded).catch(()=>undefined);
      setNotice('Gagal menyimpan: '+(e instanceof Error?e.message:String(e)));
    }finally{setSaving(false);}
  }
  async function discard(d:Draft){
    if(!window.confirm('Yakin hapus draft ini?'))return;
    setSaving(true);
-   const {error:err}=await supabase().from('vokasi_question_drafts').delete().eq('id',d.id);
-   if(err)setNotice('Gagal menghapus: '+err.message);
-   else{
-     // Drafts may reference Storage objects also used by published questions
-     // or by other drafts. Never delete the shared assets as a side effect.
+   try{
+     await deleteQuestionDraft(d.id);
      if(editing===d.id)clear();
      setNotice('Draft berhasil dihapus. Gambar yang mungkin digunakan soal lain tetap aman.');await refresh();
-   }
-   setSaving(false);
+   }catch(e){setNotice('Gagal menghapus: '+(e instanceof Error?e.message:String(e)));}
+   finally{setSaving(false);}
  }
  if(loading)return <main className="page-loader">Memeriksa akses admin...</main>;
  if(error)return <main className="page-loader">{error}</main>;

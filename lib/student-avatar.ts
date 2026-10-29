@@ -1,9 +1,8 @@
-import {supabase} from './supabase';
+import { nativeRpc } from '@/lib/native-rpc';
+import { storageUrl, uploadStorageFile } from '@/lib/storage-client';
 import type {StudentProfile} from './types';
 
 const AVATAR_BUCKET='vokasi-avatars';
-const PHOTO_EXPIRY_SECONDS=15*60;
-type AvatarIndexRow={username:string;avatar_path:string};
 
 function validPhoto(file:File){
   if(file.type!=='image/jpeg')throw new Error('Gunakan foto JPG atau JPEG.');
@@ -11,24 +10,18 @@ function validPhoto(file:File){
   if(file.size===0)throw new Error('File foto tidak boleh kosong.');
 }
 
+type AvatarIndexRow={username:string;avatar_path:string};
+
 export async function getSchoolAvatarUrls(usernames:string[]):Promise<Record<string,string>>{
   const wanted=new Set(usernames.map(name=>name.trim().toLowerCase()).filter(Boolean));
   if(!wanted.size)return {};
-  const client=supabase();
-  const {data,error}=await client.rpc('vokasi_school_avatar_index');
-  if(error)throw error;
+  const {data,error}=await nativeRpc<AvatarIndexRow[]>('vokasi_school_avatar_index');
+  if(error)throw new Error(error.message);
   const indexed=((data||[]) as AvatarIndexRow[])
     .filter(row=>wanted.has(row.username.toLowerCase())&&row.avatar_path===row.username+'/avatar.jpg');
   const urls:Record<string,string>={};
-  // Batch signs to avoid one call per person and avoid requesting files that do not exist.
-  for(let i=0;i<indexed.length;i+=100){
-    const slice=indexed.slice(i,i+100);
-    const {data:signed,error:signError}=await client.storage
-      .from(AVATAR_BUCKET).createSignedUrls(slice.map(row=>row.avatar_path),PHOTO_EXPIRY_SECONDS);
-    if(signError)throw signError;
-    (signed||[]).forEach((entry,index)=>{
-      if(entry.signedUrl&&slice[index])urls[slice[index].username.toLowerCase()]=entry.signedUrl;
-    });
+  for(const row of indexed){
+    urls[row.username.toLowerCase()]=storageUrl(AVATAR_BUCKET,row.avatar_path);
   }
   return urls;
 }
@@ -36,17 +29,7 @@ export async function getSchoolAvatarUrls(usernames:string[]):Promise<Record<str
 export async function uploadOwnAvatar(profile:StudentProfile,file:File):Promise<string>{
   validPhoto(file);
   const path=profile.username+'/avatar.jpg';
-  const client=supabase();
-  const {error:uploadError}=await client.storage.from(AVATAR_BUCKET)
-    .upload(path,file,{upsert:true,contentType:'image/jpeg',cacheControl:'3600'});
-  if(uploadError)throw uploadError;
-  // Existing roster already owns the storage path; keep optional profile metadata in sync.
-  // The photo is still valid if this additional metadata write is unavailable.
-  await client.from('student_profiles').update({avatar_path:path})
-    .eq('user_id',profile.authId);
-  const {data,error}=await client.storage.from(AVATAR_BUCKET)
-    .createSignedUrl(path,PHOTO_EXPIRY_SECONDS);
-  if(error)throw error;
-  // Cache busting for replacements in the same profile slot.
-  return data.signedUrl;
+  const uploaded=await uploadStorageFile(AVATAR_BUCKET,path,file);
+  // Cache-bust replacements in the same profile slot.
+  return uploaded.url+'&v='+Date.now();
 }

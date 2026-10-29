@@ -1,8 +1,8 @@
 'use client';
 
+import { nativeRpc } from '@/lib/native-rpc';
 import {useState} from 'react';
 import {Download,LoaderCircle} from 'lucide-react';
-import {supabase} from '@/lib/supabase';
 import {downloadStudentReport,makeStudentReportPdf} from '@/lib/student-report-pdf';
 import type {ReportQuestion} from '@/lib/student-report-pdf';
 import type {Attempt,StudentProfile} from '@/lib/types';
@@ -18,7 +18,7 @@ export default function StudentReportDownload({profile,attempt,official=false}:{
   try{
    let review:ReportQuestion[]|null=null;
    if(attempt.signature?.startsWith('WEB-SERVER-v1:')){
-     const {data,error:e}=await supabase().rpc('vokasi_web_completed_review',{p_session:attempt.session_key});
+     const {data,error:e}=await nativeRpc('vokasi_web_completed_review',{p_session:attempt.session_key});
      if(e)throw e;
      if(!Array.isArray(data))throw new Error('Rincian jawaban sesi belum tersedia.');
      review=data as ReportQuestion[];

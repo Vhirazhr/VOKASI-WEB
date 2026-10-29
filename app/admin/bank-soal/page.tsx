@@ -1,13 +1,16 @@
 'use client';
 
+import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {BookOpen,Clock3,FileQuestion,Plus,Search,FileUp,PenLine,AlertCircle,FileText,CheckCircle2,UploadCloud,Trash2,Download} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
+import {currentUser} from '@/lib/auth';
+import {deleteStorageFiles,uploadStorageFile} from '@/lib/storage-client';
+import {deleteQuestionDraft,getImportDrafts,getQuestionDrafts,saveQuestionDraft} from '@/lib/admin-question-data';
 import {fetchBank} from '@/lib/quiz';
 import {exportAdminQuestions} from '@/lib/admin-question-export';
-import {supabase} from '@/lib/supabase';
 import {APPROVED_BLUEPRINT,APPROVED_GROUPS,approvedGroup} from '@/lib/new-bank-blueprint';
 import BankFilterDropdown from '@/components/BankFilterDropdown';
 import QuestionImportWorkspace from '@/components/QuestionImportWorkspace';
@@ -89,14 +92,13 @@ export default function AdminBankPage(){
   setCreateSaving(true);
   const uploaded:string[]=[];
   try{
-   const {data:{user},error:authError}=await supabase().auth.getUser();
-   if(authError||!user)throw new Error('Sesi admin perlu diperbarui.');
+   const user=await currentUser();
+   if(!user||(user.role!=='admin'&&user.role!=='super_admin'))throw new Error('Sesi admin perlu diperbarui.');
    async function upload(file:File){
     if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>3145728)throw new Error('Gambar harus PNG/JPG/WEBP maksimal 3 MB.');
     const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
     const path=user!.id+'/'+crypto.randomUUID()+'.'+ext;
-    const {error:uploadError}=await supabase().storage.from('vokasi-question-figures').upload(path,file,{contentType:file.type,upsert:false});
-    if(uploadError)throw uploadError;
+    await uploadStorageFile('vokasi-question-figures',path,file);
     uploaded.push(path);return path;
    }
    const imagePath=newImage?await upload(newImage):newImagePath;
@@ -105,32 +107,30 @@ export default function AdminBankPage(){
    const values={category:newCategory,difficulty_code:newGroup,time_limit_seconds:APPROVED_BLUEPRINT.groups[newGroup as keyof typeof APPROVED_BLUEPRINT.groups].seconds,
     question:newQuestion.trim(),question_image_path:imagePath,options:answers,correct_index:newCorrect,explanation:newExplanation.trim()};
    if(!saveAsDraft){
-    const {error:publishError}=await supabase().rpc('vokasi_admin_import_questions',{p_questions:[values],p_mode:'append'});
+    const {error:publishError}=await nativeRpc('vokasi_admin_import_questions',{p_questions:[values],p_mode:'append'});
     if(publishError)throw publishError;
    }else if(draftEditing){
-    const {error:saveError}=await supabase().from('vokasi_question_drafts').update(values).eq('id',draftEditing);
-    if(saveError)throw saveError;
+    await saveQuestionDraft(draftEditing,values);
    }else{
-    const {error:saveError}=await supabase().from('vokasi_question_drafts').insert({...values,source_number:null,created_by:user.id});
-    if(saveError)throw saveError;
+    await saveQuestionDraft(null,{...values,source_number:null});
    }
    setCreateOpen(false);setTab(saveAsDraft?'drafts':'published');setBusy(true);setRefreshKey(v=>v+1);
   }catch(e){
-   if(uploaded.length)await supabase().storage.from('vokasi-question-figures').remove(uploaded);
+   if(uploaded.length)await deleteStorageFiles('vokasi-question-figures',uploaded).catch(()=>undefined);
    setCreateNotice(e instanceof Error?e.message:'Gagal menyimpan soal.');
   }finally{setCreateSaving(false);}
  }
  async function deleteDraft(d:DraftRow){
   if(!window.confirm('Hapus draft ini? Soal aktif tetap aman.'))return;
-  const {error}=await supabase().from('vokasi_question_drafts').delete().eq('id',d.id);
-  if(error)setIssue(error.message);else{setBusy(true);setRefreshKey(v=>v+1);}
+  try{await deleteQuestionDraft(d.id);setBusy(true);setRefreshKey(v=>v+1);}
+  catch(e){setIssue(e instanceof Error?e.message:'Gagal menghapus draft.');}
  }
  const [edit,setEdit]=useState<EditRow|null>(null),[original,setOriginal]=useState<EditRow|null>(null);
  const [editImageFile,setEditImageFile]=useState<File|null>(null),[editOptionFiles,setEditOptionFiles]=useState<Record<number,File>>({});
  const [editBusy,setEditBusy]=useState(false),[editIssue,setEditIssue]=useState(''),[refreshKey,setRefreshKey]=useState(0);
  async function startEdit(id:number){
   setEditBusy(true);setEditIssue('');
-  const {data,error:err}=await supabase().rpc('vokasi_admin_get_edit_question',{p_source_number:id});
+  const {data,error:err}=await nativeRpc('vokasi_admin_get_edit_question',{p_source_number:id});
   if(err||!data){setIssue(err?.message||'Soal tidak ditemukan.');setEditBusy(false);return;}
   const row=data as EditRow;
   setOriginal(row);setEdit(structuredClone(row));setEditImageFile(null);setEditOptionFiles({});setEditBusy(false);
@@ -162,14 +162,13 @@ export default function AdminBankPage(){
   setEditBusy(true);setEditIssue('');
   const uploads:string[]=[];
   try{
-   const {data:{user},error:authError}=await supabase().auth.getUser();
-   if(authError||!user)throw new Error('Sesi admin tidak tersedia.');
+   const user=await currentUser();
+   if(!user||(user.role!=='admin'&&user.role!=='super_admin'))throw new Error('Sesi admin tidak tersedia.');
    async function upload(file:File){
     if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>3145728)throw new Error('Gambar harus PNG/JPG/WEBP maksimal 3 MB.');
     const extension=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
     const path=user!.id+'/'+crypto.randomUUID()+'.'+extension;
-    const {error:uploadError}=await supabase().storage.from('vokasi-question-figures').upload(path,file,{upsert:false,contentType:file.type});
-    if(uploadError)throw uploadError;
+    await uploadStorageFile('vokasi-question-figures',path,file);
     uploads.push(path);
     return path;
    }
@@ -177,7 +176,7 @@ export default function AdminBankPage(){
    const choiceRows=[];
    for(let i=0;i<edit.options.length;i++)
     choiceRows.push({...edit.options[i],image_path:editOptionFiles[i]?await upload(editOptionFiles[i]):edit.options[i].image_path});
-   const {error:err}=await supabase().rpc('vokasi_admin_edit_published_question',{
+   const {error:err}=await nativeRpc('vokasi_admin_edit_published_question',{
     p_source_number:edit.source_number,p_expected:original,
     p_change:{category:edit.category,difficulty_code:edit.difficulty_code,question:edit.question,question_image_path:imagePath,
      options:choiceRows,correct_index:edit.correct_index,explanation:edit.explanation}
@@ -185,7 +184,7 @@ export default function AdminBankPage(){
    if(err)throw err;
    setEdit(null);setOriginal(null);setSelected(null);setBusy(true);setRefreshKey(v=>v+1);
   }catch(e){
-   if(uploads.length)await supabase().storage.from('vokasi-question-figures').remove(uploads);
+   if(uploads.length)await deleteStorageFiles('vokasi-question-figures',uploads).catch(()=>undefined);
    setEditIssue(e instanceof Error?e.message:'Perubahan tidak berhasil disimpan.');
   }finally{setEditBusy(false);}
  }
@@ -209,13 +208,13 @@ export default function AdminBankPage(){
   async function load(){try{
     const [bankResult,qualityResult,draftResult,importResult]=await Promise.allSettled([
      fetchBank({allowIncomplete:true}),
-     supabase().rpc('vokasi_admin_question_health'),
-     supabase().from('vokasi_question_drafts').select('id,source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation,created_at').order('created_at',{ascending:false}).limit(1000),
-     supabase().from('vokasi_web_import_drafts').select('id,file_name,mode,payload,created_at').order('created_at',{ascending:false}).limit(30)
+     nativeRpc('vokasi_admin_question_health'),
+     getQuestionDrafts(),
+     getImportDrafts<unknown[]>()
     ]);
     if(bankResult.status==='rejected')throw bankResult.reason;
     const data=bankResult.value;
-    const rawDrafts=draftResult.status==='fulfilled'&&!draftResult.value.error?(draftResult.value.data||[]) as DraftRow[]:[];
+    const rawDrafts=draftResult.status==='fulfilled'?(draftResult.value||[]) as DraftRow[]:[];
     const rowMap=new Map(data.map(x=>[x.id,x]));
     // Legacy migration kept 500 mirrored draft copies. Hide identical published records.
     const actualDrafts=rawDrafts.filter(d=>{
@@ -232,7 +231,7 @@ export default function AdminBankPage(){
     if(active){
      setBank(data);setReview(health?.published||[]);
      setDraftProblems(health?.drafts||[]);setDrafts(actualDrafts);
-     setImportDrafts(importResult.status==='fulfilled'&&!importResult.value.error?(importResult.value.data||[]) as ImportDraft[]:[]);
+     setImportDrafts(importResult.status==='fulfilled'?(importResult.value||[]) as ImportDraft[]:[]);
      setIssue(qualityResult.status==='fulfilled'&&qualityResult.value.error?'Pemeriksaan status belum tersedia: '+qualityResult.value.error.message:'');
      setBusy(false);
     }

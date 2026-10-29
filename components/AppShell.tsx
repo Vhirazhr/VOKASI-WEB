@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Activity, BookOpen, BarChart3, CheckCircle2, GraduationCap, History, ScrollText, LayoutDashboard, LogOut, Settings, ShieldCheck, Trophy, UserRound, Users, School2, FolderCog, Bot, Bell, X, MessageCircle, Menu } from 'lucide-react';
-import {supabase} from '@/lib/supabase';
 import AdminNotificationBell from '@/components/AdminNotificationBell';
 import StudentAvatar from '@/components/StudentAvatar';
 import StudentAssistant from '@/components/StudentAssistant';
@@ -55,9 +54,10 @@ export default function AppShell({children,role,onLogout,displayName,studentAvat
   useEffect(()=>{
     if(!isAdmin)return;
     let active=true;
-    void supabase().auth.getUser().then(({data,error})=>{
-      if(active&&!error)setAdminEmail(data.user?.email||'');
-    }).catch(()=>{});
+    void fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'})
+      .then(response=>response.ok?response.json():null)
+      .then(payload=>{if(active)setAdminEmail(payload?.user?.email||payload?.user?.username||'');})
+      .catch(()=>{});
     return()=>{active=false;};
   },[isAdmin]);
   const embedMode=embed||urlEmbed;

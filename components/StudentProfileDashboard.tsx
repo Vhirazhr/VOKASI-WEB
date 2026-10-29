@@ -8,7 +8,6 @@ import ReviewHistory from '@/components/ReviewHistory';
 import StudentReportDownload from '@/components/StudentReportDownload';
 import {uploadOwnAvatar} from '@/lib/student-avatar';
 import {officialMandatoryAttempts,wibDate} from '@/lib/school';
-import {supabase} from '@/lib/supabase';
 import type {Attempt,StudentProfile} from '@/lib/types';
 import '@/app/student-profile-dashboard.css';
 
@@ -138,13 +137,14 @@ export default function StudentProfileDashboard({profile,attempts,busy,avatarUrl
   if(!oldPass){setPassError(true);setPassNotice('Masukkan password saat ini.');return;}
   setPassBusy(true);
   try{
-   const db=supabase();
-   const {data:{user},error:userErr}=await db.auth.getUser();
-   if(userErr||!user||!user.email||user.id!==profile.authId)throw new Error('Sesi akun tidak valid. Masuk kembali untuk mengganti password.');
-   const {data:check,error:checkErr}=await db.auth.signInWithPassword({email:user.email,password:oldPass});
-   if(checkErr||check.user?.id!==profile.authId)throw new Error('Password saat ini tidak cocok.');
-   const {error:updateErr}=await db.auth.updateUser({password:newPass});
-   if(updateErr)throw new Error('Gagal menyimpan password baru: '+updateErr.message);
+   const response=await fetch('/api/auth/change-password',{
+    method:'POST',credentials:'same-origin',cache:'no-store',
+    headers:{'Content-Type':'application/json',Accept:'application/json'},
+    body:JSON.stringify({currentPassword:oldPass,newPassword:newPass})
+   });
+   const payload=await response.json().catch(()=>({})) as {data?:{ok?:boolean};error?:unknown};
+   if(!response.ok)throw new Error(typeof payload.error==='string'?payload.error:'Password tidak dapat diperbarui.');
+   if(!payload.data?.ok)throw new Error('Password tidak dapat diperbarui.');
    setOldPass('');setNewPass('');setPassConfirm('');
    setPassNotice('Password berhasil diperbarui. Gunakan password baru saat masuk berikutnya.');
   }catch(e){setPassError(true);setPassNotice(e instanceof Error?e.message:'Password tidak dapat diperbarui.');}

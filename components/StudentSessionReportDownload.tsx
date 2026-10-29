@@ -1,10 +1,11 @@
 'use client';
 import {useState} from 'react';
 import {Download,LoaderCircle} from 'lucide-react';
-import {supabase} from '@/lib/supabase';
+import {nativeRpc} from '@/lib/native-rpc';
+import {getOwnAttempt} from '@/lib/school';
 import {downloadStudentReport,makeStudentReportPdf} from '@/lib/student-report-pdf';
 import type {ReportQuestion} from '@/lib/student-report-pdf';
-import type {Attempt,StudentProfile} from '@/lib/types';
+import type {StudentProfile} from '@/lib/types';
 
 export default function StudentSessionReportDownload({profile,sessionId,official}:{
  profile:StudentProfile;sessionId:string;official:boolean;
@@ -14,15 +15,12 @@ export default function StudentSessionReportDownload({profile,sessionId,official
  async function onDownload(){
   setBusy(true);setError('');
   try{
-   const db=supabase();
-   const {data:attempt,error:attemptErr}=await db.from('student_attempts')
-     .select('*').eq('session_key',sessionId).eq('auth_user_id',profile.authId).maybeSingle();
-   if(attemptErr)throw attemptErr;
+   const attempt=await getOwnAttempt(sessionId);
    if(!attempt)throw new Error('Hasil sesi belum selesai tersimpan. Coba lagi beberapa saat.');
-   const {data,error:reviewError}=await db.rpc('vokasi_web_completed_review',{p_session:sessionId});
+   const {data,error:reviewError}=await nativeRpc('vokasi_web_completed_review',{p_session:sessionId});
    if(reviewError)throw reviewError;
    if(!Array.isArray(data))throw new Error('Rincian pembahasan belum tersedia.');
-   downloadStudentReport(makeStudentReportPdf(profile,attempt as Attempt,data as ReportQuestion[],official),attempt as Attempt);
+   downloadStudentReport(makeStudentReportPdf(profile,attempt,data as ReportQuestion[],official),attempt);
   }catch(e){setError(e instanceof Error?e.message:'Gagal menyiapkan laporan PDF.');}
   finally{setBusy(false);}
  }

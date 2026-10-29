@@ -1,6 +1,7 @@
 'use client';
+import { nativeRpc } from '@/lib/native-rpc';
 import {useState} from 'react';
-import {supabase} from '@/lib/supabase';
+import {storageUrl} from '@/lib/storage-client';
 
 type Choice={text:string;image_path:string|null};
 type Review={id:number;text:string;category:string;image_path:string|null;options:Choice[];
@@ -17,7 +18,7 @@ export default function ReviewHistory({sessionId}:{sessionId:string}){
   if(reviews){setShown(v=>!v);return;}
   setLoading(true);setError('');
   try{
-   const {data,error:e}=await supabase().rpc('vokasi_web_completed_review',{p_session:sessionId});
+   const {data,error:e}=await nativeRpc('vokasi_web_completed_review',{p_session:sessionId});
    if(e)throw e;
    if(!Array.isArray(data))throw new Error('Pembahasan tidak tersedia.');
    const items=data as Review[];
@@ -25,11 +26,7 @@ export default function ReviewHistory({sessionId}:{sessionId:string}){
      ...(x.image_path?[x.image_path]:[]),...x.options.flatMap(o=>o.image_path?[o.image_path]:[])
    ]))];
    const m=new Map<string,string>();
-   if(paths.length){
-    const {data:files,error:err}=await supabase().storage.from(BUCKET).createSignedUrls(paths,3600);
-    if(err||!files)throw new Error('Gambar pembahasan belum bisa dibuka.');
-    files.forEach((f,i)=>{if(f.signedUrl)m.set(paths[i],f.signedUrl);});
-   }
+   paths.forEach(path=>m.set(path,storageUrl(BUCKET,path,sessionId)));
    setReviews(items);setUrls(m);setShown(true);
   }catch(e){setError(e instanceof Error?e.message:'Gagal mengambil pembahasan.');}
   finally{setLoading(false);}

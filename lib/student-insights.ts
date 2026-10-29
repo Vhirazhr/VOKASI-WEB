@@ -1,3 +1,4 @@
+import { nativeRpc } from '@/lib/native-rpc';
 import {supabase} from './supabase';
 
 export type WeakTopicRow={category:string;answered:number;correct:number;wrong:number;timeout:number};
@@ -30,7 +31,7 @@ export function topicInsight(category:string,row?:WeakTopicRow):TopicInsight{
 }
 
 export async function getWeakTopicInsights():Promise<TopicInsight[]>{
- const {data,error}=await supabase().rpc('vokasi_school_weak_topics');
+ const {data,error}=await nativeRpc('vokasi_school_weak_topics');
  if(error)throw error;
  const rows=(data||[]) as WeakTopicRow[];
  const byCategory=new Map(rows.map(row=>[row.category.toLocaleLowerCase('id-ID'),row]));

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const file=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const quiz=file('components/QuizView.tsx');
-const school=file('lib/school.ts');
+const schoolApi=file('app/api/school/data/route.ts');
 const migration=file('supabase/migrations/202610260007_vokasi_verified_only_scoring.sql');
 const secure=file('supabase/migrations/202610260002_vokasi_secure_web_sessions.sql');
 const safe=file('supabase/migrations/202610260006_vokasi_resume_with_quarantined_visuals.sql');
@@ -12,8 +12,8 @@ assert(quiz.includes('vokasi_web_submit_answer'),'Student answers must be server
 assert(quiz.includes('vokasi_web_select_answer'),'Each option selection must be autosaved server-side');
 assert(!quiz.includes("recordExamActivity('answer_option_selected'"),'Answer option clicks must not be confused with a separate monitoring event');
 assert(quiz.includes('Pilihan tersimpan otomatis.'),'Quiz UI must explain that answers autosave and remain editable');
-assert(school.includes("allRows<Attempt>('vokasi_verified_attempts'"),'Admin grades must be server verified');
-assert(school.includes("allRows<AttemptSummary>('vokasi_verified_attempts'"),'Analytics must be server verified');
+assert(schoolApi.includes('FROM public.vokasi_verified_attempts') && schoolApi.includes('practice_category IS NULL') && schoolApi.includes('if (!isAdmin(user.role))'),'Admin grades must be server verified and admin-only');
+assert(schoolApi.includes("kind === 'admin-analytics-attempts'") && schoolApi.includes('completed_at_ms >= ${lower}') && schoolApi.includes('FROM public.vokasi_verified_attempts'),'Analytics must use server-verified attempts and a bounded date range');
 assert(migration.includes('REVOKE INSERT ON TABLE public.student_attempts FROM authenticated'),'Direct client scores must be revoked');
 assert(migration.includes('FROM public.vokasi_verified_attempts AS a'),'Leaderboard must use verified attempts');
 assert(secure.includes('auth_user_id=auth.uid() FOR UPDATE'),'Session write must lock and check ownership');
@@ -26,6 +26,40 @@ const landing=file('components/landing/LandingAccess.tsx');
 assert(auth.includes("login:'1',role:required"),'Expired sessions must return to landing-page login');
 assert(landing.includes('url.searchParams.get("login") !== "1"'),'Landing page must auto-open login from the session redirect');
 assert(safe.includes('vokasi_visual_asset_blocks'),'Known defective diagrams must be quarantined');
+
+const nativeRuntimeFiles=[
+ 'lib/auth.ts','lib/school.ts','lib/quiz.ts','lib/student-avatar.ts',
+ 'components/QuizView.tsx','components/ReviewHistory.tsx','components/AdminAnswerReview.tsx',
+ 'components/QuestionImportWorkspace.tsx','components/StudentProfileDashboard.tsx',
+ 'components/StudentSessionReportDownload.tsx','app/admin/kelas/page.tsx','app/admin/siswa/page.tsx',
+ 'app/admin/bank-soal/page.tsx','app/admin/bank-soal/buat/page.tsx',
+ 'app/admin/bank-soal/impor/zip/page.tsx','app/admin/pengaturan/page.tsx','app/admin/aktivasi/page.tsx'
+];
+for(const path of nativeRuntimeFiles){
+ const source=file(path);
+ assert(!source.includes("from '@/lib/supabase'")&&!source.includes("from './supabase'")&&!source.includes('supabase().'),
+  path+' must use the native backend, not the Supabase client');
+}
+const invite=file('app/api/admin/invitations/route.ts');
+const inviteAccept=file('app/api/admin/invitations/accept/route.ts');
+const storageFile=file('app/api/storage/file/route.ts');
+const storageUpload=file('app/api/storage/upload/route.ts');
+assert(invite.includes("user.role !== 'super_admin'")&&invite.includes("interval '48 hours'")&&invite.includes('hashSessionToken'),
+ 'Only Super Admin can create expiring, hashed native invitations');
+assert(inviteAccept.includes('hashPassword')&&inviteAccept.includes('accepted_at IS NULL')&&inviteAccept.includes('expires_at > now()'),
+ 'Admin invitations must be one-time, expiring, and password-hashed');
+assert(storageFile.includes('s.auth_user_id = ${user.id}::uuid')&&storageFile.includes("jsonb_array_elements(s.questions)"),
+ 'Student question images must be restricted to the student-owned exam session');
+assert(storageUpload.includes('STORAGE_ROOT')&&storageUpload.includes('isSameOriginRequest'),
+ 'Private uploads must require same-origin requests and configured local storage');
+
+const studentProvision=file('app/api/admin/student-accounts/provision/route.ts');
+assert(studentProvision.includes("admin.role !== 'admin'") && studentProvision.includes('isSameOriginRequest'),
+ 'Only authenticated administrators can provision student accounts');
+assert(studentProvision.includes('randomBytes(24)') && studentProvision.includes('hashPassword(temporaryPassword)'),
+ 'Every newly provisioned student must receive a unique hashed password');
+assert(studentProvision.includes('FOR UPDATE OF r') && studentProvision.includes("registration_status = 'registered'"),
+ 'Student roster activation must be transactionally locked and linked to the native account');
 
 const examHardening=file('supabase/migrations/202610260009_vokasi_exam_clock_xp_asset_scope.sql');
 assert(examHardening.includes('s.started_at + make_interval'),'Exam deadline must be based on server start and fixed budget');

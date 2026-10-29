@@ -1,12 +1,12 @@
 'use client';
 
+import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useMemo,useState} from 'react';
 import {CheckCircle2,GraduationCap,Search,Users,UserRound,RefreshCw,FileSpreadsheet,Download} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import AdminStudentHistory from '@/components/AdminStudentHistory';
-import {supabase} from '@/lib/supabase';
 import {useSchoolAuth} from '@/lib/use-school-auth';
-import {getAdminAttempts,getSchoolStudents,latestGrades,wibDate} from '@/lib/school';
+import {getActiveSchoolClasses,getAdminAttempts,getSchoolStudents,latestGrades,wibDate} from '@/lib/school';
 import type {SchoolStudent} from '@/lib/types';
 import {exportAdminGrades,exportAdminRoster,downloadAdminRosterTemplate} from '@/lib/admin-excel';
 import '@/app/admin-workspace.css';
@@ -32,14 +32,13 @@ export default function AdminStudentsPage(){
   queueMicrotask(()=>void load());return()=>{active=false};
  },[loading,error,refreshKey]);
  useEffect(()=>{if(loading||error)return;
-   void supabase().from('classes').select('id,class_name,major_id').eq('is_active',true).order('class_name')
-    .then(({data})=>setClassOptions(data||[]));
+   void getActiveSchoolClasses().then(setClassOptions).catch(e=>setIssue(e instanceof Error?e.message:'Data kelas tidak dapat dimuat.'));
  },[loading,error,refreshKey]);
  async function moveClass(){
   if(!selected||!targetClass||targetClass===selected.classId)return;
   if(!window.confirm('Pindahkan '+selected.fullName+' ke kelas tujuan? Perubahan ini akan dicatat.'))return;
   setSavingMove(true);setEditInfo('');
-  const {error:e}=await supabase().rpc('vokasi_admin_move_student',{p_roster_id:selected.id,p_new_class_id:targetClass});
+  const {error:e}=await nativeRpc('vokasi_admin_move_student',{p_roster_id:selected.id,p_new_class_id:targetClass});
   if(e)setEditInfo('Gagal memindahkan siswa: '+e.message);
   else{setSelected(null);setTargetClass('');setRefreshKey(i=>i+1);}
   setSavingMove(false);

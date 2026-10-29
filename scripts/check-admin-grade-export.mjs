@@ -11,6 +11,7 @@ function compile(path){
  const compiledModule={exports:{}};
  const imports=name=>{
   if(name==='./supabase')return {supabase:()=>{throw new Error('Network should not be used by pure report tests.')}};
+  if(name.includes('native-rpc'))return {nativeRpc:async()=>({data:null,error:null})};
   return require(name);
  };
  new Function('module','exports','require',js)(compiledModule,compiledModule.exports,imports);

@@ -1,5 +1,4 @@
-import {supabase} from '@/lib/supabase';
-
+import { nativeRpc } from '@/lib/native-rpc';
 export type ExamActivityEventType =
   | 'tab_hidden' | 'tab_visible' | 'window_blur' | 'window_focus'
   | 'copy' | 'paste' | 'context_menu' | 'fullscreen_exit'
@@ -51,7 +50,7 @@ export async function getExamActivityReport(
   offset=0,
   studentId:string|null=null
 ):Promise<ExamActivityReport>{
-  const {data,error}=await supabase().rpc('vokasi_admin_exam_activity',{
+  const {data,error}=await nativeRpc('vokasi_admin_exam_activity',{
     p_days:days,p_limit:limit,p_offset:offset,p_student:studentId
   });
   if(error)throw new Error(error.message);

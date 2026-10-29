@@ -1,3 +1,4 @@
+import { nativeRpc } from '@/lib/native-rpc';
 import {supabase} from './supabase';
 
 export type AdminNotification={
@@ -25,17 +26,17 @@ export type AdminActivity={
 export type AdminActivityData={total:number;items:AdminActivity[]};
 
 export async function getAdminNotifications():Promise<AdminNotificationData>{
- const {data,error}=await supabase().rpc('vokasi_admin_get_notifications',{p_limit:20});
+ const {data,error}=await nativeRpc('vokasi_admin_get_notifications',{p_limit:20});
  if(error)throw new Error(error.message);
  const result=data as AdminNotificationData|null;
  return {unread_count:Number(result?.unread_count||0),items:result?.items||[]};
 }
 export async function acknowledgeAdminNotifications(ids:string[]|null):Promise<void>{
- const {error}=await supabase().rpc('vokasi_admin_mark_notifications_read',{p_attempt_ids:ids});
+ const {error}=await nativeRpc('vokasi_admin_mark_notifications_read',{p_attempt_ids:ids});
  if(error)throw new Error(error.message);
 }
 export async function getAdminActivity(kind:AdminLogKind,days:number,offset:number):Promise<AdminActivityData>{
- const {data,error}=await supabase().rpc('vokasi_admin_monitor_activity',{
+ const {data,error}=await nativeRpc('vokasi_admin_monitor_activity',{
   p_kind:kind,p_days:days,p_limit:30,p_offset:offset
  });
  if(error)throw new Error(error.message);
