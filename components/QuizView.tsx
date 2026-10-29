@@ -6,6 +6,7 @@ import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,RefreshCw,XCircle,Grid2X2,Shiel
 import {supabase} from '@/lib/supabase';
 import StudentSessionReportDownload from '@/components/StudentSessionReportDownload';
 import type {Attempt,StudentProfile} from '@/lib/types';
+import {getOwnSessionXp} from '@/lib/school';
 import '@/app/quiz-playful.css';
 import '@/app/quiz-focus.css';
 import '@/app/quiz-viewport.css';
@@ -233,8 +234,7 @@ export default function QuizView({profile,category,onDone,onQuit}:{
    if(state?.status!=='complete')return;
    let current=true;
    const session=state.session_id;
-   void supabase().from('student_attempts').select('earned_xp').eq('session_key',session)
-     .maybeSingle().then(({data})=>{if(current&&live.current&&data)setXp(data.earned_xp);});
+   void getOwnSessionXp(session).then(earnedXp=>{if(current&&live.current&&earnedXp!==null)setXp(earnedXp);}).catch(()=>{/* XP is optional; the verified score remains available. */});
    return()=>{current=false;};
  },[state?.status,state?.session_id]);
 
