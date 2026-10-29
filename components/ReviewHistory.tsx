@@ -1,7 +1,7 @@
 'use client';
 import { nativeRpc } from '@/lib/native-rpc';
 import {useState} from 'react';
-import {supabase} from '@/lib/supabase';
+import {storageUrl} from '@/lib/storage-client';
 
 type Choice={text:string;image_path:string|null};
 type Review={id:number;text:string;category:string;image_path:string|null;options:Choice[];
@@ -26,11 +26,7 @@ export default function ReviewHistory({sessionId}:{sessionId:string}){
      ...(x.image_path?[x.image_path]:[]),...x.options.flatMap(o=>o.image_path?[o.image_path]:[])
    ]))];
    const m=new Map<string,string>();
-   if(paths.length){
-    const {data:files,error:err}=await supabase().storage.from(BUCKET).createSignedUrls(paths,3600);
-    if(err||!files)throw new Error('Gambar pembahasan belum bisa dibuka.');
-    files.forEach((f,i)=>{if(f.signedUrl)m.set(paths[i],f.signedUrl);});
-   }
+   paths.forEach(path=>m.set(path,storageUrl(BUCKET,path,sessionId)));
    setReviews(items);setUrls(m);setShown(true);
   }catch(e){setError(e instanceof Error?e.message:'Gagal mengambil pembahasan.');}
   finally{setLoading(false);}
