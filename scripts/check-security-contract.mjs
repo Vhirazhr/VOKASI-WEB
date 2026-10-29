@@ -53,6 +53,14 @@ assert(storageFile.includes('s.auth_user_id = ${user.id}::uuid')&&storageFile.in
 assert(storageUpload.includes('STORAGE_ROOT')&&storageUpload.includes('isSameOriginRequest'),
  'Private uploads must require same-origin requests and configured local storage');
 
+const studentProvision=file('app/api/admin/student-accounts/provision/route.ts');
+assert(studentProvision.includes("admin.role !== 'admin'") && studentProvision.includes('isSameOriginRequest'),
+ 'Only authenticated administrators can provision student accounts');
+assert(studentProvision.includes('randomBytes(24)') && studentProvision.includes('hashPassword(temporaryPassword)'),
+ 'Every newly provisioned student must receive a unique hashed password');
+assert(studentProvision.includes('FOR UPDATE OF r') && studentProvision.includes("registration_status = 'registered'"),
+ 'Student roster activation must be transactionally locked and linked to the native account');
+
 const examHardening=file('supabase/migrations/202610260009_vokasi_exam_clock_xp_asset_scope.sql');
 assert(examHardening.includes('s.started_at + make_interval'),'Exam deadline must be based on server start and fixed budget');
 assert(examHardening.includes('vokasi_web_verified_results proof'),'XP must consult verified results');
