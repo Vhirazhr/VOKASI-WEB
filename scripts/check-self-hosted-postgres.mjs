@@ -52,7 +52,7 @@ assert.match(rpcClient, /credentials: 'same-origin'/);
 assert.match(login, /count\(\*\).*identifier_hash/s);
 assert.match(login, /Terlalu banyak percobaan login/);
 assert.match(login, /LIMIT 2/);
-assert.match(login, /Username\/email atau password salah/);
+assert.match(login, /Nama\/username, kelas, atau password tidak cocok/);
 assert.match(login, /isSameOriginRequest/);
 assert.doesNotMatch(login, /console\.(log|error)\(.*password/i);
 
