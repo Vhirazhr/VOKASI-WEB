@@ -15,7 +15,7 @@ AS $function$
         WHERE a.user_id = auth.uid()
           AND a.is_active = TRUE
     );
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_add_pending_students(p_rows jsonb)
  RETURNS integer
@@ -84,7 +84,7 @@ BEGIN
   END LOOP;
   RETURN v_count;
 END
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_completed_review(p_session uuid)
  RETURNS jsonb
@@ -129,7 +129,7 @@ BEGIN
   ) joined ON true
  );
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_create_class(p_major_id uuid, p_name text, p_grade smallint, p_year text DEFAULT '2026/2027'::text)
  RETURNS uuid
@@ -211,7 +211,7 @@ BEGIN
 EXCEPTION WHEN foreign_key_violation THEN
  RAISE EXCEPTION 'Kelas masih direferensikan data lain dan tidak dapat dihapus.';
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_edit_published_question(p_source_number integer, p_expected jsonb, p_change jsonb)
  RETURNS jsonb
@@ -461,7 +461,7 @@ BEGIN
 
   RETURN v_response;
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_get_edit_question(p_source_number integer)
  RETURNS jsonb
@@ -518,7 +518,7 @@ BEGIN
  ) INTO v_result;
  RETURN v_result;
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_import_questions(p_questions jsonb, p_mode text)
  RETURNS jsonb
@@ -682,7 +682,7 @@ BEGIN
   WHERE id=1;
   RETURN jsonb_build_object('mode',p_mode,'imported',v_count,'before',v_before,'after',v_after,'version',v_version);
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_list_administrators()
  RETURNS TABLE(user_id uuid, display_name text, email text, is_active boolean, access_status text, joined_at timestamp with time zone, last_sign_in_at timestamp with time zone, email_verified boolean, is_current boolean, access_role text)
@@ -736,7 +736,7 @@ BEGIN
  SELECT count(*) INTO v_count FROM inserted;
  RETURN v_count;
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_monitor_activity(p_kind text DEFAULT 'all'::text, p_days integer DEFAULT 30, p_limit integer DEFAULT 30, p_offset integer DEFAULT 0)
  RETURNS jsonb
@@ -800,7 +800,7 @@ BEGIN
  ) INTO v_response;
  RETURN v_response;
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_move_student(p_roster_id uuid, p_new_class_id uuid)
  RETURNS boolean
@@ -940,7 +940,7 @@ BEGIN
  END LOOP;
  RETURN jsonb_build_object('published',v_issue_rows,'drafts',v_draft_rows);
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_student_history(p_student uuid, p_limit integer DEFAULT 40)
  RETURNS jsonb
@@ -980,7 +980,7 @@ BEGIN
   FROM recent r
  );
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_admin_update_class(p_class_id uuid, p_major_id uuid, p_name text, p_grade smallint, p_year text)
  RETURNS boolean
@@ -1022,7 +1022,7 @@ BEGIN
    (SELECT to_jsonb(c) FROM public.classes c WHERE c.id=p_class_id));
  RETURN true;
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_is_super_admin()
  RETURNS boolean
@@ -1032,7 +1032,7 @@ CREATE OR REPLACE FUNCTION public.vokasi_is_super_admin()
 AS $function$
  SELECT EXISTS(SELECT 1 FROM public.school_admins a
   WHERE a.user_id=(SELECT auth.uid()) AND a.is_active AND a.access_role='super_admin');
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_public_leaderboard()
  RETURNS TABLE(rank bigint, display_name text, classroom text, mandatory_average integer)
@@ -1052,7 +1052,7 @@ AS $function$
     scores.mandatory_average
   FROM vokasi_landing_private.top_school_scores() AS scores
   ORDER BY scores.rank;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_school_avatar_index()
  RETURNS TABLE(username text, avatar_path text)
@@ -1074,7 +1074,7 @@ AS $function$
     )
   ORDER BY r.username
   LIMIT 2500;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_school_leaderboard()
  RETURNS TABLE(username text, display_name text, major text, classroom text, season_xp bigint, lifetime_xp bigint, streak bigint, mandatory_average integer, mandatory_days bigint)
@@ -1159,7 +1159,7 @@ WHERE r.registration_status = 'registered'
   )
 ORDER BY e.season_points DESC, r.username
 LIMIT 2500;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_school_legacy_leaderboard()
  RETURNS TABLE(username text, display_name text, major text, classroom text, mandatory_average integer, mandatory_days bigint)
@@ -1206,7 +1206,7 @@ AS $function$
   )
  ORDER BY s.average_score DESC,s.completed_days DESC,r.username
  LIMIT 2500;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_school_weak_topics()
  RETURNS TABLE(category text, answered bigint, correct bigint, wrong bigint, timeout bigint)
@@ -1244,7 +1244,7 @@ FROM question_results
 WHERE subject IS NOT NULL AND btrim(subject)<>''
 GROUP BY subject
 ORDER BY wrong DESC,subject ASC;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_super_admin_manage_account(p_target uuid, p_action text, p_display_name text DEFAULT NULL::text)
  RETURNS jsonb
@@ -1338,7 +1338,7 @@ AS $function$
              WHERE opt.o->>'image_path'=p_path)
      )
  )
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_cancel_session(p_session uuid)
  RETURNS jsonb
@@ -1369,7 +1369,7 @@ BEGIN
  -- Completed scores are immutable; a prior cancellation is idempotent.
  RETURN jsonb_build_object('status',v_status,'session_id',p_session);
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_completed_review(p_session uuid)
  RETURNS jsonb
@@ -1401,7 +1401,7 @@ CREATE OR REPLACE FUNCTION public.vokasi_web_get_quiz_state(p_session uuid)
  SET search_path TO 'pg_catalog', 'public', 'vokasi_private'
 AS $function$
  SELECT vokasi_private.web_process(p_session,NULL,NULL);
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_pause_bank()
  RETURNS boolean
@@ -1414,7 +1414,7 @@ BEGIN
   UPDATE public.vokasi_web_bank_release SET active=FALSE WHERE id=1;
   RETURN TRUE;
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_prepare_session(p_category text DEFAULT NULL::text)
  RETURNS jsonb
@@ -1647,7 +1647,7 @@ BEGIN
     published_at=EXCLUDED.published_at,published_by=EXCLUDED.published_by;
   RETURN release_version;
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_quiz_progress(p_session uuid)
  RETURNS jsonb
@@ -1690,7 +1690,7 @@ AS $function$
        'repeat_today',(SELECT d.practice_category IS NULL AND d.earlier_verified_today FROM daily d),
        'official_today',(SELECT d.practice_category IS NULL AND d.status='complete' AND NOT d.earlier_verified_today FROM daily d)
     ) END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_record_exam_activity(p_session uuid, p_event_type text, p_question_index integer DEFAULT NULL::integer, p_target_label text DEFAULT NULL::text, p_target_kind text DEFAULT NULL::text, p_detail text DEFAULT NULL::text)
  RETURNS boolean
@@ -1747,7 +1747,7 @@ BEGIN
   );
   RETURN true;
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_select_answer(p_session uuid, p_question_index integer, p_choice integer)
  RETURNS jsonb
@@ -1792,7 +1792,7 @@ BEGIN
 
   RETURN vokasi_private.web_view(p_session);
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_submit_answer(p_session uuid, p_question_index integer, p_choice integer)
  RETURNS jsonb
@@ -1801,7 +1801,7 @@ CREATE OR REPLACE FUNCTION public.vokasi_web_submit_answer(p_session uuid, p_que
  SET search_path TO 'pg_catalog', 'public', 'vokasi_private'
 AS $function$
  SELECT vokasi_private.web_process(p_session,p_question_index,p_choice);
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION vokasi_private.web_finish(p_id uuid)
  RETURNS void
@@ -2001,7 +2001,7 @@ BEGIN
   END IF;
   RETURN v_response;
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION vokasi_private.web_view(p_id uuid)
  RETURNS jsonb
@@ -2052,7 +2052,7 @@ BEGIN
     'server_now_ms',(EXTRACT(EPOCH FROM clock_timestamp())*1000)::bigint
   );
 END;
-$function$
+$function$;
 
 -- Prevent other database roles from invoking privileged routines through PUBLIC grants.
 -- The application connection owns these routines and calls them only after validating a server-side session.
