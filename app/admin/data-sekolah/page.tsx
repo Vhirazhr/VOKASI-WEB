@@ -30,6 +30,32 @@ export default function AdminDataManagement(){
  const [majorName,setMajorName]=useState(''),[majorCode,setMajorCode]=useState(''),[saving,setSaving]=useState(false);
  const [draft,setDraft]=useState<Draft[]>([]),[fileName,setFileName]=useState(''),[showAll,setShowAll]=useState(false);
  const fileRef=useRef<HTMLInputElement>(null);
+ const [provisioning,setProvisioning]=useState<string|null>(null);
+ const [studentCredentials,setStudentCredentials]=useState<{
+   fullName:string;username:string;className:string;temporaryPassword:string;
+ }|null>(null);
+ const pendingAccounts=students.filter(s=>!s.registered);
+ async function provisionAccount(student:SchoolStudent){
+  if(provisioning||!window.confirm('Aktifkan akun login untuk '+student.fullName+'? Password sementara hanya ditampilkan sekali.'))return;
+  setProvisioning(student.id);setStudentCredentials(null);setProblem('');
+  try{
+   const response=await fetch('/api/admin/student-accounts/provision',{
+    method:'POST',credentials:'same-origin',cache:'no-store',
+    headers:{'Content-Type':'application/json',Accept:'application/json'},
+    body:JSON.stringify({rosterId:student.id})
+   });
+   const payload=await response.json().catch(()=>({})) as {
+     data?:{fullName:string;username:string;className:string;temporaryPassword:string};
+     error?:unknown;
+   };
+   if(!response.ok)throw new Error(typeof payload.error==='string'?payload.error:'Akun siswa gagal diaktifkan.');
+   if(!payload.data?.temporaryPassword)throw new Error('Respons aktivasi tidak lengkap.');
+   setStudentCredentials(payload.data);
+   setNotice('Akun siswa '+payload.data.fullName+' berhasil dibuat. Salin password sementara sebelum meninggalkan halaman.');
+   setRefresh(n=>n+1);
+  }catch(e){setProblem(e instanceof Error?e.message:'Akun siswa gagal diaktifkan.');}
+  finally{setProvisioning(null);}
+ }
  useEffect(()=>{if(loading||error)return;let active=true;const load=async()=>{setBusy(true);try{
   const [catalog,s]=await Promise.all([getAdminSchoolCatalog(),getSchoolStudents()]);
   if(active){setMajors(catalog.majors);setClasses(catalog.classes);setStudents(s);setProblem('');}
@@ -164,6 +190,32 @@ export default function AdminDataManagement(){
     {reviews.length>20&&<button className="admin-intake-more" onClick={()=>setShowAll(x=>!x)} type="button">{showAll?'Tampilkan 20 baris':'Tampilkan semua '+reviews.length+' baris'}</button>}
     <div className="admin-intake-save"><button className="btn primary" type="button" disabled={saving||valid.length===0||busy} onClick={()=>void saveRows(valid)}><Upload size={17}/>{saving?'Menyimpan...':'Impor '+valid.length+' siswa valid'}</button><button className="btn secondary" type="button" disabled={saving} onClick={()=>{setDraft([]);setFileName('');}}>Batalkan pratinjau</button></div>
    </>}
+  </section>
+  <section className="admin-data-card">
+   <div className="admin-intake-heading">
+    <span className="admin-intake-icon"><Users size={20}/></span>
+    <div><h2>Aktivasi akun login siswa</h2>
+     <p>Aktifkan siswa yang sudah masuk daftar sekolah. Setiap siswa memperoleh password sementara acak yang hanya muncul sekali, bukan password bersama.</p>
+    </div>
+   </div>
+   {studentCredentials&&<div className="admin-intake-hint" role="status">
+    <strong>Akun baru: {studentCredentials.fullName}</strong>
+    <p>Username: <code>{studentCredentials.username}</code> · Kelas: {studentCredentials.className}</p>
+    <p>Password sementara: <code>{studentCredentials.temporaryPassword}</code></p>
+    <button type="button" className="btn secondary" onClick={()=>void navigator.clipboard.writeText(
+     'Username: '+studentCredentials.username+'\nPassword sementara: '+studentCredentials.temporaryPassword
+    ).then(()=>setNotice('Kredensial siswa disalin. Bagikan secara pribadi.')).catch(()=>setProblem('Gagal menyalin. Salin secara manual.'))}>Salin username &amp; password</button>
+    <p>Berikan kepada siswa secara pribadi dan minta segera mengganti password setelah login. Password sementara tidak dapat ditampilkan ulang.</p>
+   </div>}
+   {pendingAccounts.length===0?<p className="admin-intake-note">Tidak ada siswa berstatus belum terdaftar.</p>:
+    <div className="admin-workspace-table-wrap"><table>
+     <thead><tr><th>Nama siswa</th><th>Kelas</th><th>Username</th><th>Aksi</th></tr></thead>
+     <tbody>{pendingAccounts.slice(0,50).map(s=><tr key={s.id}>
+      <td><b>{s.fullName}</b></td><td>{s.className}</td><td>{s.username||'Dibuat otomatis'}</td>
+      <td><button type="button" className="btn secondary" disabled={busy||provisioning!==null}
+       onClick={()=>void provisionAccount(s)}>{provisioning===s.id?'Mengaktifkan...':'Aktifkan akun'}</button></td>
+     </tr>)}</tbody>
+    </table>{pendingAccounts.length>50&&<p className="admin-intake-note">Menampilkan 50 siswa pertama dari {pendingAccounts.length}. Aktifkan sebagian lalu segarkan daftar.</p>}</div>}
   </section>
  </main>
  </AppShell>;
