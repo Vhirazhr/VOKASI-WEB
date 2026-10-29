@@ -28,6 +28,8 @@ jobs:
         run: npm run check:security
       - name: Verify self-hosted PostgreSQL security contract
         run: npm run check:self-hosted-db
+      - name: Validate local storage migration script
+        run: node --check scripts/import-storage-export.mjs
       - name: Lint source
         run: npm run lint
       - name: Typecheck
