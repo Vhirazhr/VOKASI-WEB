@@ -6,6 +6,8 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowLeft,BookOpen,CheckCircle2,ChevronDown,FileUp,ImagePlus,Plus,RefreshCw,Save,ShieldAlert,Trash2,UploadCloud,XCircle} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
+import {currentUser} from '@/lib/auth';
+import {uploadStorageFile} from '@/lib/storage-client';
 import {supabase} from '@/lib/supabase';
 import {IMPORT_CATEGORIES,QUESTION_GROUPS,emptyQuestion,inspectQuestionRows,parseQuestionFile,type ImportedQuestion,type QuestionGroup} from '@/lib/question-import';
 import '@/app/admin-question-import.css';
@@ -90,8 +92,8 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
  async function withStorageUploads():Promise<ImportedQuestion[]>{
   const uploads=Object.entries(pendingImages);
   if(!uploads.length)return rows;
-  const {data,error:authError}=await supabase().auth.getUser();
-  if(authError||!data.user)throw new Error('Login admin perlu diulang.');
+  const user=await currentUser();
+  if(!user||(user.role!=='admin'&&user.role!=='super_admin'))throw new Error('Login admin perlu diulang.');
   const complete=rows.map(q=>({...q}));
   for(const [idxStr,file] of uploads){
    const idx=Number(idxStr);
@@ -99,10 +101,12 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
    if(file.size>3*1024*1024||!['image/png','image/jpeg','image/webp'].includes(file.type))
     throw new Error('Gambar maksimal 3 MB dan harus PNG/JPG/WEBP.');
    const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
-   const path=data.user.id+'/'+crypto.randomUUID()+'.'+ext;
-   const {error:uploadError}=await supabase().storage.from('vokasi-question-figures')
-     .upload(path,file,{upsert:false,contentType:file.type});
-   if(uploadError)throw new Error('Gagal mengunggah gambar untuk soal '+(idx+1)+': '+uploadError.message);
+   const path=user.id+'/'+crypto.randomUUID()+'.'+ext;
+   try {
+    await uploadStorageFile('vokasi-question-figures',path,file);
+   } catch (error) {
+    throw new Error('Gagal mengunggah gambar untuk soal '+(idx+1)+': '+(error instanceof Error?error.message:'unggahan gagal'));
+   }
    complete[idx]={...complete[idx],question_image_path:path};
   }
   setRows(complete);setPendingImages({});
@@ -113,8 +117,8 @@ export default function QuestionImportWorkspace({embedded=false,onComplete,initi
   setSaving(true);setNotice('');
   try{
    const data=await withStorageUploads();
-   const {data:{user},error:e}=await supabase().auth.getUser();
-   if(e||!user)throw new Error('Login admin perlu diulang.');
+   const user=await currentUser();
+   if(!user||(user.role!=='admin'&&user.role!=='super_admin'))throw new Error('Login admin perlu diulang.');
    const values={file_name:(fileName||'Buat soal manual').slice(0,250),mode,payload:data};
    const result=savedId
      ?await supabase().from('vokasi_web_import_drafts').update(values).eq('id',savedId).eq('owner_id',user.id).select('id').single()
