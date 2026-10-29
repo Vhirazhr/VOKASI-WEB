@@ -5,7 +5,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {CalendarDays,CheckCircle2,Clock3,LogOut,Mail,Plus,RefreshCw,Search,Send,ShieldCheck,ShieldOff,UserRound,Users,X,PenLine,Trash2,LockKeyhole,UserCheck,UserX,Crown} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
-import {supabase} from '@/lib/supabase';
+import {currentUser} from '@/lib/auth';
 import '@/app/admin-workspace.css';
 import '@/app/admin-students-ui.css';
 import '@/app/admin-settings.css';
@@ -50,6 +50,7 @@ export default function AdminSettingsPage(){
  const [inviting,setInviting]=useState(false);
  const [inviteIssue,setInviteIssue]=useState('');
  const [inviteSuccess,setInviteSuccess]=useState('');
+ const [inviteLink,setInviteLink]=useState('');
  const [editMember,setEditMember]=useState<Administrator|null>(null);
  const [editName,setEditName]=useState('');
  const [editIssue,setEditIssue]=useState('');
@@ -62,13 +63,13 @@ export default function AdminSettingsPage(){
   async function load(){
    try{
     const [session,result]=await Promise.all([
-     supabase().auth.getUser(),
+     currentUser(),
      nativeRpc('vokasi_admin_list_administrators')
     ]);
-    if(session.error)throw session.error;
+    if(!session)throw new Error('Sesi admin tidak tersedia.');
     if(!active)return;
-    setAccountId(session.data.user?.id||'');
-    setEmail(session.data.user?.email||'');
+    setAccountId(session.id);
+    setEmail(session.email||'');
     if(result.error)throw result.error;
     setMembers((result.data||[]) as Administrator[]);
     setIssue('');
@@ -96,7 +97,7 @@ export default function AdminSettingsPage(){
  },[createOpen,inviting,editMember,managing]);
 
  function openCreate(){
-  setInviteName('');setInviteEmail('');setInviteIssue('');setCreateOpen(true);
+  setInviteName('');setInviteEmail('');setInviteIssue('');setInviteSuccess('');setInviteLink('');setCreateOpen(true);
  }
  async function inviteAdmin(event:React.FormEvent<HTMLFormElement>){
   event.preventDefault();
@@ -107,19 +108,16 @@ export default function AdminSettingsPage(){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(destination)){setInviteIssue('Masukkan alamat email yang valid.');return;}
   setInviting(true);setInviteIssue('');
   try{
-   const {data,error:inviteError}=await supabase().functions.invoke('invite-school-admin',{
-    body:{displayName,email:destination}
+   const response=await fetch('/api/admin/invitations',{
+    method:'POST',credentials:'same-origin',cache:'no-store',
+    headers:{'Content-Type':'application/json',Accept:'application/json'},
+    body:JSON.stringify({displayName,email:destination})
    });
-   if(inviteError){
-    let message=inviteError.message||'Tidak dapat mengirim undangan.';
-    if(inviteError.context instanceof Response){
-     const payload=await inviteError.context.clone().json().catch(()=>null);
-     if(payload&&typeof payload.error==='string')message=payload.error;
-    }
-    throw new Error(message);
-   }
-   if(!data?.ok)throw new Error('Undangan tidak berhasil dibuat. Silakan coba lagi.');
-   setInviteSuccess(data?.warning?destination+' · '+data.warning:'Undangan admin dikirim ke '+destination+'.');
+   const payload=await response.json().catch(()=>({})) as {data?:{ok?:boolean;activationUrl?:string};error?:unknown};
+   if(!response.ok)throw new Error(typeof payload.error==='string'?payload.error:'Tidak dapat membuat undangan admin.');
+   if(!payload.data?.ok||!payload.data.activationUrl)throw new Error('Tautan aktivasi tidak berhasil dibuat.');
+   setInviteSuccess('Undangan dibuat untuk '+destination+'. Salin tautan aktivasi di bawah dan kirim secara aman. Tautan berlaku 48 jam.');
+   setInviteLink(payload.data.activationUrl);
    setCreateOpen(false);
    setBusy(true);setRefreshKey(v=>v+1);
   }catch(e){setInviteIssue(e instanceof Error?e.message:'Gagal mengundang administrator.');}
@@ -198,7 +196,7 @@ export default function AdminSettingsPage(){
       {isSuperAdmin&&<button type="button" className="admin-settings-add-button" onClick={openCreate}><Plus size={17}/> Buat Admin Baru</button>}
      </div>
     </div>
-    {inviteSuccess&&<div className="admin-settings-invite-success" role="status"><Send size={17}/>{inviteSuccess}</div>}
+    {inviteSuccess&&<div className="admin-settings-invite-success" role="status"><Send size={17}/><div style={{display:'grid',gap:8,minWidth:0}}><span>{inviteSuccess}</span>{inviteLink&&<div style={{display:'flex',gap:8,flexWrap:'wrap'}}><input aria-label="Tautan aktivasi admin" readOnly value={inviteLink} style={{minWidth:220,maxWidth:'100%',flex:'1 1 320px'}}/><button type="button" onClick={async()=>{try{await navigator.clipboard.writeText(inviteLink);setInviteSuccess('Tautan aktivasi disalin.');}catch{setInviteSuccess('Salin tautan secara manual dari kolom berikut.');}}}>Salin tautan</button></div>}</div></div>}
     {manageNotice&&<div className="admin-settings-invite-success" role="status"><CheckCircle2 size={17}/>{manageNotice}</div>}
     <div className="admin-settings-directory-tools">
      <label className="admin-settings-search"><Search size={17}/><input value={query} onChange={event=>setQuery(event.target.value)} aria-label="Cari administrator" placeholder="Cari nama, email, atau status akun..."/></label>
