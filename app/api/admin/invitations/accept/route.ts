@@ -28,17 +28,31 @@ export async function POST(request: NextRequest) {
     return json({ error: 'Kata sandi harus minimal 10 karakter dan maksimal 72 byte UTF-8.' }, 400);
   }
 
+  const tokenHash = hashSessionToken(token);
+  const db = getDatabase();
+  try {
+    const valid = await db`
+      SELECT id FROM public.app_admin_invites
+      WHERE token_hash = ${tokenHash}
+        AND accepted_at IS NULL
+        AND expires_at > now()
+      LIMIT 1
+    `;
+    if (!valid.length) return json({ error: 'Tautan aktivasi tidak valid atau kedaluwarsa.' }, 410);
+  } catch {
+    return json({ error: 'Undangan tidak dapat diverifikasi saat ini.' }, 503);
+  }
+
   let passwordHash: string;
   try { passwordHash = await hashPassword(password); }
   catch { return json({ error: 'Kata sandi tidak memenuhi ketentuan keamanan.' }, 400); }
 
   try {
-    const db = getDatabase();
     const userId = await db.begin(async tx => {
       const invites = await tx`
         SELECT id::text AS id, email, display_name
         FROM public.app_admin_invites
-        WHERE token_hash = ${hashSessionToken(token)}
+        WHERE token_hash = ${tokenHash}
           AND accepted_at IS NULL
           AND expires_at > now()
         FOR UPDATE
