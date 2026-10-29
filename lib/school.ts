@@ -91,6 +91,11 @@ export async function getOwnAttempts(authId:string): Promise<Attempt[]> {
  * Repeats remain accessible in History but must not change dashboard averages.
  * The database leaderboard applies the same first-per-day rule.
  */
+export async function getOwnSessionXp(sessionKey:string):Promise<number|null> {
+  if(!sessionKey)throw new Error('Sesi ujian tidak valid.');
+  return requestSchoolData<number|null>({kind:'earned-xp',sessionKey});
+}
+
 export function officialMandatoryAttempts(attempts:Attempt[]):Attempt[]{
   const firstByDay=new Map<string,Attempt>();
   const eligible=attempts
