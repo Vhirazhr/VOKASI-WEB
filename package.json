@@ -7,7 +7,7 @@
     "check:bank": "node scripts/check-bank.mjs",
     "check:new-bank-blueprint": "node scripts/check-new-bank-blueprint.mjs",
     "check:security": "node scripts/check-security-contract.mjs",
-    "check:self-hosted-db": "node scripts/check-self-hosted-db.mjs",
+    "check:self-hosted-db": "node scripts/check-self-hosted-postgres.mjs",
     "db:seed-super-admin": "node scripts/seed-super-admin.mjs",
     "dev": "next dev --hostname 0.0.0.0",
     "lint": "eslint .",
