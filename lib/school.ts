@@ -1,5 +1,4 @@
 import { nativeRpc } from '@/lib/native-rpc';
-import { supabase } from './supabase';
 import type { Attempt, AttemptSummary, SchoolStudent, StudentProfile, LeaderboardEntry } from './types';
 
 async function requestSchoolData<T>(params: Record<string, string>): Promise<T> {
