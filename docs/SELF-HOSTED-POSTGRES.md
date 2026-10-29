@@ -1,70 +1,69 @@
-# VOKASI standalone PostgreSQL migration
+# VOKASI — Self-hosted PostgreSQL migration
 
-## Status: NOT YET A FULL CUTOVER
+## Status
 
-This branch adds the native PostgreSQL schema, server-only database pool, database readiness route, and a database-backed session/login foundation. The existing student/admin UI still contains Supabase client calls. **Do not treat this branch as a complete standalone deployment yet, and do not remove the existing backend.** Student, exam, admin, bank import/export, image storage, analytics, notifications, and history flows must be migrated to native API routes before the application can operate without Supabase.
+The `feat/self-hosted-postgres` branch now routes the main login/session, school directory, exam-result, question-bank/draft, report, administrator-invitation, password-change, and private-image flows through the native PostgreSQL backend. The CI checks currently pass, including a contract test that prevents Supabase client imports in the migrated runtime paths.
 
-The schema is derived from the current VOKASI table/constraint/index metadata and contains no application records. Hosted-auth foreign keys have been mapped to `public.app_users`. Preserve user UUIDs when importing data.
+**This is not yet a production cutover.** The cPanel test database has not been verified end-to-end from this branch, existing Supabase rows and image bytes have not been copied automatically, and the application must not be switched to the new backend until data counts and exam flows are verified. Keep the old backend and its data intact until that verification is complete. No cPanel changes are required while the code work continues on this branch.
 
-## cPanel environment variables
+The SQL schema is a bootstrap structure and contains no application records. Preserve existing user UUIDs when importing data so that roster, session, attempt, and audit references remain consistent.
 
-Configure these only for the self-hosted migration branch:
+## Required cPanel environment
 
-- `DATABASE_URL`: PostgreSQL URL provided by the hosting panel, for example `postgresql://USER:URL_ENCODED_PASSWORD@HOST:PORT/DATABASE`. Use the exact host/port from cPanel; do not assume `localhost` if the panel documents another value.
-- `DATABASE_SSL`: `require` for a remote database with TLS; `disable` only when the provider documents a local/non-TLS database connection.
-- `DATABASE_POOL_MAX`: optional small pool size (default 5; capped at 10).
-- `SESSION_SECRET`: random secret of at least 32 bytes. Generate on a trusted machine with `openssl rand -base64 48`; enter it only in the hosting environment, never GitHub or browser variables.
+Configure these values in the Node.js application's private environment, not in browser variables:
 
-Never prefix database credentials or session secrets with `NEXT_PUBLIC_`.
+- `DATABASE_URL`: the PostgreSQL URL shown by cPanel, for example `postgresql://DB_USER:URL_ENCODED_PASSWORD@DB_HOST:DB_PORT/DB_NAME`. Use the exact host and port supplied by the hosting panel.
+- `DATABASE_SSL`: use `require` for remote PostgreSQL with TLS; use `disable` only when the host documents a local/non-TLS connection.
+- `DATABASE_POOL_MAX`: optional pool size; default is 5 and the code caps it at 10.
+- `SESSION_SECRET`: cryptographically random secret of at least 32 bytes. Generate it on a trusted machine, e.g. `openssl rand -base64 48`. Do not commit the real value.
+- `STORAGE_ROOT`: absolute writable directory outside `public_html`, e.g. `/home/CPANEL_USER/vokasi-private-storage`. Replace the example account path and ensure the Node.js process can write to it.
+- `EMBED_ALLOWED_ORIGINS`: optional comma-separated trusted origins if VOKASI is embedded in another school website.
 
-Until the old frontend is migrated, the existing `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` may still be required by the current UI. They are **legacy transition variables**, not part of the final self-hosted design. Do not delete them from a currently working deployment before the UI cutover is complete.
+Supabase credentials are not required by the migrated runtime paths. Legacy Supabase migrations/functions remain in the repository as source/reference material for the one-time data migration; they are not the new runtime database.
 
-## Native administrator invitations
+## Apply and verify the test schema
 
-The self-hosted admin invitation flow no longer calls a Supabase Edge Function. A Super Admin creates a one-time activation link in the settings page; the link is shown once so it can be copied and sent to the recipient manually. It expires after 48 hours and can be used only once. The activation endpoint hashes the new password and creates the local `app_users` and `school_admins` records inside PostgreSQL.
+Only do this after confirming the target is the **empty testing database**, not production.
 
-Apply `database/002_admin_invites.sql` if the base schema has already been installed before this migration was added. No email is sent automatically; configure a trusted mail delivery provider separately if automatic delivery is required.
+1. Import `database/schema.sql` once using the PostgreSQL tool available in cPanel (or `psql` from a trusted terminal). It is a bootstrap script, not a repeatable migration.
+2. Import `database/functions.sql` into the same database. It installs the server-validated exam and admin functions against the local `auth.uid()` compatibility bridge.
+3. If the base schema was already installed before the invitation table was added, apply `database/002_admin_invites.sql`.
+4. Run `database/verify_native_setup.sql`. The relation/function checks should resolve to real objects. Row counts are expected to be zero in a fresh test database until data is imported.
+5. Confirm the bootstrap markers `20261029_self_hosted_postgres_bootstrap`, `20261029_self_hosted_compatibility`, and `20261029_self_hosted_native_functions` are present in `schema_migrations`.
 
-## Private local image storage
+Do not run the bootstrap schema a second time against a populated database. Do not expose the PostgreSQL port to the public internet; the app server should be the only runtime client.
 
-Set `STORAGE_ROOT` to an absolute, writable directory **outside `public_html` and the public web root**, for example `/home/CPANEL_USER/vokasi-private-storage`. Create the directory from the hosting account and confirm the Node.js application user can write to it. Do not expose this directory through a static web server or commit uploaded files to Git.
+## Initial Super Admin
 
-The native storage endpoints are:
-
-- `POST /api/storage/upload`: authenticated uploads for question figures and the signed-in student's own JPG avatar. MIME type, extension, file size, role, and path ownership are checked server-side.
-- `GET /api/storage/file`: serves private image bytes only after checking the active native session and object permissions. Student question images are scoped to their own exam session.
-- `POST /api/storage/delete`: allows administrators to clean up only their own unreferenced question-image uploads.
-
-The database stores object metadata in `storage.objects`; image bytes are stored under `STORAGE_ROOT`. **The existing Supabase Storage objects are not copied automatically.** Before using image-based questions on the self-hosted branch, export the existing bucket files and migrate them into the private directory with matching metadata, or re-upload them through the admin workflow after the remaining admin data APIs are migrated. Keep the old storage intact until the file counts and image paths have been verified.
-
-## Apply schema to the empty cPanel test database
-
-1. Confirm the target database is the empty testing database, not the current production database.
-2. Use the hosting's PostgreSQL import tool (for example phpPgAdmin if provided) or `psql` from a trusted terminal.
-3. Import `database/schema.sql` once into the empty database. It is a bootstrap script, not a repeatable migration; it intentionally wraps changes in a transaction.
-4. Import `database/functions.sql` next, using the same database role. It installs the existing server-validated VOKASI business functions against the local `auth.uid()` bridge and local object metadata table.
-5. Confirm `schema_migrations` contains `20261029_self_hosted_postgres_bootstrap`, `20261029_self_hosted_compatibility`, and `20261029_self_hosted_native_functions`.
-6. Confirm the new tables/functions exist and no existing production data has been changed.
-
-The schema retains the current exam-verification view and important data-integrity triggers. `database/functions.sql` ports the current business RPC functions; the explicit `/api/rpc` allowlist executes them only after the native server session is checked and the authenticated user ID is set transaction-locally. Direct frontend table queries and local file storage are still being migrated, so this is not yet the complete cutover.
-
-## Create the initial Super Admin
-
-After importing the schema, configure `DATABASE_URL`, `DATABASE_SSL`, `INITIAL_SUPER_ADMIN_USERNAME`, and `INITIAL_SUPER_ADMIN_PASSWORD` in a trusted terminal/session, then run:
+After the schema is imported, configure `DATABASE_URL`, `DATABASE_SSL`, `SESSION_SECRET`, `INITIAL_SUPER_ADMIN_USERNAME`, and `INITIAL_SUPER_ADMIN_PASSWORD` in a trusted terminal or protected hosting environment, then run:
 
 ```bash
 npm run db:seed-super-admin
 ```
 
-For a deliberate production bootstrap only, also set `ALLOW_SUPER_ADMIN_BOOTSTRAP=yes` for that one command. Use a unique password with at least 14 characters and no more than 72 UTF-8 bytes. Do not put the password in source code or command history; prefer environment injection by the hosting panel or a protected shell. The script refuses to overwrite an existing login or create a second Super Admin.
+For a deliberate first bootstrap only, also set `ALLOW_SUPER_ADMIN_BOOTSTRAP=yes` for that command. Use a unique password with at least 14 characters and no more than 72 UTF-8 bytes. Never put the password in source code or commit it. The seeding script refuses to overwrite an existing login or create a second Super Admin.
 
-## Native API endpoints
+## Native API surface
 
-- `GET /api/health/database`: minimal readiness status; never returns database errors or credentials.
-- `POST /api/auth/login`: username/email and password JSON; supports bcrypt hashes so existing bcrypt hashes can be imported without plaintext passwords.
-- `GET /api/auth/me`: current session and derived role.
-- `POST /api/auth/logout`: revokes the server-side session.
+- `POST /api/auth/login`, `GET /api/auth/me`, and `POST /api/auth/logout`: database-backed sessions using an HttpOnly cookie; session tokens are random and hashed at rest.
+- `POST /api/auth/change-password`: verifies the current password, hashes the new password, and revokes the account's other sessions.
+- `POST /api/rpc`: executes only an explicit allowlist of database functions after checking the native session and setting the current user ID transaction-locally.
+- `GET /api/school/data`: role-scoped school directory, verified attempt history, analytics, and student-owned attempt/XP reads.
+- `GET /api/admin/question-bank` and `/api/admin/question-data`: administrator-only published bank, draft, and import-draft workflows.
+- `POST /api/admin/invitations`, `GET /api/admin/invitations?token=...`, and `POST /api/admin/invitations/accept`: one-time administrator activation links. Links expire after 48 hours and are shown once for manual delivery; no email is sent automatically.
+- `POST /api/storage/upload`, `GET /api/storage/file`, and `POST /api/storage/delete`: private local image storage. Uploads validate the role, path, MIME type, extension, and size; student question images are scoped to the student's own exam session.
 
-Session cookies are HttpOnly, SameSite=Lax, Secure in production, random, database-backed, hashed at rest, and expire after eight hours. Login failures are rate-limited by a keyed hash of the identifier and optionally the request IP.
+## Data and file migration still required
 
-These endpoints are a foundation and are not yet wired into the existing login UI. Do not expose the PostgreSQL port to the public internet; the application server should be the only runtime client.
+The schema does not copy existing application records. Before the switch, compare counts and representative rows for users, students, classes, majors, drafts, published questions, sessions, attempts, and notifications. Preserve UUIDs wherever records reference each other. Existing Supabase password hashes should only be reused if they are compatible with the native bcrypt verifier; otherwise arrange a secure password reset/activation process.
+
+Image bytes are stored under `STORAGE_ROOT`; `storage.objects` contains metadata only. Existing Supabase Storage objects are **not copied automatically**. Export the old question-image and avatar buckets, copy them into the private directory while preserving object paths, and insert matching metadata before running image-based exams. Keep the old storage intact until object counts, paths, and image rendering are verified.
+
+## Final validation before merging or deploying
+
+- Run the CI workflow and security-contract script on the latest branch commit.
+- Verify `/api/health/database` from the deployed Node.js app.
+- Confirm the setup SQL check resolves all expected tables and functions.
+- Test login/logout, admin invitation/activation, password change, student roster, class management, question import/edit/publish, image uploads, a full exam, autosave, server grading, review history, report export, and leaderboard/analytics against the cPanel database.
+- Confirm an ordinary student cannot read another student's attempts, answer key, or exam images.
+- Compare migrated row/object counts against the source export and retain a backup before any production switch.
