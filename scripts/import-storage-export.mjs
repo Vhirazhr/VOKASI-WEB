@@ -86,6 +86,7 @@ try {
     }
   }
 
+  if (!plan.length) throw new Error('No supported image files found in the export root.');
   const report = { mode: apply ? 'apply' : 'dry-run', discovered: plan.length, imported: 0, skipped: 0, objects: [] };
   for (const item of plan) {
     const existing = await sql`
