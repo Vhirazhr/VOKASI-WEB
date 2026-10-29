@@ -8,9 +8,9 @@ import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {currentUser} from '@/lib/auth';
 import {deleteStorageFiles,uploadStorageFile} from '@/lib/storage-client';
+import {deleteQuestionDraft,getImportDrafts,getQuestionDrafts,saveQuestionDraft} from '@/lib/admin-question-data';
 import {fetchBank} from '@/lib/quiz';
 import {exportAdminQuestions} from '@/lib/admin-question-export';
-import {supabase} from '@/lib/supabase';
 import {APPROVED_BLUEPRINT,APPROVED_GROUPS,approvedGroup} from '@/lib/new-bank-blueprint';
 import BankFilterDropdown from '@/components/BankFilterDropdown';
 import QuestionImportWorkspace from '@/components/QuestionImportWorkspace';
@@ -110,11 +110,9 @@ export default function AdminBankPage(){
     const {error:publishError}=await nativeRpc('vokasi_admin_import_questions',{p_questions:[values],p_mode:'append'});
     if(publishError)throw publishError;
    }else if(draftEditing){
-    const {error:saveError}=await supabase().from('vokasi_question_drafts').update(values).eq('id',draftEditing);
-    if(saveError)throw saveError;
+    await saveQuestionDraft(draftEditing,values);
    }else{
-    const {error:saveError}=await supabase().from('vokasi_question_drafts').insert({...values,source_number:null,created_by:user.id});
-    if(saveError)throw saveError;
+    await saveQuestionDraft(null,{...values,source_number:null});
    }
    setCreateOpen(false);setTab(saveAsDraft?'drafts':'published');setBusy(true);setRefreshKey(v=>v+1);
   }catch(e){
@@ -124,8 +122,8 @@ export default function AdminBankPage(){
  }
  async function deleteDraft(d:DraftRow){
   if(!window.confirm('Hapus draft ini? Soal aktif tetap aman.'))return;
-  const {error}=await supabase().from('vokasi_question_drafts').delete().eq('id',d.id);
-  if(error)setIssue(error.message);else{setBusy(true);setRefreshKey(v=>v+1);}
+  try{await deleteQuestionDraft(d.id);setBusy(true);setRefreshKey(v=>v+1);}
+  catch(e){setIssue(e instanceof Error?e.message:'Gagal menghapus draft.');}
  }
  const [edit,setEdit]=useState<EditRow|null>(null),[original,setOriginal]=useState<EditRow|null>(null);
  const [editImageFile,setEditImageFile]=useState<File|null>(null),[editOptionFiles,setEditOptionFiles]=useState<Record<number,File>>({});
@@ -211,12 +209,12 @@ export default function AdminBankPage(){
     const [bankResult,qualityResult,draftResult,importResult]=await Promise.allSettled([
      fetchBank({allowIncomplete:true}),
      nativeRpc('vokasi_admin_question_health'),
-     supabase().from('vokasi_question_drafts').select('id,source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation,created_at').order('created_at',{ascending:false}).limit(1000),
-     supabase().from('vokasi_web_import_drafts').select('id,file_name,mode,payload,created_at').order('created_at',{ascending:false}).limit(30)
+     getQuestionDrafts(),
+     getImportDrafts<ImportDraft>()
     ]);
     if(bankResult.status==='rejected')throw bankResult.reason;
     const data=bankResult.value;
-    const rawDrafts=draftResult.status==='fulfilled'&&!draftResult.value.error?(draftResult.value.data||[]) as DraftRow[]:[];
+    const rawDrafts=draftResult.status==='fulfilled'?(draftResult.value||[]) as DraftRow[]:[];
     const rowMap=new Map(data.map(x=>[x.id,x]));
     // Legacy migration kept 500 mirrored draft copies. Hide identical published records.
     const actualDrafts=rawDrafts.filter(d=>{
@@ -233,7 +231,7 @@ export default function AdminBankPage(){
     if(active){
      setBank(data);setReview(health?.published||[]);
      setDraftProblems(health?.drafts||[]);setDrafts(actualDrafts);
-     setImportDrafts(importResult.status==='fulfilled'&&!importResult.value.error?(importResult.value.data||[]) as ImportDraft[]:[]);
+     setImportDrafts(importResult.status==='fulfilled'?(importResult.value||[]) as ImportDraft[]:[]);
      setIssue(qualityResult.status==='fulfilled'&&qualityResult.value.error?'Pemeriksaan status belum tersedia: '+qualityResult.value.error.message:'');
      setBusy(false);
     }
