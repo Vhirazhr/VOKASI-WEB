@@ -17,7 +17,7 @@ function isAdmin(role: string): boolean {
 }
 
 function wibRange(date: string): [number, number] {
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     throw new Error('Tanggal tidak valid.');
   }
 
@@ -148,7 +148,13 @@ export async function GET(request: NextRequest) {
 
     if (kind === 'admin-attempts' || kind === 'admin-analytics-attempts') {
       const date = request.nextUrl.searchParams.get(kind === 'admin-attempts' ? 'date' : 'endDate') ?? '';
-      const [start, end] = wibRange(date);
+      let range: [number, number];
+      try {
+        range = wibRange(date);
+      } catch {
+        return json({ error: 'Tanggal tidak valid.' }, 400);
+      }
+      const [start, end] = range;
 
       if (kind === 'admin-attempts') {
         const rows = await db`
