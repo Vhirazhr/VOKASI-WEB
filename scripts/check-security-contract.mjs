@@ -27,6 +27,32 @@ assert(auth.includes("login:'1',role:required"),'Expired sessions must return to
 assert(landing.includes('url.searchParams.get("login") !== "1"'),'Landing page must auto-open login from the session redirect');
 assert(safe.includes('vokasi_visual_asset_blocks'),'Known defective diagrams must be quarantined');
 
+const nativeRuntimeFiles=[
+ 'lib/auth.ts','lib/school.ts','lib/quiz.ts','lib/student-avatar.ts',
+ 'components/QuizView.tsx','components/ReviewHistory.tsx','components/AdminAnswerReview.tsx',
+ 'components/QuestionImportWorkspace.tsx','components/StudentProfileDashboard.tsx',
+ 'components/StudentSessionReportDownload.tsx','app/admin/kelas/page.tsx','app/admin/siswa/page.tsx',
+ 'app/admin/bank-soal/page.tsx','app/admin/bank-soal/buat/page.tsx',
+ 'app/admin/bank-soal/impor/zip/page.tsx','app/admin/pengaturan/page.tsx','app/admin/aktivasi/page.tsx'
+];
+for(const path of nativeRuntimeFiles){
+ const source=file(path);
+ assert(!source.includes("from '@/lib/supabase'")&&!source.includes("from './supabase'")&&!source.includes('supabase().'),
+  path+' must use the native backend, not the Supabase client');
+}
+const invite=file('app/api/admin/invitations/route.ts');
+const inviteAccept=file('app/api/admin/invitations/accept/route.ts');
+const storageFile=file('app/api/storage/file/route.ts');
+const storageUpload=file('app/api/storage/upload/route.ts');
+assert(invite.includes("user.role !== 'super_admin'")&&invite.includes("interval '48 hours'")&&invite.includes('hashSessionToken'),
+ 'Only Super Admin can create expiring, hashed native invitations');
+assert(inviteAccept.includes('hashPassword')&&inviteAccept.includes('accepted_at IS NULL')&&inviteAccept.includes('expires_at > now()'),
+ 'Admin invitations must be one-time, expiring, and password-hashed');
+assert(storageFile.includes('s.auth_user_id = ${user.id}::uuid')&&storageFile.includes("jsonb_array_elements(s.questions)"),
+ 'Student question images must be restricted to the student-owned exam session');
+assert(storageUpload.includes('STORAGE_ROOT')&&storageUpload.includes('isSameOriginRequest'),
+ 'Private uploads must require same-origin requests and configured local storage');
+
 const examHardening=file('supabase/migrations/202610260009_vokasi_exam_clock_xp_asset_scope.sql');
 assert(examHardening.includes('s.started_at + make_interval'),'Exam deadline must be based on server start and fixed budget');
 assert(examHardening.includes('vokasi_web_verified_results proof'),'XP must consult verified results');
