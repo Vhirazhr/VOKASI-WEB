@@ -30,7 +30,7 @@ export async function getStudent(authId: string): Promise<StudentProfile> {
     user?: { id?: string; profile?: StudentProfile | null };
     error?: unknown;
   };
-  if (!response.ok || payload.user?.id !== authId || !payload.user.profile) {
+  if (!response.ok || !payload.user || payload.user.id !== authId || !payload.user.profile) {
     throw new Error('Akun siswa tidak ditemukan atau sesi tidak valid.');
   }
   return payload.user.profile;
