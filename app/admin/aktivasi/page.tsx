@@ -1,52 +1,71 @@
 'use client';
-import { nativeRpc } from '@/lib/native-rpc';
+
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import {CheckCircle2,Eye,EyeOff,KeyRound,ShieldCheck} from 'lucide-react';
-import {configured,supabase} from '@/lib/supabase';
 import '@/app/admin-settings.css';
 
 export default function AdminActivationPage(){
  const router=useRouter();
  const [checking,setChecking]=useState(true);
+ const [token,setToken]=useState('');
  const [email,setEmail]=useState('');
+ const [displayName,setDisplayName]=useState('');
  const [password,setPassword]=useState('');
  const [repeat,setRepeat]=useState('');
  const [visible,setVisible]=useState(false);
  const [busy,setBusy]=useState(false);
  const [issue,setIssue]=useState('');
  const [success,setSuccess]=useState(false);
+
  useEffect(()=>{
   let mounted=true;
   async function check(){
+   const inviteToken=new URLSearchParams(window.location.search).get('token')||'';
+   if(!inviteToken){
+    if(mounted){setIssue('Tautan undangan tidak valid atau kedaluwarsa. Hubungi Super Admin sekolah.');setChecking(false);}
+    return;
+   }
+   setToken(inviteToken);
    try{
-    if(!configured())throw new Error('Koneksi Supabase belum tersedia.');
-    const {data,error}=await supabase().auth.getUser();
-    if(error||!data.user)throw new Error('Tautan undangan tidak valid atau kedaluwarsa. Hubungi administrator sekolah.');
-    const {data:isAdmin,error:roleError}=await nativeRpc('is_school_admin');
-    if(roleError||isAdmin!==true)throw new Error('Akun ini belum memiliki akses administrator sekolah.');
-    if(mounted)setEmail(data.user.email||'');
-   }catch(e){if(mounted)setIssue(e instanceof Error?e.message:'Undangan tidak dapat diproses.');}
-   finally{if(mounted)setChecking(false);}
+    const response=await fetch('/api/admin/invitations?token='+encodeURIComponent(inviteToken),{
+     method:'GET',credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}
+    });
+    const payload=await response.json().catch(()=>({})) as {data?:{email?:string;displayName?:string};error?:unknown};
+    if(!response.ok)throw new Error(typeof payload.error==='string'?payload.error:'Tautan undangan tidak valid atau kedaluwarsa.');
+    if(!payload.data?.email||!payload.data.displayName)throw new Error('Data undangan tidak lengkap.');
+    if(mounted){setEmail(payload.data.email);setDisplayName(payload.data.displayName);}
+   }catch(e){
+    if(mounted)setIssue(e instanceof Error?e.message:'Undangan tidak dapat diverifikasi.');
+   }finally{
+    if(mounted)setChecking(false);
+   }
   }
   void check();
   return()=>{mounted=false;};
  },[]);
+
  async function activate(event:React.FormEvent<HTMLFormElement>){
   event.preventDefault();setIssue('');
   if(password.length<10){setIssue('Kata sandi minimal 10 karakter.');return;}
   if(password!==repeat){setIssue('Konfirmasi kata sandi belum sama.');return;}
   setBusy(true);
   try{
-   const {error}=await supabase().auth.updateUser({password});
-   if(error)throw error;
-   setSuccess(true);
-   setPassword('');setRepeat('');
+   const response=await fetch('/api/admin/invitations/accept',{
+    method:'POST',credentials:'same-origin',cache:'no-store',
+    headers:{'Content-Type':'application/json',Accept:'application/json'},
+    body:JSON.stringify({token,password})
+   });
+   const payload=await response.json().catch(()=>({})) as {data?:{ok?:boolean};error?:unknown};
+   if(!response.ok)throw new Error(typeof payload.error==='string'?payload.error:'Aktivasi akun admin tidak berhasil.');
+   if(!payload.data?.ok)throw new Error('Aktivasi akun admin tidak berhasil.');
+   setSuccess(true);setPassword('');setRepeat('');
    router.replace('/admin/pengaturan');
   }catch(e){setIssue(e instanceof Error?e.message:'Gagal membuat kata sandi.');}
   finally{setBusy(false);}
  }
+
  return <main className="admin-activation-screen">
   <section className="admin-activation-card">
    <span className="admin-activation-icon"><ShieldCheck size={26}/></span>
@@ -54,8 +73,9 @@ export default function AdminActivationPage(){
    <h1>Aktivasi akun admin</h1>
    <p>Atur kata sandi pribadi untuk mengaktifkan akses administrator sekolah.</p>
    {checking?<div className="admin-activation-note">Memeriksa undangan...</div>:
-    success?<div className="admin-activation-success"><CheckCircle2 size={18}/> Kata sandi tersimpan. Membuka Pengaturan...</div>:
+    success?<div className="admin-activation-success"><CheckCircle2 size={18}/> Akun berhasil diaktifkan. Membuka Pengaturan...</div>:
     email?<form className="admin-activation-form" onSubmit={e=>void activate(e)}>
+     <label>Nama administrator<input value={displayName} readOnly autoComplete="name"/></label>
      <label>Email administrator<input value={email} readOnly autoComplete="username"/></label>
      <label>Kata sandi baru (minimal 10 karakter)
       <span className="admin-activation-password"><input minLength={10} required type={visible?'text':'password'} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Masukkan kata sandi baru"/>
