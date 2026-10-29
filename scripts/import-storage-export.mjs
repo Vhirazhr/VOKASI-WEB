@@ -127,6 +127,20 @@ try {
         await rm(destination, { force: true }).catch(() => undefined);
         throw error;
       }
+      if (item.bucket === 'vokasi-avatars') {
+        const username = item.objectPath.split('/')[0];
+        await sql`
+          INSERT INTO public.student_profiles (user_id, avatar_path, updated_at)
+          SELECT r.auth_user_id, ${item.objectPath}, now()
+          FROM public.student_roster AS r
+          WHERE r.username = ${username}
+            AND r.registration_status = 'registered'
+            AND r.auth_user_id IS NOT NULL
+          ON CONFLICT (user_id) DO UPDATE SET
+            avatar_path = EXCLUDED.avatar_path,
+            updated_at = now()
+        `;
+      }
       report.imported += 1;
       report.objects.push({ bucket: item.bucket, path: item.objectPath, size: item.size, status: 'imported' });
     } catch (error) {
