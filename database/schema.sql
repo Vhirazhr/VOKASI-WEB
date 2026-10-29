@@ -605,7 +605,7 @@ BEGIN
  END IF;
  RETURN NEW;
 END;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.vokasi_limit_daily_compulsory_xp()
@@ -644,7 +644,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.vokasi_set_updated_at()
@@ -656,7 +656,7 @@ BEGIN
     NEW.updated_at := NOW();
     RETURN NEW;
 END;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.vokasi_web_stop_broken_visual_release()
@@ -692,7 +692,7 @@ BEGIN
  END IF;
  RETURN NEW;
 END;
-$function$
+$function$;
 
 
 
