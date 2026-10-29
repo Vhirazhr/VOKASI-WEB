@@ -5,7 +5,7 @@ import {nativeRpc} from '@/lib/native-rpc';
 import {getOwnAttempt} from '@/lib/school';
 import {downloadStudentReport,makeStudentReportPdf} from '@/lib/student-report-pdf';
 import type {ReportQuestion} from '@/lib/student-report-pdf';
-import type {Attempt,StudentProfile} from '@/lib/types';
+import type {StudentProfile} from '@/lib/types';
 
 export default function StudentSessionReportDownload({profile,sessionId,official}:{
  profile:StudentProfile;sessionId:string;official:boolean;
