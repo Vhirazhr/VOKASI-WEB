@@ -64,6 +64,24 @@ export async function GET(request: NextRequest) {
       return json({ data: rows.map(row => normalizeAttempt(row as Record<string, unknown>)) });
     }
 
+    if (kind === 'own-attempt') {
+      if (user.role !== 'student' || !user.profile) {
+        return json({ error: 'Data ini hanya tersedia untuk akun siswa yang sedang masuk.' }, 403);
+      }
+      const sessionKey = request.nextUrl.searchParams.get('sessionKey') ?? '';
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sessionKey)) {
+        return json({ error: 'Sesi ujian tidak valid.' }, 400);
+      }
+      const rows = await db`
+        SELECT *
+        FROM public.student_attempts
+        WHERE auth_user_id = ${user.id}::uuid
+          AND session_key = ${sessionKey}::uuid
+        LIMIT 1
+      `;
+      return json({ data: rows.length ? normalizeAttempt(rows[0] as Record<string, unknown>) : null });
+    }
+
     if (kind === 'earned-xp') {
       if (user.role !== 'student' || !user.profile) {
         return json({ error: 'Data ini hanya tersedia untuk akun siswa yang sedang masuk.' }, 403);
