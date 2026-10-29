@@ -96,10 +96,16 @@ try {
     `;
     const destination = resolve(storageRoot, item.bucket, ...item.objectPath.split('/'));
     const destinationExists = await stat(destination).then(() => true).catch(() => false);
-    if (existing.length || destinationExists) {
+    if (existing.length) {
+      if (!destinationExists) {
+        throw new Error('Storage metadata exists but the file is missing: ' + item.bucket + '/' + item.objectPath);
+      }
       report.skipped += 1;
       report.objects.push({ bucket: item.bucket, path: item.objectPath, status: 'skipped-existing' });
       continue;
+    }
+    if (destinationExists) {
+      throw new Error('Destination file exists without storage metadata; resolve this conflict before importing: ' + item.bucket + '/' + item.objectPath);
     }
 
     if (!apply) {
