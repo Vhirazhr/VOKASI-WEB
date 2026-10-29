@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentNativeUser, isSameOriginRequest } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
+import { APPROVED_BLUEPRINT, APPROVED_GROUPS } from '@/lib/new-bank-blueprint';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const GROUPS = new Set(['HITUNG_DASAR','HITUNG_MENENGAH','HITUNG_LANJUT','NUMERASI_CAMPURAN','FISIKA_DASAR','LOGIKA','POLA_GAMBAR']);
-const GROUP_SECONDS: Record<string, number> = {
-  HITUNG_DASAR: 15, HITUNG_MENENGAH: 18, HITUNG_LANJUT: 25,
-  NUMERASI_CAMPURAN: 20, FISIKA_DASAR: 20, LOGIKA: 20, POLA_GAMBAR: 25,
-};
+const GROUPS = new Set<string>(APPROVED_GROUPS);
+const GROUP_SECONDS: Record<string, number> = Object.fromEntries(
+  APPROVED_GROUPS.map(group => [group, APPROVED_BLUEPRINT.groups[group].seconds]),
+);
 
 function json(body: unknown, status = 200) {
   return NextResponse.json(body, {
