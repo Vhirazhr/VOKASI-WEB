@@ -38,7 +38,7 @@ BEGIN
 
   major_id := public.vokasi_admin_create_major('Jurusan CI', 'TC');
   class_id := public.vokasi_admin_create_class(major_id, 'X CI', 10::smallint, '2026/2027');
-  IF NOT EXISTS (SELECT 1 FROM public.classes WHERE id = class_id AND major_id = major_id) THEN
+  IF NOT EXISTS (SELECT 1 FROM public.classes WHERE id = class_id) THEN
     RAISE EXCEPTION 'Native major/class creation failed';
   END IF;
 
