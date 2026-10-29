@@ -48,10 +48,10 @@ export async function POST(request: NextRequest) {
   let body: unknown;
   try { body = await request.json(); } catch { return json({ error: 'Data undangan tidak valid.' }, 400); }
   const payload = body && typeof body === 'object' ? body as Record<string, unknown> : {};
-  const displayName = typeof payload.displayName === 'string' ? payload.displayName.trim().replace(/\\s+/g, ' ') : '';
+  const displayName = typeof payload.displayName === 'string' ? payload.displayName.trim().replace(/\s+/g, ' ') : '';
   const email = typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : '';
   if (displayName.length < 3 || displayName.length > 100) return json({ error: 'Nama lengkap harus 3–100 karakter.' }, 400);
-  if (email.length > 254 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({ error: 'Alamat email tidak valid.' }, 400);
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: 'Alamat email tidak valid.' }, 400);
 
   const token = randomBytes(32).toString('base64url');
   const tokenHash = hashSessionToken(token);
