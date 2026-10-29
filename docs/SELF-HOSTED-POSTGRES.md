@@ -19,6 +19,18 @@ Never prefix database credentials or session secrets with `NEXT_PUBLIC_`.
 
 Until the old frontend is migrated, the existing `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` may still be required by the current UI. They are **legacy transition variables**, not part of the final self-hosted design. Do not delete them from a currently working deployment before the UI cutover is complete.
 
+## Private local image storage
+
+Set `STORAGE_ROOT` to an absolute, writable directory **outside `public_html` and the public web root**, for example `/home/CPANEL_USER/vokasi-private-storage`. Create the directory from the hosting account and confirm the Node.js application user can write to it. Do not expose this directory through a static web server or commit uploaded files to Git.
+
+The native storage endpoints are:
+
+- `POST /api/storage/upload`: authenticated uploads for question figures and the signed-in student's own JPG avatar. MIME type, extension, file size, role, and path ownership are checked server-side.
+- `GET /api/storage/file`: serves private image bytes only after checking the active native session and object permissions. Student question images are scoped to their own exam session.
+- `POST /api/storage/delete`: allows administrators to clean up only their own unreferenced question-image uploads.
+
+The database stores object metadata in `storage.objects`; image bytes are stored under `STORAGE_ROOT`. **The existing Supabase Storage objects are not copied automatically.** Before using image-based questions on the self-hosted branch, export the existing bucket files and migrate them into the private directory with matching metadata, or re-upload them through the admin workflow after the remaining admin data APIs are migrated. Keep the old storage intact until the file counts and image paths have been verified.
+
 ## Apply schema to the empty cPanel test database
 
 1. Confirm the target database is the empty testing database, not the current production database.
