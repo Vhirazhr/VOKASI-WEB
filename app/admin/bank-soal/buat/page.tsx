@@ -7,7 +7,7 @@ import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
 import {currentUser} from '@/lib/auth';
 import {deleteStorageFiles,storageUrl,uploadStorageFile} from '@/lib/storage-client';
-import {supabase} from '@/lib/supabase';
+import {deleteQuestionDraft,getQuestionDrafts,saveQuestionDraft} from '@/lib/admin-question-data';
 import {APPROVED_BLUEPRINT,APPROVED_GROUPS,approvedGroup,type ApprovedGroup} from '@/lib/new-bank-blueprint';
 import '@/app/admin-visual-questions.css';
 
@@ -56,11 +56,9 @@ export default function CreatePictureQuestion(){
  const [publishNow,setPublishNow]=useState(false);
  async function refresh(){
    setBusy(true);
-   const {data,error:dbError}=await supabase().from('vokasi_question_drafts')
-     .select('id,source_number,category,difficulty_code,question,question_image_path,options,correct_index,time_limit_seconds,explanation,created_at')
-     .order('created_at',{ascending:false}).limit(1000);
-   if(dbError){setIssue(dbError.message);setDrafts([]);}else{setIssue('');setDrafts((data||[]) as Draft[]);}
-   setBusy(false);
+   try{const data=await getQuestionDrafts();setIssue('');setDrafts(data as Draft[]);}
+   catch(e){setIssue(e instanceof Error?e.message:'Data draft tidak dapat dimuat.');setDrafts([]);}
+   finally{setBusy(false);}
  }
  useEffect(()=>{if(!loading&&!error)queueMicrotask(()=>void refresh());},[loading,error]);
  const setOption=(i:number,patch:Partial<Answer>)=>setOptions(a=>a.map((v,j)=>j===i?{...v,...patch}:v));
@@ -115,10 +113,7 @@ export default function CreatePictureQuestion(){
        clear();await refresh();
        setNotice('Berhasil! Soal ditambahkan ke bank aktif dan dapat dipilih untuk latihan siswa.');
      }else{
-       const request=editing?
-         await supabase().from('vokasi_question_drafts').update(values).eq('id',editing):
-         await supabase().from('vokasi_question_drafts').insert({...values,created_by:user.id});
-       if(request.error)throw request.error;
+       await saveQuestionDraft(editing,values);
        clear();await refresh();setNotice('Draft soal tersimpan. Bank aktif tidak berubah.');
      }
    }catch(e){
@@ -129,15 +124,12 @@ export default function CreatePictureQuestion(){
  async function discard(d:Draft){
    if(!window.confirm('Yakin hapus draft ini?'))return;
    setSaving(true);
-   const {error:err}=await supabase().from('vokasi_question_drafts').delete().eq('id',d.id);
-   if(err)setNotice('Gagal menghapus: '+err.message);
-   else{
-     // Drafts may reference Storage objects also used by published questions
-     // or by other drafts. Never delete the shared assets as a side effect.
+   try{
+     await deleteQuestionDraft(d.id);
      if(editing===d.id)clear();
      setNotice('Draft berhasil dihapus. Gambar yang mungkin digunakan soal lain tetap aman.');await refresh();
-   }
-   setSaving(false);
+   }catch(e){setNotice('Gagal menghapus: '+(e instanceof Error?e.message:String(e)));}
+   finally{setSaving(false);}
  }
  if(loading)return <main className="page-loader">Memeriksa akses admin...</main>;
  if(error)return <main className="page-loader">{error}</main>;
