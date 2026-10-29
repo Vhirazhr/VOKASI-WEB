@@ -1,6 +1,6 @@
 import type { StudentProfile, UserRole } from './types';
 
-type NativeAuthUser = {
+export type NativeAuthUser = {
   id: string;
   username: string;
   email: string | null;
@@ -46,7 +46,7 @@ export async function signIn(identity: string, password: string, role: UserRole)
   return role === 'student' ? user.profile : null;
 }
 
-export async function currentRole(): Promise<{ role: UserRole; profile: StudentProfile | null } | null> {
+export async function currentUser(): Promise<NativeAuthUser | null> {
   const response = await fetch('/api/auth/me', {
     method: 'GET',
     credentials: 'same-origin',
@@ -61,6 +61,12 @@ export async function currentRole(): Promise<{ role: UserRole; profile: StudentP
   }
   const user = payload.user as NativeAuthUser | undefined;
   if (!user || !['student', 'admin', 'super_admin'].includes(user.role)) return null;
+  return user;
+}
+
+export async function currentRole(): Promise<{ role: UserRole; profile: StudentProfile | null } | null> {
+  const user = await currentUser();
+  if (!user) return null;
   const role: UserRole = user.role === 'student' ? 'student' : 'admin';
   return { role, profile: role === 'student' ? user.profile : null };
 }
