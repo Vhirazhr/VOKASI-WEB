@@ -4,9 +4,8 @@ import { nativeRpc } from '@/lib/native-rpc';
 import {useEffect,useMemo,useState} from 'react';
 import {ArrowRight,BookOpen,GraduationCap,RefreshCw,School2,Search,Users,Plus,PenLine,Trash2,X} from 'lucide-react';
 import AppShell from '@/components/AppShell';
-import {supabase} from '@/lib/supabase';
 import {useSchoolAuth} from '@/lib/use-school-auth';
-import {getSchoolStudents} from '@/lib/school';
+import {getActiveMajors,getSchoolClasses,getSchoolStudents} from '@/lib/school';
 import type {SchoolStudent} from '@/lib/types';
 import '@/app/admin-workspace.css';
 import '@/app/admin-students-ui.css';
@@ -50,18 +49,13 @@ export default function AdminClassesPage(){
  },[selected,classModal,deleteTarget,saveBusy]);
  useEffect(()=>{if(loading||error)return;let active=true;
   async function load(){try{
- const [data,cls]=await Promise.all([
-  getSchoolStudents(),
-  supabase().from('classes').select('id,class_name,major_id,grade_level,school_year').order('class_name')
- ]);
- if(cls.error)throw cls.error;
- if(active){setStudents(data);setAllClasses(cls.data||[]);setIssue('');setBusy(false);}
+ const [data,cls]=await Promise.all([getSchoolStudents(),getSchoolClasses()]);
+ if(active){setStudents(data);setAllClasses(cls);setIssue('');setBusy(false);}
  }catch(e){if(active){setIssue(e instanceof Error?e.message:'Data kelas tidak dapat dimuat.');setBusy(false);}}}
   queueMicrotask(()=>void load());return()=>{active=false};
  },[loading,error,refreshKey]);
  useEffect(()=>{if(loading||error)return;
-   void supabase().from('majors').select('id,name,code').eq('is_active',true).order('name')
-     .then(({data})=>setMajorsDb(data||[]));
+   void getActiveMajors().then(setMajorsDb).catch(e=>setIssue(e instanceof Error?e.message:'Data jurusan tidak dapat dimuat.'));
  },[loading,error]);
  const romanGrade=(grade:number)=>grade===10?'X':grade===11?'XI':'XII';
  function generatedClass(majorId:string,grade:number,rombel:string){
