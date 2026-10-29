@@ -64,7 +64,8 @@ assert.doesNotMatch(health, /error\.message|DATABASE_URL/);
 assert.match(seed, /ALLOW_SUPER_ADMIN_BOOTSTRAP/);
 assert.match(seed, /refusing to overwrite/i);
 assert.match(seed, /bcrypt\.hash\(password, 12\)/);
-assert.match(docs, /NOT YET A FULL CUTOVER/);
-assert.match(docs, /do not remove the existing backend/i);
+assert.match(docs, /not yet a production cutover/i);
+assert.match(docs, /Keep the old backend and its data intact/i);
+assert.match(docs, /database\/verify_native_setup\.sql/);
 
 console.log('OK: self-hosted PostgreSQL foundation and native-auth security contracts passed.');
