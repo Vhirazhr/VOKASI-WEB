@@ -6,6 +6,8 @@ import Link from 'next/link';
 import {BookOpen,Clock3,FileQuestion,Plus,Search,FileUp,PenLine,AlertCircle,FileText,CheckCircle2,UploadCloud,Trash2,Download} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import {useSchoolAuth} from '@/lib/use-school-auth';
+import {currentUser} from '@/lib/auth';
+import {deleteStorageFiles,uploadStorageFile} from '@/lib/storage-client';
 import {fetchBank} from '@/lib/quiz';
 import {exportAdminQuestions} from '@/lib/admin-question-export';
 import {supabase} from '@/lib/supabase';
@@ -90,14 +92,13 @@ export default function AdminBankPage(){
   setCreateSaving(true);
   const uploaded:string[]=[];
   try{
-   const {data:{user},error:authError}=await supabase().auth.getUser();
-   if(authError||!user)throw new Error('Sesi admin perlu diperbarui.');
+   const user=await currentUser();
+   if(!user||(user.role!=='admin'&&user.role!=='super_admin'))throw new Error('Sesi admin perlu diperbarui.');
    async function upload(file:File){
     if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>3145728)throw new Error('Gambar harus PNG/JPG/WEBP maksimal 3 MB.');
     const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
     const path=user!.id+'/'+crypto.randomUUID()+'.'+ext;
-    const {error:uploadError}=await supabase().storage.from('vokasi-question-figures').upload(path,file,{contentType:file.type,upsert:false});
-    if(uploadError)throw uploadError;
+    await uploadStorageFile('vokasi-question-figures',path,file);
     uploaded.push(path);return path;
    }
    const imagePath=newImage?await upload(newImage):newImagePath;
@@ -117,7 +118,7 @@ export default function AdminBankPage(){
    }
    setCreateOpen(false);setTab(saveAsDraft?'drafts':'published');setBusy(true);setRefreshKey(v=>v+1);
   }catch(e){
-   if(uploaded.length)await supabase().storage.from('vokasi-question-figures').remove(uploaded);
+   if(uploaded.length)await deleteStorageFiles('vokasi-question-figures',uploaded).catch(()=>undefined);
    setCreateNotice(e instanceof Error?e.message:'Gagal menyimpan soal.');
   }finally{setCreateSaving(false);}
  }
@@ -163,14 +164,13 @@ export default function AdminBankPage(){
   setEditBusy(true);setEditIssue('');
   const uploads:string[]=[];
   try{
-   const {data:{user},error:authError}=await supabase().auth.getUser();
-   if(authError||!user)throw new Error('Sesi admin tidak tersedia.');
+   const user=await currentUser();
+   if(!user||(user.role!=='admin'&&user.role!=='super_admin'))throw new Error('Sesi admin tidak tersedia.');
    async function upload(file:File){
     if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>3145728)throw new Error('Gambar harus PNG/JPG/WEBP maksimal 3 MB.');
     const extension=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
     const path=user!.id+'/'+crypto.randomUUID()+'.'+extension;
-    const {error:uploadError}=await supabase().storage.from('vokasi-question-figures').upload(path,file,{upsert:false,contentType:file.type});
-    if(uploadError)throw uploadError;
+    await uploadStorageFile('vokasi-question-figures',path,file);
     uploads.push(path);
     return path;
    }
@@ -186,7 +186,7 @@ export default function AdminBankPage(){
    if(err)throw err;
    setEdit(null);setOriginal(null);setSelected(null);setBusy(true);setRefreshKey(v=>v+1);
   }catch(e){
-   if(uploads.length)await supabase().storage.from('vokasi-question-figures').remove(uploads);
+   if(uploads.length)await deleteStorageFiles('vokasi-question-figures',uploads).catch(()=>undefined);
    setEditIssue(e instanceof Error?e.message:'Perubahan tidak berhasil disimpan.');
   }finally{setEditBusy(false);}
  }
