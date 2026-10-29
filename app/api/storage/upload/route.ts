@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import { link, mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentNativeUser, isSameOriginRequest } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
-import { isStorageBucket, normalizeStorageObjectPath, resolveStorageObjectPath } from '@/lib/server/storage';
+import { hasSupportedImageSignature, isStorageBucket, normalizeStorageObjectPath, resolveStorageObjectPath } from '@/lib/server/storage';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -87,6 +87,9 @@ export async function POST(request: NextRequest) {
     WHERE bucket_id = ${bucket} AND name = ${objectPath}
     LIMIT 1
   `;
+  if (bucket === 'vokasi-question-figures' && existing.length) {
+    return json({ error: 'Gambar soal dengan nama tersebut sudah ada. Gunakan nama baru.' }, 409);
+  }
   if (existing[0]?.owner_id && existing[0].owner_id !== user.id) {
     return json({ error: 'Berkas dengan path tersebut dimiliki akun lain.' }, 403);
   }
@@ -99,14 +102,24 @@ export async function POST(request: NextRequest) {
   }
 
   const tempPath = finalPath + '.tmp-' + randomUUID();
+  let createdFigure = false;
   try {
     const bytes = Buffer.from(await fileValue.arrayBuffer());
+    if (bytes.length !== fileValue.size || !hasSupportedImageSignature(bytes, mime)) {
+      return json({ error: 'Isi file tidak sesuai dengan format gambar yang dipilih.' }, 415);
+    }
     await mkdir(dirname(finalPath), { recursive: true, mode: 0o700 });
     await writeFile(tempPath, bytes, { flag: 'wx', mode: 0o600 });
-    await rename(tempPath, finalPath);
+    if (bucket === 'vokasi-question-figures') {
+      await link(tempPath, finalPath);
+      createdFigure = true;
+      await rm(tempPath, { force: true });
+    } else {
+      await rename(tempPath, finalPath);
+    }
 
     await db.begin(async tx => {
-      await tx`
+      const saved = await tx`
         INSERT INTO storage.objects
           (bucket_id, name, owner_id, metadata, mimetype, size_bytes, updated_at)
         VALUES (
@@ -120,7 +133,11 @@ export async function POST(request: NextRequest) {
           mimetype = EXCLUDED.mimetype,
           size_bytes = EXCLUDED.size_bytes,
           updated_at = now()
+        WHERE ${bucket} = 'vokasi-avatars'
+          AND (storage.objects.owner_id IS NULL OR storage.objects.owner_id = EXCLUDED.owner_id)
+        RETURNING id
       `;
+      if (!saved.length) throw new Error('STORAGE_COLLISION');
 
       if (bucket === 'vokasi-avatars') {
         await tx`
@@ -135,8 +152,13 @@ export async function POST(request: NextRequest) {
 
     const query = new URLSearchParams({ bucket, path: objectPath });
     return json({ data: { bucket, path: objectPath, url: '/api/storage/file?' + query.toString() } });
-  } catch {
+  } catch (error) {
+    if (createdFigure) await rm(finalPath, { force: true }).catch(() => undefined);
     await rm(tempPath, { force: true }).catch(() => undefined);
+    const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : '';
+    if (code === 'EEXIST' || code === '23505' || (error instanceof Error && error.message === 'STORAGE_COLLISION')) {
+      return json({ error: 'Berkas dengan nama tersebut sudah ada. Gunakan nama baru.' }, 409);
+    }
     return json({ error: 'Berkas tidak berhasil disimpan.' }, 500);
   }
 }
